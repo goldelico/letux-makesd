@@ -1,0 +1,321 @@
+# make an SD suitable for the GTA04 (Letux 2804)
+# run on some host with a SD interface
+
+#
+# export DEV=... if needed to set the device
+# export SERVER=... if you want to install a specific version
+
+[ "$SERVER" ] || export SERVER=http://download.goldelico.com/gta04/unstable
+
+# set defaults
+
+FORMAT1=ext4
+BOOT1=none
+KERNEL1=3.17-rc7
+DT1="omap3-gta04a2.dtb omap3-gta04a3.dtb omap3-gta04a4.dtb omap3-gta04a5.dtb"
+ROOTFS1=debian-lxde
+CONFIG1=debian-wheezy
+
+FORMAT2=none
+BOOT2=none
+KERNEL2=none
+DT2=
+ROOTFS2=none
+CONFIG2=none
+
+FORMAT3=none
+BOOT3=none
+KERNEL3=none
+DT3=
+ROOTFS3=none
+CONFIG3=none
+
+FORMAT4=none
+BOOT4=none
+KERNEL4=none
+DT4=
+ROOTFS4=none
+CONFIG4=none
+
+NP=0
+
+function useage()
+{
+	echo "useage: DEV=/dev/device makesd [partition1 [partition2 [partition3 [partition4]]]]"
+	echo
+	echo "  DEV=/dev/device - specify the raw device (not the partitions), e.g. /dev/sdc"
+	echo "  partition:"
+	echo "    format (starts next partition):"
+	echo "    -f fat"
+	echo "    -f ext3"
+	echo "    -f ext4"
+	echo "    -f none"
+	echo "    bootloader:"
+	echo "    -b <url>"
+	echo "    -b none"
+	echo "    -b gta04"
+	echo "    -b gta04b2"
+	echo "    -b gta04b3"
+	echo "    -b gta04b7"
+	echo "    -b pandaboard"
+	echo "    -b omap5evm"
+	echo "    kernel:"
+	echo "    -k <url>"
+	echo "    -k none"
+	echo "    -k 3.17-rc7"
+	echo "    modules (must come after kernel):"
+	echo "    -m none"
+	echo "    -m 3.17-rc7"
+	echo "    device tree files (mst come after kernel):"
+	echo "    -d omap3-gta04a2"
+	echo "    -d <pattern>"
+	echo "    -d '*'"
+	echo "    root file system (OS):"
+	echo "    -r <url>"
+	echo "    -r none"
+	echo "    -r debian-lxde"
+	echo "    -r debian-minimal"
+	echo "    -r quantumstep"
+	echo "    -r replicant-4.2"
+	echo "    -r qtmoko"
+	echo "    config patches:"
+	echo "    -c <url>"
+	echo "    -c none"
+	echo "    -c debian-wheezy"
+	echo "    abbreviations for single partition cards:"
+	echo "      debian-lxde = -f ext4 -r debian-lxde -d all -k latest -m latest -c debian-wheezy"
+	echo "      qtmoko = -f ext4 -r qtmoko -d all -k latest (does not need config)"
+	echo "      replicant = -f ext4 -d all -r replicant-4.2 (has its own kernel)"
+	echo "      quantumstep = -f ext4 -r quantumstep -d all -k latest -m latest -c debian-wheezy"
+	echo "    abbreviations for multiple partitions (to create bootable production image flash card):"
+	echo "      l2804 = -f fat -b gta04 debian-lxde"
+	echo "      l3704 = -f fat -b gta04b2 debian-lxde"
+	echo "      l7004 = -f fat -b gta04b3 debian-lxde"
+	echo "      neo900 = -f fat -b gta04b7 debian-lxde"
+	echo "      pandaboard = -f fat -b pandaboard debian-lxde"
+	echo "      pyra = -f fat -b pyra debian-lxde"
+	echo "      all = debian-lxde qtmoko replicant quantumstep"
+}
+
+
+function process() { # $1 .. $n
+	while [ "$1" ]
+		do
+		case "$1" in
+			-f )
+				NP=$(expr "$NP" + 1)
+				if [ "$NP" -gt 4 ]
+				then
+					echo "too many partitions specified (max. 4)"
+					useage
+					exit 1
+				fi
+				shift
+				echo "partition type $1"
+				## ...
+				;;
+			-b )
+				shift
+				echo "bootloader $1"
+				case "$1" in
+					http://*/* | https://*/* ) ;;
+					gta03b2 ) ;;
+				esac
+				;;
+			-k )
+				shift
+				echo "kernel $1"
+				case "$1" in
+					http://*/* | https://*/* ) ;;
+					none ) ;;
+				esac
+				;;
+			-m )
+				shift
+				echo "modules $1"
+				case "$1" in
+					http://*/* | https://*/* ) ;;
+					none ) ;;
+				esac
+				;;
+			-d )
+				shift
+				echo "device trees $1"
+				case "$1" in
+					http://*/* | https://*/* ) ;;
+					none ) ;;
+				esac
+				;;
+			-r )
+				shift
+				echo "rootfs $1"
+				case "$1" in
+					http://*/* | https://*/* ) ;;
+					none ) ;;
+				esac
+				;;
+			-c )
+				shift
+				echo "config $1"
+				case "$1" in
+					http://*/* | https://*/* ) ;;
+					none ) ;;
+				esac
+				;;
+			debian-lxde )	process -f ext4 -r debian-lxde -d all -k latest -m latest -c debian-wheezy ;;
+			qtmoko )		process -f ext4 -r qtmoko -d all -k latest ;;
+			replicant )		process -f ext4 -d all -r replicant-4.2 ;;
+			quantumstep )	process -f ext4 -r quantumstep -d all -k latest -m latest -c debian-wheezy ;;
+			l2804 )			process -f fat -b gta04 debian-lxde ;;
+			l3704 )			process -f fat -b gta04b2 debian-lxde ;;
+			l7004 )			process -f fat -b gta04b3 debian-lxde ;;
+			neo900 )		process -f fat -b gta04b7 debian-lxde ;;
+			pandaboard )	process -f fat -b pandaboard debian-lxde ;;
+			pyra )			process -f fat -b omap5evm debian-lxde ;;
+			all )			process debian-lxde qtmoko replicant quantumstep ;;
+			-* )			echo "unknown option: $1"; useage; exit 1 ;;
+			* )				echo "unknown macro: $1"; useage; exit 1 ;;
+		esac
+		shift
+	done
+}
+
+# IDEA: check specified version from $SERVER for patterns (gta04, gta04b2, gta04b7 etc.) and initialize accordingly
+# this would allow to use a single makesd script for everything by setting e.g. DEV=/dev/sdd SERVER=gta04b2 ./makesd before calling
+# and/or evaluate $1 where we can pass a device name and maybe a version incl. -l -u to decide between latest and unstable?
+
+[ "$BOOT" ] || export BOOT="$SERVER"
+[ "$KERNEL" ] || export KERNEL="$SERVER"
+[ "$CONFIG" ] || export CONFIG="$SERVER"
+[ "$ROOTFS" ] || export ROOTFS=http://download.goldelico.com/gta04/debian/latest-lxde.tbz
+[ "$DTBS" ] || export DTBS="omap3-gta04a2.dtb omap3-gta04a3.dtb omap3-gta04a4.dtb omap3-gta04a5.dtb"
+
+#
+# my eeePC has this configuration:
+#
+# /dev/sda:	internal flash (rootfs)
+# /dev/sdb:	internal SD reader
+# /dev/sdc: external SD reader
+# /dev/sdd: external CF reader
+# /dev/sde: external ? reader
+
+[ "$DEV" ] || export DEV=/dev/sdc
+
+# set defaults
+process debian-lxde -f none -f none -f none
+
+if [ "$1" ]
+then
+	# start over with given options
+	NP=0
+	process "$@" || exit 1
+fi
+
+DEVP=$DEV
+[ -b "${DEV}p" ] && DEV=${DEV}p	# needs "p"artition suffix
+
+if [ "${DEV}" = "/dev/sda" ]
+then
+	echo "can't overwrite /dev/sda"
+	exit 1
+elif [ -b "$DEV" ]
+then
+	: ok
+else
+	echo "not a block device: $DEV"
+	exit 1
+fi
+
+for P in 1 2 3 4
+	do
+		umount ${DEVP}${P}
+		mkdir -p /media/P${P}
+	done
+
+## new based on http://omappedia.org/wiki/SD_Configuration#Script_to_partition.2Fformat_SDCards
+## updated based on http://www.sakoman.com/OMAP/a-script-for-partitioningformatting-a-bootable-sdmicrosd-card.html
+dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
+[ "$SIZE" ] || SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l $DEV | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
+echo DISK SIZE: $SIZE bytes
+CYLINDERS=$(expr $SIZE / 255 / 63 / 512)
+echo CYLINDERS: $CYLINDERS
+SECTORS2=$(expr $SIZE / 512 - 131072)	# number of sectors for second partition
+echo SECTORS1: 130944
+echo SECTORS2: $SECTORS2
+{
+##	echo ,9,0x0C,*
+##	echo ,,,-
+	echo 128,130944,0x0C,*	# first partition: FAT
+	echo 131072,$SECTORS2,,-	# second partiton: Linux
+} | sfdisk --force -D -uS -H 255 -S 63 -C $CYLINDERS $DEV
+/sbin/partprobe $DEV
+
+for P in 1 2 3 4
+do # format partitions
+	umount ${DEVP}${P}
+	case "$FORMAT$P" in
+		fat )
+			mkfs.vfat -F 32 -n "boot" ${DEVP}${P} &&
+			fsck.vfat -y ${DEVP}${P}
+			mount ${DEVP}${P} /media/P${P} || exit
+			;;
+		ext* )
+			mke2fs -j -L "rootfs" ${DEVP}${P} &&
+			fsck.ext3 -y ${DEVP}${P}
+			mount ${DEVP}${P} /media/P${P} || exit
+			;;
+	esac
+df
+
+for P in 1 2 3 4
+do
+	( cd /media/P{$P}
+
+install what was specified
+
+# first partition (FAT)
+wget "$BOOT/MLO"	# must come first
+wget "$BOOT/x-load.flash"
+## some x-loaders want u-boot.bin others want u-boot.img
+wget "$BOOT/u-boot.bin"
+wget "$BOOT/u-boot.flash"
+wget "$BOOT/splash.rgb16z"
+wget "$BOOT/menu.rgb16z"
+wget "$BOOT/boot.scr"
+## some u-boots want uImage.bin others want uImage.img
+wget "$KERNEL/uImage"
+wget "$KERNEL/bootargs.scr"
+
+for i in $DTBS
+do
+	wget "$KERNEL/$i"
+done
+)
+ls -l /media/P1
+
+wget "$ROOTFS" -O - | tar xvjf -
+# wipe out old configs coming from the tbz
+rm -rf boot/*
+rm -rf lib/modules/kernel
+rm -rf root
+wget "$KERNEL/modules.tgz" -O - | tar xvzf -
+wget "$CONFIG/config.tgz" -O - | tar xvzf -
+	)
+	ls -l /media/P${P}
+done
+
+sync
+
+if [ "$DEV" ]
+then
+	df
+	for P in 1 2 3 4
+	do
+		umount ${DEVP}${P}
+		rmdir /media/P${P}
+	done
+	for P in 1 2 3 4
+	do
+		fsck -f ${DEVP}${P}
+	done
+fi

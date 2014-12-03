@@ -1,0 +1,31 @@
+#
+# upload all makesd scripts to server
+#
+
+[ "$UPLOAD" ] || export UPLOAD="/Volumes/Server HD/Library/WebServer/Sites/download.goldelico.com/"
+
+case "$1" in
+	pull )
+		# get all dual partition production images
+		FILES=$(cd "$UPLOAD/gta04/unstable" && find . -name makesd -print)
+		(cd "$UPLOAD/gta04/unstable" && tar cf - $FILES) | (cd src/makesd && tar xvf - )
+		cp -fv "$UPLOAD/gta04/debian/makesd" src/makesd/makesd-lxde
+		cp -fv "$UPLOAD/gta04/replicant/4.2/makesd" src/makesd/makesd-replicant
+		cp -fv "$UPLOAD/gta04/quantumstep/makesd" src/makesd/makesd-quantumstep
+		(cd src/makesd && git status .)
+		exit
+		;;
+esac
+
+# Dual Partition Production images
+
+(cd src/makesd && tar cf - .) | (cd "$UPLOAD/gta04/unstable" && tar xvf - )
+
+cp -fv src/makesd/makesd-production-panda "$UPLOAD/ompanda/unstable/makesd"
+cp -fv src/makesd/makesd-production-dragonfly "$UPLOAD/DragonFly/unstable/makesd"
+
+# Single partition images
+
+cp -fv src/makesd/makesd-lxde "$UPLOAD/gta04/debian/makesd"
+cp -fv src/makesd/makesd-replicant "$UPLOAD/gta04/replicant/4.2/makesd"
+cp -fv src/makesd/makesd-quantumstep "$UPLOAD/gta04/quantumstep/makesd"
