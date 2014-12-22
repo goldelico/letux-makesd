@@ -9,12 +9,14 @@
 
 # set defaults
 
-FORMAT1=ext4
+DEBUG=false
+
+FORMAT1=none
 BOOT1=none
-KERNEL1=3.17-rc7
-DT1="omap3-gta04a2.dtb omap3-gta04a3.dtb omap3-gta04a4.dtb omap3-gta04a5.dtb"
-ROOTFS1=debian-lxde
-CONFIG1=debian-wheezy
+KERNEL1=none
+DT1=
+ROOTFS1=none
+CONFIG1=none
 
 FORMAT2=none
 BOOT2=none
@@ -50,6 +52,7 @@ function useage()
 	echo "    -f ext3"
 	echo "    -f ext4"
 	echo "    -f none"
+	echo "    -f[1-4] -- switch to given partition"
 	echo "    bootloader:"
 	echo "    -b <url>"
 	echo "    -b none"
@@ -102,7 +105,13 @@ function process() { # $1 .. $n
 	while [ "$1" ]
 		do
 		case "$1" in
-			-f )
+			-f[1-4] ) # switch to given partition
+				NP=$(expr "$1" : "-f\(.*\)" )
+				$DEBUG && echo "switched to partition $NP"
+				shift
+				$DEBUG && echo "partition $NP type: $1"
+				;;
+			-f ) # switch to next partition
 				NP=$(expr "$NP" + 1)
 				if [ "$NP" -gt 4 ]
 				then
@@ -111,105 +120,121 @@ function process() { # $1 .. $n
 					exit 1
 				fi
 				shift
-				echo "partition type $1"
-				## ...
+				$DEBUG && echo "partition $NP type: $1"
+				### set
 				;;
-			-b )
+			-b ) # define boot loader
 				shift
-				echo "bootloader $1"
+				$DEBUG && echo "bootloader $1"
 				case "$1" in
-					http://*/* | https://*/* ) ;;
-					gta03b2 ) ;;
+					none ) P="$1";;
+					http://*/* | https://*/* ) P="$1";;
+					* ) P="http://download.goldelico.com/gta04/$1/u-boot.bin" ;;
 				esac
+				$DEBUG && echo "u-boot: $P"
+				### set
 				;;
-			-k )
+			-k ) # define kernel
 				shift
-				echo "kernel $1"
+				$DEBUG && echo "kernel $1"
 				case "$1" in
-					http://*/* | https://*/* ) ;;
-					none ) ;;
+					none ) P="$1";;
+					http://*/* | https://*/* ) P="$1";;
+					* ) P="http://download.goldelico.com/gta04/$1/uImage" ;;
 				esac
+				$DEBUG && echo "kernel: $P"
+				### set
 				;;
-			-m )
+			-m ) # define modules
 				shift
-				echo "modules $1"
+				$DEBUG && echo "modules $1"
 				case "$1" in
-					http://*/* | https://*/* ) ;;
-					none ) ;;
+					none ) P="$1";;
+					http://*/* | https://*/* ) P="$1";;
+					* ) P="http://download.goldelico.com/gta04/$1/modules.tgz" ;;
 				esac
+				$DEBUG && echo "modules: $P"
+				### set
 				;;
-			-d )
+			-d ) # define device trees
 				shift
-				echo "device trees $1"
+				$DEBUG && echo "device trees $1"
 				case "$1" in
-					http://*/* | https://*/* ) ;;
-					none ) ;;
+					none ) P="$1";;
+					all ) P="omap3-gta04a2.dtb omap3-gta04a3.dtb omap3-gta04a4.dtb omap3-gta04a5.dtb" ;;
+					* ) P="$1";;
 				esac
+				$DEBUG && echo "device trees: $P"
+				### set
 				;;
-			-r )
+			-r ) # define root file system
 				shift
-				echo "rootfs $1"
+				$DEBUG && echo "rootfs $1"
 				case "$1" in
-					http://*/* | https://*/* ) ;;
-					none ) ;;
+					none ) P="$1";;
+					http://*/* | https://*/* ) P="$1";;
+					*-debian ) P="http://download.goldelico.com/gta04/debian/$1.tbz" ;;
+					*-lxde ) P="http://download.goldelico.com/gta04/debian/$1.tbz" ;;
+					*-qtmoko ) P="http://download.goldelico.com/gta04/qtmoko/$1.tbz" ;;
+					*-quantumstep ) P="http://download.goldelico.com/gta04/qtmoko/$1.tbz" ;;
+					*-replicant-*) P="http://download.goldelico.com/gta04/replicant/$1/latest-replicant.tbz" ;;
+					* ) echo "unknown rootfs: $1"; useage; exit 1 ;;
 				esac
+				$DEBUG && echo "rootfs: $P"
+				### set
 				;;
-			-c )
+			-c ) # define config
 				shift
-				echo "config $1"
+				$DEBUG && echo "config $1"
 				case "$1" in
-					http://*/* | https://*/* ) ;;
-					none ) ;;
+					none ) P="$1";;
+					http://*/* | https://*/* ) P="$1";;
+					* ) P="http://download.goldelico.com/gta04/$1/config.tgz" ;;
 				esac
+				$DEBUG && echo "config: $P"
+				### set
 				;;
-			debian-lxde )	process -f ext4 -r debian-lxde -d all -k latest -m latest -c debian-wheezy ;;
-			qtmoko )		process -f ext4 -r qtmoko -d all -k latest ;;
-			replicant )		process -f ext4 -d all -r replicant-4.2 ;;
-			quantumstep )	process -f ext4 -r quantumstep -d all -k latest -m latest -c debian-wheezy ;;
-			l2804 )			process -f fat -b gta04 debian-lxde ;;
-			l3704 )			process -f fat -b gta04b2 debian-lxde ;;
-			l7004 )			process -f fat -b gta04b3 debian-lxde ;;
-			neo900 )		process -f fat -b gta04b7 debian-lxde ;;
-			pandaboard )	process -f fat -b pandaboard debian-lxde ;;
-			pyra )			process -f fat -b omap5evm debian-lxde ;;
-			all )			process debian-lxde qtmoko replicant quantumstep ;;
-			-* )			echo "unknown option: $1"; useage; exit 1 ;;
-			* )				echo "unknown macro: $1"; useage; exit 1 ;;
+			debian-lxde )	process -f ext4 -r latest-lxde -d latest -k latest -m latest -c debian-wheezy ;;
+			qtmoko )	process -f ext4 -r latest-qtmoko -d all -k latest ;;
+			replicant )	process -f ext4 -r latest-replicant-4.2 ;;
+			quantumstep )	process -f ext4 -r latest-quantumstep -d all -k latest -m latest -c debian-wheezy ;;
+			l2804 )		process -f fat -b latest debian-lxde ;;
+			l3704 )		process -f fat -b latest/b2 debian-lxde ;;
+			l7004 )		process -f fat -b latest/b3 debian-lxde ;;
+			neo900 )	process -f fat -b latest/b7 debian-lxde ;;
+			pandaboard )	process -f fat -b latest/panda-es debian-lxde ;;
+			pyra )		process -f fat -b latest/pyra debian-lxde ;;
+			all )		process debian-lxde qtmoko replicant quantumstep ;;
+			-* )		echo "unknown option: $1"; useage; exit 1 ;;
+			* )		echo "unknown macro: $1"; useage; exit 1 ;;
 		esac
 		shift
 	done
 }
 
-# IDEA: check specified version from $SERVER for patterns (gta04, gta04b2, gta04b7 etc.) and initialize accordingly
-# this would allow to use a single makesd script for everything by setting e.g. DEV=/dev/sdd SERVER=gta04b2 ./makesd before calling
-# and/or evaluate $1 where we can pass a device name and maybe a version incl. -l -u to decide between latest and unstable?
-
-[ "$BOOT" ] || export BOOT="$SERVER"
-[ "$KERNEL" ] || export KERNEL="$SERVER"
-[ "$CONFIG" ] || export CONFIG="$SERVER"
-[ "$ROOTFS" ] || export ROOTFS=http://download.goldelico.com/gta04/debian/latest-lxde.tbz
-[ "$DTBS" ] || export DTBS="omap3-gta04a2.dtb omap3-gta04a3.dtb omap3-gta04a4.dtb omap3-gta04a5.dtb"
-
-#
-# my eeePC has this configuration:
-#
-# /dev/sda:	internal flash (rootfs)
-# /dev/sdb:	internal SD reader
-# /dev/sdc: external SD reader
-# /dev/sdd: external CF reader
-# /dev/sde: external ? reader
-
 [ "$DEV" ] || export DEV=/dev/sdc
 
-# set defaults
+case "$1" in
+	"--debug" )
+		DEBUG=true
+		shift
+		;;
+esac
+
+$DEBUG && echo "-- define defaults --"
 process debian-lxde -f none -f none -f none
 
 if [ "$1" ]
 then
+	$DEBUG && echo "-- start over with given options --"
 	# start over with given options
 	NP=0
 	process "$@" || exit 1
 fi
+
+$DEBUG && echo "-- prepare --"
+
+exit 1
 
 DEVP=$DEV
 [ -b "${DEV}p" ] && DEV=${DEV}p	# needs "p"artition suffix
@@ -226,15 +251,22 @@ else
 	exit 1
 fi
 
+$DEBUG && echo "-- unmount partitions --"
+
 for P in 1 2 3 4
 	do
 		umount ${DEVP}${P}
 		mkdir -p /media/P${P}
 	done
 
-## new based on http://omappedia.org/wiki/SD_Configuration#Script_to_partition.2Fformat_SDCards
-## updated based on http://www.sakoman.com/OMAP/a-script-for-partitioningformatting-a-bootable-sdmicrosd-card.html
+$DEBUG && echo "-- clear boot record --"
+
+## based on: http://omappedia.org/wiki/SD_Configuration#Script_to_partition.2Fformat_SDCards
+## and: http://www.sakoman.com/OMAP/a-script-for-partitioningformatting-a-bootable-sdmicrosd-card.html
+
 dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
+
+$DEBUG && echo "-- partitioning --"
 [ "$SIZE" ] || SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l $DEV | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
 echo DISK SIZE: $SIZE bytes
 CYLINDERS=$(expr $SIZE / 255 / 63 / 512)
@@ -249,6 +281,8 @@ echo SECTORS2: $SECTORS2
 	echo 131072,$SECTORS2,,-	# second partiton: Linux
 } | sfdisk --force -D -uS -H 255 -S 63 -C $CYLINDERS $DEV
 /sbin/partprobe $DEV
+
+$DEBUG && echo "-- format partitions --"
 
 for P in 1 2 3 4
 do # format partitions
@@ -267,11 +301,15 @@ do # format partitions
 	esac
 df
 
+$DEBUG && echo "-- install --"
+
 for P in 1 2 3 4
 do
 	( cd /media/P{$P}
 
-install what was specified
+## install what was specified
+## derive secondary names from $(dirname $DIR)/u-boot.flash etc.
+## try .tbz and .tgz
 
 # first partition (FAT)
 wget "$BOOT/MLO"	# must come first
@@ -304,18 +342,25 @@ wget "$CONFIG/config.tgz" -O - | tar xvzf -
 	ls -l /media/P${P}
 done
 
+$DEBUG && echo "-- sync --"
+
 sync
 
 if [ "$DEV" ]
 then
+	$DEBUG && echo "-- show mounted partitions --"
 	df
+	$DEBUG && echo "-- unmount --"
 	for P in 1 2 3 4
 	do
 		umount ${DEVP}${P}
 		rmdir /media/P${P}
 	done
+	$DEBUG && echo "--fsck --"
 	for P in 1 2 3 4
 	do
 		fsck -f ${DEVP}${P}
 	done
 fi
+
+$DEBUG && echo "-- done --"
