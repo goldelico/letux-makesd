@@ -1,13 +1,5 @@
-# make an SD suitable for the GTA04 (Letux 2804)
+# make an SD suitable for GTA04 devices (Letux 2804 etc.)
 # run on some host with a SD interface
-
-#
-# export DEV=... if needed to set the device
-# export SERVER=... if you want to install a specific version
-
-[ "$SERVER" ] || export SERVER=http://download.goldelico.com/gta04/unstable
-
-# set defaults
 
 DEBUG=false
 
