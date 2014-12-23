@@ -97,6 +97,11 @@ function useage()
 	echo "      all = debian-lxde qtmoko replicant quantumstep"
 }
 
+function sparam () { # $partition $name $value
+}
+
+function gparam() { # $partition $name
+}
 
 function process() { # $1 .. $n
 	while [ "$1" ]
