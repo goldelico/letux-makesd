@@ -1,0 +1,6 @@
+./nmakesd --debug --dry l2804
+./nmakesd --debug --dry debian-lxde
+./nmakesd --debug --dry replicant
+./nmakesd --debug --dry all
+./nmakesd --debug --dry debian-lxde -k unstable
+./nmakesd --debug --dry pyra
