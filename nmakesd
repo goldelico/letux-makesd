@@ -188,13 +188,24 @@ function process() { # $1 .. $n
 }
 
 DEBUG=false
+DRYRUN=false
 
-case "$1" in
-	"--debug" )
-		DEBUG=true
-		shift
-		;;
-esac
+while [ "$1" ]
+do
+	case "$1" in
+		"--debug" )
+			DEBUG=true
+			shift
+			;;
+		"--dry" )
+			DRYRUN=true
+			shift
+			;;
+		* )
+			break
+			;;
+	esac
+done
 
 $DEBUG && echo "-- define defaults --"
 NP=0
@@ -213,22 +224,25 @@ fi
 $DEBUG && echo "-- prepare $DEV --"
 
 DEVP=$DEV
-if [ -b "${DEV}p" ]
+if ! $DRYRUN
 then
-	DEV=${DEV}p	# needs "p"artition suffix
-	$DEBUG && echo "-- suffix p added --"
-fi
+	if [ -b "${DEV}p" ]
+	then
+		DEV=${DEV}p	# needs "p"artition suffix
+		$DEBUG && echo "-- suffix p added --"
+	fi
 
-if [ "${DEV}" = "/dev/sda" ]
-then
-	echo "error: refuses to overwrite /dev/sda"
-	exit 1
-elif [ -b "$DEV" ]
-then
-	: ok
-else
-	echo "error: not a block device: $DEV"
-	exit 1
+	if [ "${DEV}" = "/dev/sda" ]
+	then
+		echo "error: refuses to overwrite /dev/sda"
+		exit 1
+	elif [ -b "$DEV" ]
+	then
+		: ok
+	else
+		echo "error: not a block device: $DEV"
+		exit 1
+	fi
 fi
 
 $DEBUG && echo "-- unmount partitions --"
@@ -243,7 +257,7 @@ do
 		none )
 			;; # skip
 		fat | ext* )
-			mkdir -p /media/P${P}
+			! $DRYRUN && mkdir -p /media/P${P}
 			TOTALSIZE=$(expr "$TOTALSIZE" + $(getparam $P SIZE))	# sum up
 			LASTPARTITION=$P
 			;;
@@ -257,7 +271,7 @@ $DEBUG && echo "-- total size $TOTALSIZE --"
 ## and: http://www.sakoman.com/OMAP/a-script-for-partitioningformatting-a-bootable-sdmicrosd-card.html
 
 $DEBUG && echo "-- clear boot record --"
-dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
+! $DRYRUN && dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
 
 $DEBUG && echo "-- partitioning --"
 [ "$SIZE" ] || SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l $DEV | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
@@ -276,7 +290,8 @@ do # calculate sizes of partitions
 		SECTORS=$(expr $SIZE * $(getparam $P SIZE) / (512 * $TOTALSIZE)
 	case "$(getparam $P FORMAT)" in
 		none )
-			;; # skip
+			: skip
+			;;
 		fat )
 			echo $PSTART,$SECTORS,0x0C,*	# FAT partition (bootable)
 			;;
@@ -286,18 +301,21 @@ do # calculate sizes of partitions
 	esac
 	[ "$SECTORS" ] && PSTART=$(expr "$PSTART" + "$SECTORS")
 done
-} | tee /dev/fd/2 | sfdisk --force -D -uS -H 255 -S 63 -C $CYLINDERS $DEV
+} | tee /dev/fd/2 | ! $DRYRUN && sfdisk --force -D -uS -H 255 -S 63 -C $CYLINDERS $DEV
 
 /sbin/partprobe $DEV
 
 $DEBUG && echo "-- format partitions --"
 
+if ! $DRYRUN
+then
 for P in 1 2 3 4
 do # format partitions
 	umount ${DEVP}${P}
 	case "$(getparam $P FORMAT)" in
 		none )
-			;; # skip
+			: skip
+			;;
 		fat )
 			mkfs.vfat -F 32 -n "boot" ${DEVP}${P} &&
 			fsck.vfat -y ${DEVP}${P}
@@ -310,6 +328,7 @@ do # format partitions
 			;;
 	esac
 done
+fi
 
 df # should have been formatted and mounted now
 
