@@ -6,38 +6,6 @@
 # Licenced under GPLv2
 #
 
-DEBUG=false
-
-FORMAT1=none
-BOOT1=none
-KERNEL1=none
-DT1=
-ROOTFS1=none
-CONFIG1=none
-
-FORMAT2=none
-BOOT2=none
-KERNEL2=none
-DT2=
-ROOTFS2=none
-CONFIG2=none
-
-FORMAT3=none
-BOOT3=none
-KERNEL3=none
-DT3=
-ROOTFS3=none
-CONFIG3=none
-
-FORMAT4=none
-BOOT4=none
-KERNEL4=none
-DT4=
-ROOTFS4=none
-CONFIG4=none
-
-NP=0
-
 function useage()
 {
 	echo "useage: DEV=/dev/device makesd [partition1 [partition2 [partition3 [partition4]]]]"
@@ -50,6 +18,7 @@ function useage()
 	echo "    -f ext4"
 	echo "    -f none"
 	echo "    -f[1-4] -- switch to given partition"
+	echo "    -s size -- define relative size"
 	echo "    bootloader:"
 	echo "    -b <url>"
 	echo "    -b none"
@@ -97,10 +66,12 @@ function useage()
 	echo "      all = debian-lxde qtmoko replicant quantumstep"
 }
 
-function sparam () { # $partition $name $value
+function sparam() { # $partition $name $value
+	$DEBUG && echo sparam $1 $2 $3
 }
 
 function gparam() { # $partition $name
+	echo 123
 }
 
 function process() { # $1 .. $n
@@ -120,8 +91,11 @@ function process() { # $1 .. $n
 					exit 1
 				fi
 				shift
-				$DEBUG && echo "partition $NP type: $1"
 				sparam $NP FORMAT "$1"
+				;;
+			-s ) # define relative size (typically in %)
+				shift
+				sparam $NP SIZE "$1"
 				;;
 			-b ) # define boot loader
 				shift
@@ -131,8 +105,7 @@ function process() { # $1 .. $n
 					http://*/* | https://*/* ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04/$1/u-boot.bin" ;;
 				esac
-				$DEBUG && echo "u-boot: $P"
-				sparam $NP FORMAT "$1"
+				sparam $NP BOOT "$P"
 				;;
 			-k ) # define kernel
 				shift
@@ -142,8 +115,7 @@ function process() { # $1 .. $n
 					http://*/* | https://*/* ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04/$1/uImage" ;;
 				esac
-				$DEBUG && echo "kernel: $P"
-				sparam $NP KERNEL "$1"
+				sparam $NP KERNEL "$P"
 				;;
 			-m ) # define modules
 				shift
@@ -153,9 +125,15 @@ function process() { # $1 .. $n
 					http://*/* | https://*/* ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04/$1/modules.tgz" ;;
 				esac
-				$DEBUG && echo "modules: $P"
-				sparam $NP MODULE "$1"
+				sparam $NP MODULE "$P"
 				;;
+#
+# device trees are a special case
+# they more or less belong to the kernel
+# and the same is for the modules
+# only the storage location can vary
+# and the subset to be used
+#
 			-d ) # define device trees
 				shift
 				$DEBUG && echo "device trees $1"
@@ -164,8 +142,7 @@ function process() { # $1 .. $n
 					all ) P="omap3-gta04a2.dtb omap3-gta04a3.dtb omap3-gta04a4.dtb omap3-gta04a5.dtb" ;;
 					* ) P="$1";;
 				esac
-				$DEBUG && echo "device trees: $P"
-				sparam $NP DT "$1"
+				sparam $NP DT "$P"
 				;;
 			-r ) # define root file system
 				shift
@@ -180,8 +157,7 @@ function process() { # $1 .. $n
 					*-replicant-*) P="http://download.goldelico.com/gta04/replicant/$1/latest-replicant.tbz" ;;
 					* ) echo "unknown rootfs: $1"; useage; exit 1 ;;
 				esac
-				$DEBUG && echo "rootfs: $P"
-				sparam $NP ROOTFS "$1"
+				sparam $NP ROOTFS "$P"
 				;;
 			-c ) # define config
 				shift
@@ -191,19 +167,18 @@ function process() { # $1 .. $n
 					http://*/* | https://*/* ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04/$1/config.tgz" ;;
 				esac
-				$DEBUG && echo "config: $P"
-				sparam $NP CONFIG "$1"
+				sparam $NP CONFIG "$P"
 				;;
-			debian-lxde )	process -f ext4 -r latest-lxde -d latest -k latest -m latest -c debian-wheezy ;;
+			debian-lxde )	process -f ext4 -r latest-lxde -d all -k latest -m latest -c debian-wheezy ;;
 			qtmoko )	process -f ext4 -r latest-qtmoko -d all -k latest ;;
 			replicant )	process -f ext4 -r latest-replicant-4.2 ;;
 			quantumstep )	process -f ext4 -r latest-quantumstep -d all -k latest -m latest -c debian-wheezy ;;
-			l2804 )		process -f fat -b latest debian-lxde ;;
-			l3704 )		process -f fat -b latest/b2 debian-lxde ;;
-			l7004 )		process -f fat -b latest/b3 debian-lxde ;;
-			neo900 )	process -f fat -b latest/b7 debian-lxde ;;
-			pandaboard )	process -f fat -b latest/panda-es debian-lxde ;;
-			pyra )		process -f fat -b latest/pyra debian-lxde ;;
+			l2804 )		process -f fat -s 5 -b latest debian-lxde -s 95 ;;
+			l3704 )		process -f fat -s 5 -b latest/b2 debian-lxde -s 95 ;;
+			l7004 )		process -f fat -s 5 -b latest/b3 debian-lxde -s 95 ;;
+			neo900 )	process -f fat -s 5 -b latest/b7 debian-lxde -s 95 ;;
+			pandaboard )	process -f fat -s 5 -b latest/panda-es debian-lxde -s 95 ;;
+			pyra )		process -f fat -s 5 -b latest/pyra debian-lxde -s 95 ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			-* )		echo "unknown option: $1"; useage; exit 1 ;;
 			* )		echo "unknown macro: $1"; useage; exit 1 ;;
@@ -212,7 +187,7 @@ function process() { # $1 .. $n
 	done
 }
 
-[ "$DEV" ] || export DEV=/dev/sdc
+DEBUG=false
 
 case "$1" in
 	"--debug" )
@@ -222,7 +197,8 @@ case "$1" in
 esac
 
 $DEBUG && echo "-- define defaults --"
-process debian-lxde -f none -f none -f none
+NP=0
+process debian-lxde -s 25 -f none -s 25 -f none -s 25 -f none -s 25
 
 if [ "$1" ]
 then
@@ -232,54 +208,86 @@ then
 	process "$@" || exit 1
 fi
 
-$DEBUG && echo "-- prepare --"
+[ "$DEV" ] || export DEV=/dev/sdc
 
-exit 1
+$DEBUG && echo "-- prepare $DEV --"
 
 DEVP=$DEV
-[ -b "${DEV}p" ] && DEV=${DEV}p	# needs "p"artition suffix
+if [ -b "${DEV}p" ]
+then
+	DEV=${DEV}p	# needs "p"artition suffix
+	$DEBUG && echo "-- suffix p added --"
+fi
 
 if [ "${DEV}" = "/dev/sda" ]
 then
-	echo "can't overwrite /dev/sda"
+	echo "error: refuses to overwrite /dev/sda"
 	exit 1
 elif [ -b "$DEV" ]
 then
 	: ok
 else
-	echo "not a block device: $DEV"
+	echo "error: not a block device: $DEV"
 	exit 1
 fi
 
 $DEBUG && echo "-- unmount partitions --"
 
+TOTALSIZE=0
+LASTPARTITION=1
+
 for P in 1 2 3 4
-	do
-		umount ${DEVP}${P}
-		mkdir -p /media/P${P}
-	done
+do
+	umount ${DEVP}${P}
+	case "$(getparam $P FORMAT)" in
+		none )
+			;; # skip
+		fat | ext* )
+			mkdir -p /media/P${P}
+			TOTALSIZE=$(expr "$TOTALSIZE" + $(getparam $P SIZE))	# sum up
+			LASTPARTITION=$P
+			;;
+	esac
+done
 
-$DEBUG && echo "-- clear boot record --"
+$DEBUG && echo "-- total size $TOTALSIZE --"
 
+## the following code is roughly
 ## based on: http://omappedia.org/wiki/SD_Configuration#Script_to_partition.2Fformat_SDCards
 ## and: http://www.sakoman.com/OMAP/a-script-for-partitioningformatting-a-bootable-sdmicrosd-card.html
 
+$DEBUG && echo "-- clear boot record --"
 dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
 
 $DEBUG && echo "-- partitioning --"
 [ "$SIZE" ] || SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l $DEV | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
-echo DISK SIZE: $SIZE bytes
+$DEBUG && echo "-- DISK SIZE: $SIZE bytes --"
 CYLINDERS=$(expr $SIZE / 255 / 63 / 512)
-echo CYLINDERS: $CYLINDERS
-SECTORS2=$(expr $SIZE / 512 - 131072)	# number of sectors for second partition
-echo SECTORS1: 130944
-echo SECTORS2: $SECTORS2
-{
-##	echo ,9,0x0C,*
-##	echo ,,,-
-	echo 128,130944,0x0C,*	# first partition: FAT
-	echo 131072,$SECTORS2,,-	# second partiton: Linux
-} | sfdisk --force -D -uS -H 255 -S 63 -C $CYLINDERS $DEV
+$DEBUG && echo "-- CYLINDERS: $CYLINDERS --"
+
+{ # run in an anonymous function, not a subprocess
+PSTART=128
+for P in 1 2 3 4
+do # calculate sizes of partitions
+	if [ $P = $LASTPARTITION ]
+	then
+		SECTORS=	# use remainder
+	else
+		SECTORS=$(expr $SIZE * $(getparam $P SIZE) / (512 * $TOTALSIZE)
+	case "$(getparam $P FORMAT)" in
+		none )
+			;; # skip
+		fat )
+			echo $PSTART,$SECTORS,0x0C,*	# FAT partition (bootable)
+			;;
+		ext* )
+			echo $PSTART,$SECTORS,,-	# Linux partition
+			;;
+	esac
+	[ "$SECTORS" ] && PSTART=$(expr "$PSTART" + "$SECTORS")
+done
+} | tee /dev/fd/2 | sfdisk --force -D -uS -H 255 -S 63 -C $CYLINDERS $DEV
+
 /sbin/partprobe $DEV
 
 $DEBUG && echo "-- format partitions --"
@@ -287,7 +295,9 @@ $DEBUG && echo "-- format partitions --"
 for P in 1 2 3 4
 do # format partitions
 	umount ${DEVP}${P}
-	case "$FORMAT$P" in
+	case "$(getparam $P FORMAT)" in
+		none )
+			;; # skip
 		fat )
 			mkfs.vfat -F 32 -n "boot" ${DEVP}${P} &&
 			fsck.vfat -y ${DEVP}${P}
@@ -299,13 +309,18 @@ do # format partitions
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
 	esac
-df
+done
+
+df # should have been formatted and mounted now
 
 $DEBUG && echo "-- install --"
 
 for P in 1 2 3 4
 do
 	( cd /media/P{$P}
+
+# skip "none" partitions and contents
+# else download and install
 
 ## install what was specified
 ## derive secondary names from $(dirname $DIR)/u-boot.flash etc.
