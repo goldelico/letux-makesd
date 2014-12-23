@@ -102,11 +102,9 @@ function process() { # $1 .. $n
 	while [ "$1" ]
 		do
 		case "$1" in
-			-f[1-4] ) # switch to given partition
+			-f[1-4] ) # switch to given partition (but don't change type)
 				NP=$(expr "$1" : "-f\(.*\)" )
 				$DEBUG && echo "switched to partition $NP"
-				shift
-				$DEBUG && echo "partition $NP type: $1"
 				;;
 			-f ) # switch to next partition
 				NP=$(expr "$NP" + 1)
