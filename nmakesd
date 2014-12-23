@@ -121,7 +121,7 @@ function process() { # $1 .. $n
 				fi
 				shift
 				$DEBUG && echo "partition $NP type: $1"
-				### set
+				sparam $NP FORMAT "$1"
 				;;
 			-b ) # define boot loader
 				shift
@@ -132,7 +132,7 @@ function process() { # $1 .. $n
 					* ) P="http://download.goldelico.com/gta04/$1/u-boot.bin" ;;
 				esac
 				$DEBUG && echo "u-boot: $P"
-				### set
+				sparam $NP FORMAT "$1"
 				;;
 			-k ) # define kernel
 				shift
@@ -143,7 +143,7 @@ function process() { # $1 .. $n
 					* ) P="http://download.goldelico.com/gta04/$1/uImage" ;;
 				esac
 				$DEBUG && echo "kernel: $P"
-				### set
+				sparam $NP KERNEL "$1"
 				;;
 			-m ) # define modules
 				shift
@@ -154,7 +154,7 @@ function process() { # $1 .. $n
 					* ) P="http://download.goldelico.com/gta04/$1/modules.tgz" ;;
 				esac
 				$DEBUG && echo "modules: $P"
-				### set
+				sparam $NP MODULE "$1"
 				;;
 			-d ) # define device trees
 				shift
@@ -165,7 +165,7 @@ function process() { # $1 .. $n
 					* ) P="$1";;
 				esac
 				$DEBUG && echo "device trees: $P"
-				### set
+				sparam $NP DT "$1"
 				;;
 			-r ) # define root file system
 				shift
@@ -181,7 +181,7 @@ function process() { # $1 .. $n
 					* ) echo "unknown rootfs: $1"; useage; exit 1 ;;
 				esac
 				$DEBUG && echo "rootfs: $P"
-				### set
+				sparam $NP ROOTFS "$1"
 				;;
 			-c ) # define config
 				shift
@@ -192,7 +192,7 @@ function process() { # $1 .. $n
 					* ) P="http://download.goldelico.com/gta04/$1/config.tgz" ;;
 				esac
 				$DEBUG && echo "config: $P"
-				### set
+				sparam $NP CONFIG "$1"
 				;;
 			debian-lxde )	process -f ext4 -r latest-lxde -d latest -k latest -m latest -c debian-wheezy ;;
 			qtmoko )	process -f ext4 -r latest-qtmoko -d all -k latest ;;
