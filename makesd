@@ -193,12 +193,14 @@ function fetch() { # $url $dest
 		echo "fetch $1 -> $2"
 	elif which wget >/dev/null
 	then # wget exists
-		wget "$1" - >"$2"
+		$DEBUG && echo "-- wget -O - $1 >$2 --"
+		wget -O - "$1" >"$2"
 	elif which curl >/dev/null
 	then # try curl
+		$DEBUG && echo "-- curl $1 -o $2 --"
 		curl "$1" -o "$2"
 	else
-		echo "error: can't fetch files"
+		echo "error: can't fetch files (needs wget or curl)"
 		exit 1
 	fi
 }
