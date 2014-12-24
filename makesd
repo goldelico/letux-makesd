@@ -227,7 +227,7 @@ do
 			$DEBUG && echo "-- self-update --"
 			fetch "http://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)" "$(basename $0).new" &&
 			chmod +x $(basename $0).new &&
-			: mv $(basename $0).new $(basename $0)
+			mv $(basename $0).new $(basename $0)
 			exit
 			;;
 		"--debug" )
