@@ -188,7 +188,19 @@ function process() { # $1 .. $n
 }
 
 function fetch() { # $url $dest
-	which wget >/dev/null && wget "$1" - >"$2" || curl "$1" -o "$2"
+	if $DRYRUN
+	then
+		echo "fetch $1 -> $2"
+	elif which wget >/dev/null
+	then # wget exists
+		wget "$1" - >"$2"
+	elif which curl >/dev/null
+	then # try curl
+		curl "$1" -o "$2"
+	else
+		echo "error: can't fetch files"
+		exit 1
+	fi
 }
 
 DEBUG=false
@@ -360,7 +372,11 @@ $DEBUG && echo "-- install --"
 
 for P in 1 2 3 4
 do
-	( cd /media/P{$P}
+
+BOOT=$(getparam "$P" BOOT)
+KERNEL=$(getparam "$P" KERNEL)
+ROOTFS=$(getparam "$P" ROOTFS)
+CONFIG=$(getparam "$P" CONFIG)
 
 # skip "none" partitions and contents
 # else download and install
@@ -369,34 +385,54 @@ do
 ## derive secondary names from $(dirname $DIR)/u-boot.flash etc.
 ## try .tbz and .tgz
 
-# first partition (FAT)
-wget "$BOOT/MLO"	# must come first
-wget "$BOOT/x-load.flash"
+if [ "$BOOT" != none ]
+then
+	# may fail to load if it does not exist for some variant - but we ignore
+	fetch $(dirname "$BOOT")/MLO "/media/P${P}/MLO"	# must come first
+	fetch $(dirname "$BOOT")/x-load.flash "/media/P${P}/x-load.flash"
 ## some x-loaders want u-boot.bin others want u-boot.img
-wget "$BOOT/u-boot.bin"
-wget "$BOOT/u-boot.flash"
-wget "$BOOT/splash.rgb16z"
-wget "$BOOT/menu.rgb16z"
-wget "$BOOT/boot.scr"
+	fetch "$BOOT" "/media/P${P}/u-boot.bin"
+	fetch $(dirname "$BOOT")/u-boot.flash "/media/P${P}/u-boot.flash"
+	fetch $(dirname "$BOOT")/splash.rgb16z "/media/P${P}/splash.rgb16z"
+	fetch $(dirname "$BOOT")/menu.rgb16z "/media/P${P}/menu.rgb16z"
+	fetch $(dirname "$BOOT")/boot.scr "/media/P${P}/boot.scr"
+fi
+
 ## some u-boots want uImage.bin others want uImage.img
-wget "$KERNEL/uImage"
-wget "$KERNEL/bootargs.scr"
 
-for i in $DTBS
+if [ "$KERNEL" != none ]
+then
+	fetch "$KERNEL" "/media/P${P}"/$(basename "$KERNEL")
+	fetch $(dirname "$KERNEL")/bootargs.scr "/media/P${P}"/bootargs.scr
+fi
+
+for DT in $DTBS
 do
-	wget "$KERNEL/$i"
+	fetch "$KERNEL"/$DT "/media/P${P}"/$DT
 done
-)
-ls -l /media/P1
 
-wget "$ROOTFS" -O - | tar xvjf -
-# wipe out old configs coming from the tbz
-rm -rf boot/*
-rm -rf lib/modules/kernel
-rm -rf root
-wget "$KERNEL/modules.tgz" -O - | tar xvzf -
-wget "$CONFIG/config.tgz" -O - | tar xvzf -
+ls -l /media/P1 /media/P2 /media/P3 /media/P4
+
+if [ "$ROOTFS" != none ]
+then
+
 	ls -l /media/P${P}
+	( cd "/media/P${P}" && fetch "$ROOTFS" /dev/fd/1 | tar xvjf - )
+
+	# wipe out any old configs coming from the tbz
+	rm -rf /media/P${P}/boot/*
+	rm -rf /media/P${P}/lib/modules/kernel
+	rm -rf /media/P${P}/root
+	if [ "$KERNEL" != none ]
+	then
+		fetch $(dirname "$KERNEL")/modules.tgz /dev/fd/1 | (cd /media/P${P}/ && tar xvzf -)
+	fi
+	if [ "$CONFIG" != none ]
+	then
+		fetch "$CONFIG" /dev/fd/1 | (cd /media/P${P}/ && tar xvzf -)
+	fi
+fi
+
 done
 
 $DEBUG && echo "-- sync --"
