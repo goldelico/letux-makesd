@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # makesd
 # partition and format an SD card suitable for GTA04 devices (Letux 2804 etc.)
@@ -68,11 +69,22 @@ function useage()
 
 function setparam() { # $partition $name $value
 	$DEBUG && echo setparam $1 $2 $3
+	eval $2$1="$3"
 }
 
 function getparam() { # $partition $name
-	echo 123
+	eval echo \$$2$1
 }
+
+setparam 2 KERNEL 1234
+_TESTME=$(getparam 2 KERNEL)
+if [ "$_TESTME" != 1234 ]
+then
+	echo "error: getparam and setparam did not pass internal test - please check shell or script"
+	set
+	exit
+fi
+unset _TESTME
 
 function process() { # $1 .. $n
 	while [ "$1" ]
@@ -281,12 +293,12 @@ LASTPARTITION=1
 
 for P in 1 2 3 4
 do
-	umount ${DEVP}${P}
+	umount -f ${DEVP}${P} 2>/dev/null
+	! $DRYRUN && mkdir -p /media/P${P}
 	case "$(getparam $P FORMAT)" in
 		none )
 			;; # skip
 		fat | ext* )
-			! $DRYRUN && mkdir -p /media/P${P}
 			TOTALSIZE=$(expr "$TOTALSIZE" + $(getparam $P SIZE))	# sum up
 			LASTPARTITION=$P
 			;;
@@ -370,6 +382,9 @@ fi
 
 df # should have been formatted and mounted now
 
+$DEBUG && echo "-- variables --"
+$DEBUG && set
+
 $DEBUG && echo "-- install --"
 
 for P in 1 2 3 4
@@ -380,12 +395,7 @@ KERNEL=$(getparam "$P" KERNEL)
 ROOTFS=$(getparam "$P" ROOTFS)
 CONFIG=$(getparam "$P" CONFIG)
 
-# skip "none" partitions and contents
-# else download and install
-
-## install what was specified
-## derive secondary names from $(dirname $DIR)/u-boot.flash etc.
-## try .tbz and .tgz
+## should try .tbz and .tgz
 
 if [ "$BOOT" != none ]
 then
@@ -451,7 +461,7 @@ then
 		umount ${DEVP}${P}
 		rmdir /media/P${P}
 	done
-	$DEBUG && echo "--fsck --"
+	$DEBUG && echo "-- fsck --"
 	for P in 1 2 3 4
 	do
 		fsck -f ${DEVP}${P}
