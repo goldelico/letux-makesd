@@ -66,11 +66,11 @@ function useage()
 	echo "      all = debian-lxde qtmoko replicant quantumstep"
 }
 
-function sparam() { # $partition $name $value
-	$DEBUG && echo sparam $1 $2 $3
+function setparam() { # $partition $name $value
+	$DEBUG && echo setparam $1 $2 $3
 }
 
-function gparam() { # $partition $name
+function getparam() { # $partition $name
 	echo 123
 }
 
@@ -91,11 +91,11 @@ function process() { # $1 .. $n
 					exit 1
 				fi
 				shift
-				sparam $NP FORMAT "$1"
+				setparam $NP FORMAT "$1"
 				;;
 			-s ) # define relative size (typically in %)
 				shift
-				sparam $NP SIZE "$1"
+				setparam $NP SIZE "$1"
 				;;
 			-b ) # define boot loader
 				shift
@@ -105,7 +105,7 @@ function process() { # $1 .. $n
 					http://*/* | https://*/* ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04/$1/u-boot.bin" ;;
 				esac
-				sparam $NP BOOT "$P"
+				setparam $NP BOOT "$P"
 				;;
 			-k ) # define kernel
 				shift
@@ -115,7 +115,7 @@ function process() { # $1 .. $n
 					http://*/* | https://*/* ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04/$1/uImage" ;;
 				esac
-				sparam $NP KERNEL "$P"
+				setparam $NP KERNEL "$P"
 				;;
 			-m ) # define modules
 				shift
@@ -125,7 +125,7 @@ function process() { # $1 .. $n
 					http://*/* | https://*/* ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04/$1/modules.tgz" ;;
 				esac
-				sparam $NP MODULE "$P"
+				setparam $NP MODULE "$P"
 				;;
 #
 # device trees are a special case
@@ -142,7 +142,7 @@ function process() { # $1 .. $n
 					all ) P="omap3-gta04a2.dtb omap3-gta04a3.dtb omap3-gta04a4.dtb omap3-gta04a5.dtb" ;;
 					* ) P="$1";;
 				esac
-				sparam $NP DT "$P"
+				setparam $NP DT "$P"
 				;;
 			-r ) # define root file system
 				shift
@@ -157,7 +157,7 @@ function process() { # $1 .. $n
 					*-replicant-*) P="http://download.goldelico.com/gta04/replicant/$1/latest-replicant.tbz" ;;
 					* ) echo "unknown rootfs: $1"; useage; exit 1 ;;
 				esac
-				sparam $NP ROOTFS "$P"
+				setparam $NP ROOTFS "$P"
 				;;
 			-c ) # define config
 				shift
@@ -167,7 +167,7 @@ function process() { # $1 .. $n
 					http://*/* | https://*/* ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04/$1/config.tgz" ;;
 				esac
-				sparam $NP CONFIG "$P"
+				setparam $NP CONFIG "$P"
 				;;
 			debian-lxde )	process -f ext4 -r latest-lxde -d all -k latest -m latest -c debian-wheezy ;;
 			qtmoko )	process -f ext4 -r latest-qtmoko -d all -k latest ;;
@@ -289,9 +289,11 @@ $DEBUG && echo "-- clear boot record --"
 ! $DRYRUN && dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
 
 $DEBUG && echo "-- partitioning --"
-[ "$SIZE" ] || SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l $DEV | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
+[ "$SIZE" ] || SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
 $DEBUG && echo "-- DISK SIZE: $SIZE bytes --"
-CYLINDERS=$(expr $SIZE / 255 / 63 / 512)
+SECTORS=63
+HEADS=255
+CYLINDERS=$(expr "$SIZE" / "$HEADS" / "$SECTORS" / 512)
 $DEBUG && echo "-- CYLINDERS: $CYLINDERS --"
 
 { # run in an anonymous function, not a subprocess
@@ -302,23 +304,30 @@ do # calculate sizes of partitions
 	then
 		SECTORS=	# use remainder
 	else
-		SECTORS=$(expr $SIZE * $(getparam $P SIZE) / (512 * $TOTALSIZE)
+		SECTORS=$(expr "$SIZE" * "$(getparam $P SIZE)" / \( 512 * "$TOTALSIZE" \) )
+	fi
 	case "$(getparam $P FORMAT)" in
 		none )
 			: skip
 			;;
 		fat )
-			echo $PSTART,$SECTORS,0x0C,*	# FAT partition (bootable)
+			echo "$PSTART","$SECTORS",0x0C,*	# FAT partition (bootable)
 			;;
 		ext* )
-			echo $PSTART,$SECTORS,,-	# Linux partition
+			echo "$PSTART","$SECTORS",,-	# Linux partition
 			;;
 	esac
 	[ "$SECTORS" ] && PSTART=$(expr "$PSTART" + "$SECTORS")
 done
-} | tee /dev/fd/2 | ! $DRYRUN && sfdisk --force -D -uS -H 255 -S 63 -C $CYLINDERS $DEV
+} |
+if $DRYRUN
+then
+	cat # echo to stdout
+else
+	sfdisk --force -D -uS -H "$HEADS" -S "$SECTORS" -C "$CYLINDERS" "$DEV"
+fi
 
-/sbin/partprobe $DEV
+/sbin/partprobe "$DEV"
 
 $DEBUG && echo "-- format partitions --"
 
@@ -387,7 +396,6 @@ rm -rf lib/modules/kernel
 rm -rf root
 wget "$KERNEL/modules.tgz" -O - | tar xvzf -
 wget "$CONFIG/config.tgz" -O - | tar xvzf -
-	)
 	ls -l /media/P${P}
 done
 
