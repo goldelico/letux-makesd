@@ -69,7 +69,7 @@ function useage()
 
 function setparam() { # $partition $name $value
 	$DEBUG && echo setparam $1 $2 $3
-	eval $2$1="$3"
+	eval $2$1="'$3'"
 }
 
 function getparam() { # $partition $name
@@ -299,7 +299,7 @@ do
 		none )
 			;; # skip
 		fat | ext* )
-			TOTALSIZE=$(expr "$TOTALSIZE" + $(getparam $P SIZE))	# sum up
+			TOTALSIZE=$(expr "$TOTALSIZE" + "$(getparam $P SIZE)")	# sum up
 			LASTPARTITION=$P
 			;;
 	esac
@@ -328,10 +328,15 @@ for P in 1 2 3 4
 do # calculate sizes of partitions
 	if [ $P = $LASTPARTITION ]
 	then
-		SECTORS=	# use remainder
+		SECTORS=""	# use remainder
 	else
-		SECTORS=$(expr "$SIZE" * "$(getparam $P SIZE)" / \( 512 * "$TOTALSIZE" \) )
+		SECTORS=$(expr "$SIZE" '*' "$(getparam $P SIZE)" / \( 512 '*' "$TOTALSIZE" \) )
 	fi
+echo "P: $P"
+echo "LAST: $LASTPARTITION"
+echo "SIZE: $(getparam $P SIZE)"
+echo "FORMAT; $(getparam $P FORMAT)"
+echo "sectors: $SECTORS"
 	case "$(getparam $P FORMAT)" in
 		none )
 			: skip
