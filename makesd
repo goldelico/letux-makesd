@@ -315,28 +315,41 @@ $DEBUG && echo "-- clear boot record --"
 ! $DRYRUN && dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
 
 $DEBUG && echo "-- partitioning --"
-[ "$SIZE" ] || SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
+SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
 $DEBUG && echo "-- DISK SIZE: $SIZE bytes --"
+TOTALSECTORS=$(expr "$SIZE" / 512)
+$DEBUG && echo "-- TOTAL SECTORS: $TOTALSECTORS --"
 SECTORS=63
 HEADS=255
-CYLINDERS=$(expr "$SIZE" / "$HEADS" / "$SECTORS" / 512)
+SECTORSPERCYLINDER=$(expr "$TOTALSECTORS" / "$HEADS")
+$DEBUG && echo "-- SECTORS PER CYLINDER: $SECTORSPERCYLINDER --"
+CYLINDERS=$(expr "$SECTORSPERCYLINDER" / "$SECTORS")
 $DEBUG && echo "-- CYLINDERS: $CYLINDERS --"
 
 { # run in an anonymous function, not a subprocess
 PSTART=128
 for P in 1 2 3 4
 do # calculate sizes of partitions
+	REMAINING=$(expr "$TOTALSECTORS" - "$PSTART")
+	THISSIZE=$(getparam $P SIZE )
 	if [ $P = $LASTPARTITION ]
 	then
-		SECTORS=""	# use remainder
+		SECTORS="$REMAINING"	# use remainder
 	else
-		SECTORS=$(expr "$SIZE" '*' "$(getparam $P SIZE)" / \( 512 '*' "$TOTALSIZE" \) )
+		SECTORS=$(expr "$REMAINING" '*' "THISSIZE" / "$TOTALSIZE" )
+		SECTORS=$(expr \( \( "$SECTORS" + $SECTORSPERCYLINDER - 1 \) / $SECTORSPERCYLINDER \) * $SECTORSPERCYLINDER)
+		## round up to cylinders
+		REMAINING=$(expr "$REMAINING" - "$SECTORS" )
+		TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE" )
 	fi
+(
 echo "P: $P"
-echo "LAST: $LASTPARTITION"
-echo "SIZE: $(getparam $P SIZE)"
 echo "FORMAT; $(getparam $P FORMAT)"
+echo "LAST: $LASTPARTITION"
+echo "SIZE: $THISSIZE ($TOTALSIZE)"
 echo "sectors: $SECTORS"
+echo "SECTORS: $PSTART + $SECTORS .. $REMAINING"
+) >&2
 	case "$(getparam $P FORMAT)" in
 		none )
 			: skip # (how with sfdisk? do we have to read the current partition sizes)
