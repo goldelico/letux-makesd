@@ -339,13 +339,13 @@ echo "FORMAT; $(getparam $P FORMAT)"
 echo "sectors: $SECTORS"
 	case "$(getparam $P FORMAT)" in
 		none )
-			: skip (how?)
+			: skip # (how with sfdisk? do we have to read the current partition sizes)
 			;;
 		fat )
-			echo "$PSTART","$SECTORS",0x0C,*	# FAT partition (bootable)
+			echo "$PSTART,$SECTORS,0x0C,*"	# FAT partition (bootable)
 			;;
 		ext* )
-			echo "$PSTART","$SECTORS",,-	# Linux partition
+			echo "$PSTART,$SECTORS,,-"	# Linux partition
 			;;
 	esac
 	[ "$SECTORS" ] && PSTART=$(expr "$PSTART" + "$SECTORS")
