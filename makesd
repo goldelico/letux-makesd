@@ -102,6 +102,13 @@ function process() { # $1 .. $n
 				fi
 				shift
 				setparam $NP FORMAT "$1"
+				setparam $NP SIZE "25"
+				setparam $NP BOOT "none"
+				setparam $NP KERNEL "none"
+				setparam $NP MODULES "none"
+				setparam $NP DT "none"
+				setparam $NP ROOTFS "none"
+				setparam $NP CONFIG "none"
 				;;
 			-s ) # define relative size (typically in %)
 				shift
@@ -183,7 +190,7 @@ function process() { # $1 .. $n
 			qtmoko )	process -f ext4 -r latest-qtmoko -d all -k latest ;;
 			replicant )	process -f ext4 -r latest-replicant-4.2 ;;
 			quantumstep )	process -f ext4 -r latest-quantumstep -d all -k latest -m latest -c latest ;;
-			gta04 | l2804 )	process -f fat -s 5 -b latest debian-lxde -s 95 ;;
+			gta04 | l2804 )	process -f fat -s 5 -b latest -k latest debian-lxde -k none -s 95 ;;
 			gta04b2 | l3704 )	process -f fat -s 5 -b latest/b2 debian-lxde -s 95 ;;
 			gta04b3 | l7004 )	process -f fat -s 5 -b latest/b3 debian-lxde -s 95 ;;
 			gta04b7 | neo900 )	process -f fat -s 5 -b latest/b7 debian-lxde -s 95 ;;
@@ -250,7 +257,7 @@ done
 
 $DEBUG && echo "-- define defaults --"
 NP=0
-process debian-lxde -s 25 -f none -s 25 -f none -s 25 -f none -s 25
+process debian-lxde -f none -f none -f none
 
 if [ "$1" ]
 then
@@ -293,17 +300,19 @@ TOTALSIZE=0
 for P in 1 2 3 4
 do
 	umount -f ${DEVP}${P} 2>/dev/null
-	! $DRYRUN && mkdir -p /media/P${P}
 	case "$(getparam $P FORMAT)" in
 		none )
 			## check if this is the last or only followed by "none"
 			## i.e. there can't be "holes" in the partition numbers
 			;; # skip
 		fat | ext* )
+			! $DRYRUN && mkdir -p /media/P${P}
 			TOTALSIZE=$(expr "$TOTALSIZE" + "$(getparam $P SIZE)")	# sum up
 			;;
 	esac
 done
+
+ls -l /media/P[1-4]
 
 $DEBUG && echo "-- total size $TOTALSIZE --"
 
@@ -339,22 +348,22 @@ do # calculate sizes of partitions
 	elif [ "$TOTALSIZE" -gt 0 ]
 	then # intermediate partition
 		PSECTORS=$(expr \( "$REMAINING" '*' "$THISSIZE" \) / "$TOTALSIZE")
-		S1=$PSECTORS
-		echo "S1: $S1" >&2
-		S2=$(expr "$PSTART" + "$S1" + "$SECTORSPERCYLINDER" - 1 )
-		echo "S2: $S2" >&2
-		S3=$(expr "$S2" / "$SECTORSPERCYLINDER" )
-		echo "S3: $S3" >&2
+#		S1=$PSECTORS
+#		echo "S1: $S1" >&2
+#		S2=$(expr "$PSTART" + "$S1" + "$SECTORSPERCYLINDER" - 1 )
+#		echo "S2: $S2" >&2
+#		S3=$(expr "$S2" / "$SECTORSPERCYLINDER" )
+#		echo "S3: $S3" >&2
 		PSECTORS=$(expr \( \( "$PSTART" + "$PSECTORS" + "$SECTORSPERCYLINDER" - 1 \) / "$SECTORSPERCYLINDER" \) "*" "$SECTORSPERCYLINDER" - "$PSTART") # round up to end of full cylinder boundary
 	else
 		PSECTORS=0	# must be a "none"
 	fi
-(
-echo "P: $P"
-echo "FORMAT: $FORMAT"
-echo "THISSIZE: $THISSIZE ($TOTALSIZE)"
-echo "SECTORS: $PSTART + $PSECTORS .. $REMAINING"
-) >&2
+#(
+#echo "P: $P"
+#echo "FORMAT: $FORMAT"
+#echo "THISSIZE: $THISSIZE ($TOTALSIZE)"
+#echo "SECTORS: $PSTART + $PSECTORS .. $REMAINING"
+#) >&2
 	case "$FORMAT" in
 		none )
 			: skip # (how with sfdisk? do we have to read the current partition sizes)
@@ -422,40 +431,48 @@ $DEBUG && echo "-- install --"
 for P in 1 2 3 4
 do
 
+FORMAT=$(getparam "$P" FORMAT)
+if [ "$FORMAT" = "none" -o ! -d /media/P${P} ]
+then
+	continue	# skip
+fi
+
+# location on boot partition is depending on format
+[ "$FORMAT" = "fat" ] && BDEST="/media/P${P}" || BDEST="/media/P${P}/boot"
+
 BOOT=$(getparam "$P" BOOT)
 KERNEL=$(getparam "$P" KERNEL)
 ROOTFS=$(getparam "$P" ROOTFS)
 CONFIG=$(getparam "$P" CONFIG)
 
-## should try .tbz and .tgz
+## FIXME: should also try .tbz and .tgz
+## FIXME: and we should be able to unpack some .dd.bz2 or img.bz2
 
 if [ "$BOOT" != none ]
 then
 	# may fail to load if it does not exist for some variant - but we ignore
-	fetch $(dirname "$BOOT")/MLO "/media/P${P}/MLO"	# must come first
-	fetch $(dirname "$BOOT")/x-load.flash "/media/P${P}/x-load.flash"
-## some x-loaders want u-boot.bin others want u-boot.img
-	fetch "$BOOT" "/media/P${P}/u-boot.bin"
-	fetch $(dirname "$BOOT")/u-boot.flash "/media/P${P}/u-boot.flash"
-	fetch $(dirname "$BOOT")/splash.rgb16z "/media/P${P}/splash.rgb16z"
-	fetch $(dirname "$BOOT")/menu.rgb16z "/media/P${P}/menu.rgb16z"
-	fetch $(dirname "$BOOT")/boot.scr "/media/P${P}/boot.scr"
+	fetch $(dirname "$BOOT")/MLO "$BDEST/MLO"	# must come first
+	fetch $(dirname "$BOOT")/x-load.flash "$BDEST/x-load.flash"
+## FIXME: some x-loaders want u-boot.bin others want u-boot.img
+	fetch "$BOOT" "$BDEST/u-boot.bin"
+	fetch $(dirname "$BOOT")/u-boot.flash "$BDEST/u-boot.flash"
+	fetch $(dirname "$BOOT")/splash.rgb16z "$BDEST/splash.rgb16z"
+	fetch $(dirname "$BOOT")/menu.rgb16z "$BDEST/menu.rgb16z"
+	fetch $(dirname "$BOOT")/boot.scr "$BDEST/boot.scr"
 fi
 
-## some u-boots want uImage.bin others want uImage.img
+## FIXME: some u-boots want uImage.bin others want uImage.img
 
 if [ "$KERNEL" != none ]
 then
-	fetch "$KERNEL" "/media/P${P}"/$(basename "$KERNEL")
-	fetch $(dirname "$KERNEL")/bootargs.scr "/media/P${P}"/bootargs.scr
+	fetch "$KERNEL" "$BDEST/$(basename "$KERNEL")
+	fetch $(dirname "$KERNEL")/bootargs.scr "$BDEST/bootargs.scr
 fi
 
 for DT in $DTBS
 do
-	fetch "$KERNEL"/$DT "/media/P${P}"/$DT
+	fetch "$KERNEL"/$DT "$BDEST"/$DT
 done
-
-ls -l /media/P1 /media/P2 /media/P3 /media/P4
 
 if [ "$ROOTFS" != none ]
 then
@@ -476,6 +493,8 @@ then
 		fetch "$CONFIG" /dev/fd/1 | (cd /media/P${P}/ && tar xvzf -)
 	fi
 fi
+
+ls -l /media/P[1-4]
 
 done
 
