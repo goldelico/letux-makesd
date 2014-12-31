@@ -296,6 +296,8 @@ do
 	! $DRYRUN && mkdir -p /media/P${P}
 	case "$(getparam $P FORMAT)" in
 		none )
+			## check if this is the last or only followed by "none"
+			## i.e. there can't be "holes" in the partition numbers
 			;; # skip
 		fat | ext* )
 			TOTALSIZE=$(expr "$TOTALSIZE" + "$(getparam $P SIZE)")	# sum up
@@ -328,20 +330,21 @@ $DEBUG && echo "-- CYLINDERS: $CYLINDERS --"
 PSTART=128
 for P in 1 2 3 4
 do # calculate sizes of partitions
+	FORMAT=$(getparam $P FORMAT)
 	REMAINING=$(expr "$TOTALSECTORS" - "$PSTART")
-	THISSIZE=$(getparam $P SIZE )
-	SECTORS=$(expr "$REMAINING" '*' "$THISSIZE" / "$TOTALSIZE" )
-	SECTORS=$(expr \( \( "$SECTORS" + $SECTORSPERCYLINDER - 1 \) / $SECTORSPERCYLINDER \) * $SECTORSPERCYLINDER) # round up to full cylinders
+	THISSIZE=$(getparam $P SIZE)
+	SECTORS=$(expr \( "$REMAINING" '*' "$THISSIZE" \) / "$TOTALSIZE")
+	SECTORS=$(expr \( \( "$SECTORS" + "$SECTORSPERCYLINDER" - 1 \) / "$SECTORSPERCYLINDER" \) * "$SECTORSPERCYLINDER") # round up to full cylinders
 (
 echo "P: $P"
 echo "FORMAT; $(getparam $P FORMAT)"
-echo "SIZE: $THISSIZE ($TOTALSIZE)"
-echo "sectors: $SECTORS"
+echo "THISSIZE: $THISSIZE ($TOTALSIZE)"
 echo "SECTORS: $PSTART + $SECTORS .. $REMAINING"
 ) >&2
-	case "$(getparam $P FORMAT)" in
+	case "$FORMAT" in
 		none )
 			: skip # (how with sfdisk? do we have to read the current partition sizes)
+			# this gives the wrong impression that we could define just a partition 3 and none for 1 & 2
 			;;
 		fat )
 			echo "$PSTART,$SECTORS,0x0C,*"	# FAT partition (bootable)
@@ -351,7 +354,7 @@ echo "SECTORS: $PSTART + $SECTORS .. $REMAINING"
 			;;
 	esac
 	PSTART=$(expr "$PSTART" + "$SECTORS")
-	TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE" )
+	TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
 done
 } |
 if $DRYRUN
