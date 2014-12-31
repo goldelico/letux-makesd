@@ -7,6 +7,9 @@
 # Licenced under GPLv2
 #
 
+DEBUG=false
+DRYRUN=false
+
 function useage()
 {
 	echo "useage: DEV=/dev/device makesd [partition1 [partition2 [partition3 [partition4]]]]"
@@ -216,9 +219,6 @@ function fetch() { # $url $dest
 		exit 1
 	fi
 }
-
-DEBUG=false
-DRYRUN=false
 
 while [ "$1" ]
 do
