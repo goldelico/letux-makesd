@@ -289,7 +289,6 @@ fi
 $DEBUG && echo "-- unmount partitions --"
 
 TOTALSIZE=0
-LASTPARTITION=1
 
 for P in 1 2 3 4
 do
@@ -300,7 +299,6 @@ do
 			;; # skip
 		fat | ext* )
 			TOTALSIZE=$(expr "$TOTALSIZE" + "$(getparam $P SIZE)")	# sum up
-			LASTPARTITION=$P
 			;;
 	esac
 done
@@ -332,20 +330,11 @@ for P in 1 2 3 4
 do # calculate sizes of partitions
 	REMAINING=$(expr "$TOTALSECTORS" - "$PSTART")
 	THISSIZE=$(getparam $P SIZE )
-	if [ $P = $LASTPARTITION ]
-	then
-		SECTORS="$REMAINING"	# use remainder
-	else
-		SECTORS=$(expr "$REMAINING" '*' "THISSIZE" / "$TOTALSIZE" )
-		SECTORS=$(expr \( \( "$SECTORS" + $SECTORSPERCYLINDER - 1 \) / $SECTORSPERCYLINDER \) * $SECTORSPERCYLINDER)
-		## round up to cylinders
-		REMAINING=$(expr "$REMAINING" - "$SECTORS" )
-		TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE" )
-	fi
+	SECTORS=$(expr "$REMAINING" '*' "$THISSIZE" / "$TOTALSIZE" )
+	SECTORS=$(expr \( \( "$SECTORS" + $SECTORSPERCYLINDER - 1 \) / $SECTORSPERCYLINDER \) * $SECTORSPERCYLINDER) # round up to full cylinders
 (
 echo "P: $P"
 echo "FORMAT; $(getparam $P FORMAT)"
-echo "LAST: $LASTPARTITION"
 echo "SIZE: $THISSIZE ($TOTALSIZE)"
 echo "sectors: $SECTORS"
 echo "SECTORS: $PSTART + $SECTORS .. $REMAINING"
@@ -361,7 +350,8 @@ echo "SECTORS: $PSTART + $SECTORS .. $REMAINING"
 			echo "$PSTART,$SECTORS,,-"	# Linux partition
 			;;
 	esac
-	[ "$SECTORS" ] && PSTART=$(expr "$PSTART" + "$SECTORS")
+	PSTART=$(expr "$PSTART" + "$SECTORS")
+	TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE" )
 done
 } |
 if $DRYRUN
