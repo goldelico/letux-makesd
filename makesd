@@ -186,21 +186,23 @@ function process() { # $1 .. $n
 				esac
 				setparam $NP CONFIG "$P"
 				;;
+			# -v variant - to overwrite VARIANT="latest" and use $VARIANT everwhere below where latest is specified
 			debian-lxde )	process -f ext4 -r latest-lxde -d all -k latest -m latest -c latest ;;
 			qtmoko )	process -f ext4 -r latest-qtmoko -d all -k latest ;;
 			replicant )	process -f ext4 -r latest-replicant-4.2 ;;
 			quantumstep )	process -f ext4 -r latest-quantumstep -d all -k latest -m latest -c latest ;;
 			gta04 | l2804 )	process -f fat -s 5 -b latest -k latest debian-lxde -k none -s 95 ;;
-			gta04b2 | l3704 )	process -f fat -s 5 -b latest/b2 debian-lxde -s 95 ;;
-			gta04b3 | l7004 )	process -f fat -s 5 -b latest/b3 debian-lxde -s 95 ;;
-			gta04b7 | neo900 )	process -f fat -s 5 -b latest/b7 debian-lxde -s 95 ;;
-			bbb )		process -f fat -s 5 -b latest/beagleboneblack debian-lxde -s 95 ;;
-			bb+b1 )		process -f fat -s 5 -b latest/beagleboard+b1 debian-lxde -s 95 ;;
-			bb+b2 )		process -f fat -s 5 -b latest/beagleboard+b2 debian-lxde -s 95 ;;
-			bb+b4 )		process -f fat -s 5 -b latest/beagleboard+b4 debian-lxde -s 95 ;;
-			bb+b5 )		process -f fat -s 5 -b latest/beagleboard+b7 debian-lxde -s 95 ;;
-			panda-es )	process -f fat -s 5 -b latest/panda-es debian-lxde -s 95 ;;
+			gta04b2 | l3704 )	process -f fat -s 5 -b latest/b2 -k latest debian-lxde -k none -s 95 ;;
+			gta04b3 | l7004 )	process -f fat -s 5 -b latest/b3 -k latest debian-lxde -k none -s 95 ;;
+			gta04b7 | neo900 )	process -f fat -s 5 -b latest/b7 -k latest debian-lxde -k none -s 95 ;;
+			bbb )		process -f fat -s 5 -b latest/beagleboneblack -k latest debian-lxde -k none -s 95 ;;
+			bb+b1 )		process -f fat -s 5 -b latest/beagleboard+b1 -k latest debian-lxde -k none -s 95 ;;
+			bb+b2 )		process -f fat -s 5 -b latest/beagleboard+b2 -k latest debian-lxde -k none -s 95 ;;
+			bb+b4 )		process -f fat -s 5 -b latest/beagleboard+b4 -k latest debian-lxde -k none -s 95 ;;
+			bb+b5 )		process -f fat -s 5 -b latest/beagleboard+b7 -k latest debian-lxde -k none -s 95 ;;
+			panda-es )	process -f fat -s 5 -b latest/panda-es -k latest debian-lxde -k none -s 95 ;;
 			omap5432evm | pyra )	process -f fat -s 5 -b latest/pyra debian-lxde -s 95 ;;
+			openpandora )	process debian-lxde -b latest/openpandora ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			-* )		echo "unknown option: $1"; useage; exit 1 ;;
 			* )		echo "unknown macro: $1"; useage; exit 1 ;;
@@ -216,7 +218,12 @@ function fetch() { # $url $dest
 	elif which wget >/dev/null
 	then # wget exists
 		$DEBUG && echo "-- wget -O - $1 >$2 --"
-		wget -O - "$1" >"$2"
+		if [ -w "$2" ]
+		then # exists and we directly can write (might be /dev/fd/1)
+			wget -O - "$1" >"$2"
+		else # write to a temp file and check for complete download
+			wget -O - "$1" >/tmp/$$ && mv /tmp/$$ "$2"
+		fi
 	elif which curl >/dev/null
 	then # try curl
 		$DEBUG && echo "-- curl $1 -o $2 --"
@@ -451,22 +458,23 @@ CONFIG=$(getparam "$P" CONFIG)
 if [ "$BOOT" != none ]
 then
 	# may fail to load if it does not exist for some variant - but we ignore
-	fetch $(dirname "$BOOT")/MLO "$BDEST/MLO"	# must come first
-	fetch $(dirname "$BOOT")/x-load.flash "$BDEST/x-load.flash"
+	fetch "$(dirname "$BOOT")/MLO" "$BDEST/MLO"	# must come first
+	fetch "$(dirname "$BOOT")/x-load.flash" "$BDEST/x-load.flash"
 ## FIXME: some x-loaders want u-boot.bin others want u-boot.img
 	fetch "$BOOT" "$BDEST/u-boot.bin"
-	fetch $(dirname "$BOOT")/u-boot.flash "$BDEST/u-boot.flash"
-	fetch $(dirname "$BOOT")/splash.rgb16z "$BDEST/splash.rgb16z"
-	fetch $(dirname "$BOOT")/menu.rgb16z "$BDEST/menu.rgb16z"
-	fetch $(dirname "$BOOT")/boot.scr "$BDEST/boot.scr"
+	fetch "$(dirname "$BOOT")/u-boot.flash" "$BDEST/u-boot.flash"
+	fetch "$(dirname "$BOOT")/splash.rgb16z" "$BDEST/splash.rgb16z"
+	fetch "$(dirname "$BOOT")/menu.rgb16z" "$BDEST/menu.rgb16z"
+	fetch "$(dirname "$BOOT")/boot.scr" "$BDEST/boot.scr"
+	fetch "$(dirname "$BOOT")/boot.txt" "$BDEST/boot.txt"
 fi
 
 ## FIXME: some u-boots want uImage.bin others want uImage.img
 
 if [ "$KERNEL" != none ]
 then
-	fetch "$KERNEL" "$BDEST/$(basename "$KERNEL")
-	fetch $(dirname "$KERNEL")/bootargs.scr "$BDEST/bootargs.scr
+	fetch "$KERNEL" "$BDEST/$(basename "$KERNEL")"
+	fetch "$(dirname "$KERNEL")/bootargs.scr" "$BDEST/bootargs.scr"
 fi
 
 for DT in $DTBS
