@@ -321,10 +321,10 @@ TOTALSECTORS=$(expr "$SIZE" / 512)
 $DEBUG && echo "-- TOTAL SECTORS: $TOTALSECTORS --"
 SECTORS=63
 HEADS=255
-SECTORSPERCYLINDER=$(expr "$TOTALSECTORS" / "$HEADS")
-$DEBUG && echo "-- SECTORS PER CYLINDER: $SECTORSPERCYLINDER --"
-CYLINDERS=$(expr "$SECTORSPERCYLINDER" / "$SECTORS")
+CYLINDERS=$(expr "$TOTALSECTORS" / "$HEADS" / "$SECTORS")
 $DEBUG && echo "-- CYLINDERS: $CYLINDERS --"
+SECTORSPERCYLINDER=$(expr "$TOTALSECTORS" / "$CYLINDERS")
+$DEBUG && echo "-- SECTORS PER CYLINDER: $SECTORSPERCYLINDER --"
 
 { # run in an anonymous function, not a subprocess
 PSTART=128
@@ -333,13 +333,27 @@ do # calculate sizes of partitions
 	FORMAT=$(getparam $P FORMAT)
 	REMAINING=$(expr "$TOTALSECTORS" - "$PSTART")
 	THISSIZE=$(getparam $P SIZE)
-	SECTORS=$(expr \( "$REMAINING" '*' "$THISSIZE" \) / "$TOTALSIZE")
-	SECTORS=$(expr \( \( "$SECTORS" + "$SECTORSPERCYLINDER" - 1 \) / "$SECTORSPERCYLINDER" \) * "$SECTORSPERCYLINDER") # round up to full cylinders
+	if [ "$THISSIZE" = "$TOTALSIZE" ]
+	then # last partition
+		PSECTORS="$REMAINING"	# take all remaining sectors
+	elif [ "$TOTALSIZE" -gt 0 ]
+	then # intermediate partition
+		PSECTORS=$(expr \( "$REMAINING" '*' "$THISSIZE" \) / "$TOTALSIZE")
+		S1=$PSECTORS
+		echo "S1: $S1" >&2
+		S2=$(expr "$PSTART" + "$S1" + "$SECTORSPERCYLINDER" - 1 )
+		echo "S2: $S2" >&2
+		S3=$(expr "$S2" / "$SECTORSPERCYLINDER" )
+		echo "S3: $S3" >&2
+		PSECTORS=$(expr \( \( "$PSTART" + "$PSECTORS" + "$SECTORSPERCYLINDER" - 1 \) / "$SECTORSPERCYLINDER" \) "*" "$SECTORSPERCYLINDER" - "$PSTART") # round up to end of full cylinder boundary
+	else
+		PSECTORS=0	# must be a "none"
+	fi
 (
 echo "P: $P"
-echo "FORMAT; $(getparam $P FORMAT)"
+echo "FORMAT: $FORMAT"
 echo "THISSIZE: $THISSIZE ($TOTALSIZE)"
-echo "SECTORS: $PSTART + $SECTORS .. $REMAINING"
+echo "SECTORS: $PSTART + $PSECTORS .. $REMAINING"
 ) >&2
 	case "$FORMAT" in
 		none )
@@ -347,15 +361,22 @@ echo "SECTORS: $PSTART + $SECTORS .. $REMAINING"
 			# this gives the wrong impression that we could define just a partition 3 and none for 1 & 2
 			;;
 		fat )
-			echo "$PSTART,$SECTORS,0x0C,*"	# FAT partition (bootable)
+			echo "$PSTART,$PSECTORS,0x0C,*"	# FAT partition (bootable)
+			TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
+			PSTART=$(expr "$PSTART" + "$PSECTORS")
 			;;
 		ext* )
-			echo "$PSTART,$SECTORS,,-"	# Linux partition
+			echo "$PSTART,$PSECTORS,,-"	# Linux partition
+			TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
+			PSTART=$(expr "$PSTART" + "$PSECTORS")
 			;;
 	esac
-	PSTART=$(expr "$PSTART" + "$SECTORS")
-	TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
 done
+if [ "$TOTALSIZE" != 0 -o "$REMAINING" != 0 ]
+	then
+	echo "error: error in partition calculation"
+	exit 1
+fi
 } |
 if $DRYRUN
 then
@@ -372,7 +393,7 @@ if ! $DRYRUN
 then
 for P in 1 2 3 4
 do # format partitions
-	umount ${DEVP}${P}
+	umount ${DEVP}${P} 2>/dev/null
 	case "$(getparam $P FORMAT)" in
 		none )
 			: skip
@@ -469,7 +490,7 @@ then
 	$DEBUG && echo "-- unmount --"
 	for P in 1 2 3 4
 	do
-		umount ${DEVP}${P}
+		umount ${DEVP}${P} 2>/dev/null
 		rmdir /media/P${P}
 	done
 	$DEBUG && echo "-- fsck --"
