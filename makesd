@@ -9,6 +9,8 @@
 
 DEBUG=false
 DRYRUN=false
+[ "$VARIANT" ] || VARIANT=latest
+[ "$DEV" ] || DEV=/dev/sdc
 
 function useage()
 {
@@ -50,6 +52,8 @@ function useage()
 	echo "    -c <url>"
 	echo "    -c none"
 	echo "    -c debian-wheezy"
+	echo "    choose variant:"
+	echo "    -v variant -- default is 'latest'"
 	echo "    abbreviations for single partition cards:"
 	echo "      debian-lxde = -f ext4 -r debian-lxde -d all -k latest -m latest -c debian-wheezy"
 	echo "      qtmoko = -f ext4 -r qtmoko -d all -k latest (does not need config)"
@@ -63,6 +67,15 @@ function useage()
 	echo "      panda-es = -f fat -b latest/panda-es debian-lxde"
 	echo "      pyra = -f fat -b latest/ pyra debian-lxde"
 	echo "      all = debian-lxde qtmoko replicant quantumstep"
+	echo ""
+	echo "examples:"
+	echo "./makesd -- makes a LXDE image"
+	echo "DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)"
+	echo "./makesd -u -- self-update"
+	echo "./makesd gta04 -- makes the latest stable production image for the GTA04"
+	echo "./makesd -v unstable gta04 -- makes an unstable production image"
+	echo "./makesd all -- makes a 4-partition card"
+	echo "./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704"
 }
 
 function setparam() { # $partition $name $value
@@ -186,23 +199,28 @@ function process() { # $1 .. $n
 				esac
 				setparam $NP CONFIG "$P"
 				;;
-			# -v variant - to overwrite VARIANT="latest" and use $VARIANT everwhere below where latest is specified
-			debian-lxde )	process -f ext4 -r latest-lxde -d all -k latest -m latest -c latest ;;
-			qtmoko )	process -f ext4 -r latest-qtmoko -d all -k latest ;;
-			replicant )	process -f ext4 -r latest-replicant-4.2 ;;
-			quantumstep )	process -f ext4 -r latest-quantumstep -d all -k latest -m latest -c latest ;;
-			gta04 | l2804 )	process -f fat -s 5 -b latest -k latest debian-lxde -k none -s 95 ;;
-			gta04b2 | l3704 )	process -f fat -s 5 -b latest/b2 -k latest debian-lxde -k none -s 95 ;;
-			gta04b3 | l7004 )	process -f fat -s 5 -b latest/b3 -k latest debian-lxde -k none -s 95 ;;
-			gta04b7 | neo900 )	process -f fat -s 5 -b latest/b7 -k latest debian-lxde -k none -s 95 ;;
-			bbb )		process -f fat -s 5 -b latest/beagleboneblack -k latest debian-lxde -k none -s 95 ;;
-			bb+b1 )		process -f fat -s 5 -b latest/beagleboard+b1 -k latest debian-lxde -k none -s 95 ;;
-			bb+b2 )		process -f fat -s 5 -b latest/beagleboard+b2 -k latest debian-lxde -k none -s 95 ;;
-			bb+b4 )		process -f fat -s 5 -b latest/beagleboard+b4 -k latest debian-lxde -k none -s 95 ;;
-			bb+b5 )		process -f fat -s 5 -b latest/beagleboard+b7 -k latest debian-lxde -k none -s 95 ;;
-			panda-es )	process -f fat -s 5 -b latest/panda-es -k latest debian-lxde -k none -s 95 ;;
-			omap5432evm | pyra )	process -f fat -s 5 -b latest/pyra debian-lxde -s 95 ;;
-			openpandora )	process debian-lxde -b latest/openpandora ;;
+			-v ) # define variant
+				shift
+				$DEBUG && echo "variant $1"
+				[ "$1" ] && VARIANT="$1"	# overwrite
+				shift
+				;;
+			debian-lxde )	process -f ext4 -r $VARIANT-lxde -d all -k $VARIANT -m $VARIANT -c $VARIANT ;;
+			qtmoko )	process -f ext4 -r $VARIANT-qtmoko -d all -k $VARIANT ;;
+			replicant )	process -f ext4 -r $VARIANT-replicant-4.2 ;;
+			quantumstep )	process -f ext4 -r $VARIANT-quantumstep -d all -k $VARIANT -m $VARIANT -c $VARIANT ;;
+			gta04 | l2804 )	process -f fat -s 5 -b $VARIANT -k $VARIANT debian-lxde -k none -s 95 ;;
+			gta04b2 | l3704 )	process -f fat -s 5 -b $VARIANT/b2 -k $VARIANT debian-lxde -k none -s 95 ;;
+			gta04b3 | l7004 )	process -f fat -s 5 -b $VARIANT/b3 -k $VARIANT debian-lxde -k none -s 95 ;;
+			gta04b7 | neo900 )	process -f fat -s 5 -b $VARIANT/b7 -k $VARIANT debian-lxde -k none -s 95 ;;
+			bbb )		process -f fat -s 5 -b $VARIANT/beagleboneblack -k $VARIANT debian-lxde -k none -s 95 ;;
+			bb+b1 )		process -f fat -s 5 -b $VARIANT/beagleboard+b1 -k $VARIANT debian-lxde -k none -s 95 ;;
+			bb+b2 )		process -f fat -s 5 -b $VARIANT/beagleboard+b2 -k $VARIANT debian-lxde -k none -s 95 ;;
+			bb+b4 )		process -f fat -s 5 -b $VARIANT/beagleboard+b4 -k $VARIANT debian-lxde -k none -s 95 ;;
+			bb+b5 )		process -f fat -s 5 -b $VARIANT/beagleboard+b7 -k $VARIANT debian-lxde -k none -s 95 ;;
+			panda-es )	process -f fat -s 5 -b $VARIANT/panda-es -k $VARIANT debian-lxde -k none -s 95 ;;
+			omap5432evm | pyra )	process -f fat -s 5 -b $VARIANT/pyra debian-lxde -s 95 ;;
+			openpandora )	process debian-lxde -b $VARIANT/openpandora ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			-* )		echo "unknown option: $1"; useage; exit 1 ;;
 			* )		echo "unknown macro: $1"; useage; exit 1 ;;
@@ -273,8 +291,6 @@ then
 	NP=0
 	process "$@" || exit 1
 fi
-
-[ "$DEV" ] || export DEV=/dev/sdc
 
 $DEBUG && echo "-- prepare $DEV --"
 
