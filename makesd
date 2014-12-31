@@ -22,20 +22,15 @@ function useage()
 	echo "    -s size -- define relative size"
 	echo "    bootloader:"
 	echo "    -b <url>"
+	echo "    -b version"
 	echo "    -b none"
-	echo "    -b gta04"
-	echo "    -b gta04b2"
-	echo "    -b gta04b3"
-	echo "    -b gta04b7"
-	echo "    -b pandaboard"
-	echo "    -b omap5evm"
 	echo "    kernel:"
 	echo "    -k <url>"
+	echo "    -k version"
 	echo "    -k none"
-	echo "    -k 3.17-rc7"
 	echo "    modules (must come after kernel):"
 	echo "    -m none"
-	echo "    -m 3.17-rc7"
+	echo "    -m version"
 	echo "    device tree files (mst come after kernel):"
 	echo "    -d omap3-gta04a2"
 	echo "    -d <pattern>"
@@ -57,13 +52,13 @@ function useage()
 	echo "      qtmoko = -f ext4 -r qtmoko -d all -k latest (does not need config)"
 	echo "      replicant = -f ext4 -d all -r replicant-4.2 (has its own kernel)"
 	echo "      quantumstep = -f ext4 -r quantumstep -d all -k latest -m latest -c debian-wheezy"
-	echo "    abbreviations for multiple partitions (to create bootable production image flash card):"
-	echo "      l2804 = -f fat -b gta04 debian-lxde"
-	echo "      l3704 = -f fat -b gta04b2 debian-lxde"
-	echo "      l7004 = -f fat -b gta04b3 debian-lxde"
-	echo "      neo900 = -f fat -b gta04b7 debian-lxde"
-	echo "      pandaboard = -f fat -b pandaboard debian-lxde"
-	echo "      pyra = -f fat -b pyra debian-lxde"
+	echo "    abbreviations for multiple partitions (to create bootable production image SD card):"
+	echo "      gta04 | l2804 = -f fat -b latest debian-lxde"
+	echo "      gta04b2 | l3704 = -f fat -b latest/b2 debian-lxde"
+	echo "      gta04b3 | l7004 = -f fat -b latest/b3 debian-lxde"
+	echo "      gta04b7 | neo900 = -f fat -b latest/b7 debian-lxde"
+	echo "      panda-es = -f fat -b latest/panda-es debian-lxde"
+	echo "      pyra = -f fat -b latest/ pyra debian-lxde"
 	echo "      all = debian-lxde qtmoko replicant quantumstep"
 }
 
@@ -165,7 +160,7 @@ function process() { # $1 .. $n
 					*-debian ) P="http://download.goldelico.com/gta04/debian/$1.tbz" ;;
 					*-lxde ) P="http://download.goldelico.com/gta04/debian/$1.tbz" ;;
 					*-qtmoko ) P="http://download.goldelico.com/gta04/qtmoko/$1.tbz" ;;
-					*-quantumstep ) P="http://download.goldelico.com/gta04/qtmoko/$1.tbz" ;;
+					*-quantumstep ) P="http://download.goldelico.com/gta04/quantumstep/$1.tbz" ;;
 					*-replicant-*) P="http://download.goldelico.com/gta04/replicant/$1/latest-replicant.tbz" ;;
 					* ) echo "unknown rootfs: $1"; useage; exit 1 ;;
 				esac
@@ -181,16 +176,21 @@ function process() { # $1 .. $n
 				esac
 				setparam $NP CONFIG "$P"
 				;;
-			debian-lxde )	process -f ext4 -r latest-lxde -d all -k latest -m latest -c debian-wheezy ;;
+			debian-lxde )	process -f ext4 -r latest-lxde -d all -k latest -m latest -c latest ;;
 			qtmoko )	process -f ext4 -r latest-qtmoko -d all -k latest ;;
 			replicant )	process -f ext4 -r latest-replicant-4.2 ;;
-			quantumstep )	process -f ext4 -r latest-quantumstep -d all -k latest -m latest -c debian-wheezy ;;
-			l2804 )		process -f fat -s 5 -b latest debian-lxde -s 95 ;;
-			l3704 )		process -f fat -s 5 -b latest/b2 debian-lxde -s 95 ;;
-			l7004 )		process -f fat -s 5 -b latest/b3 debian-lxde -s 95 ;;
-			neo900 )	process -f fat -s 5 -b latest/b7 debian-lxde -s 95 ;;
-			pandaboard )	process -f fat -s 5 -b latest/panda-es debian-lxde -s 95 ;;
-			pyra )		process -f fat -s 5 -b latest/pyra debian-lxde -s 95 ;;
+			quantumstep )	process -f ext4 -r latest-quantumstep -d all -k latest -m latest -c latest ;;
+			gta04 | l2804 )	process -f fat -s 5 -b latest debian-lxde -s 95 ;;
+			gta04b2 | l3704 )	process -f fat -s 5 -b latest/b2 debian-lxde -s 95 ;;
+			gta04b3 | l7004 )	process -f fat -s 5 -b latest/b3 debian-lxde -s 95 ;;
+			gta04b7 | neo900 )	process -f fat -s 5 -b latest/b7 debian-lxde -s 95 ;;
+			bbb )		process -f fat -s 5 -b latest/beagleboneblack debian-lxde -s 95 ;;
+			bb+b1 )		process -f fat -s 5 -b latest/beagleboard+b1 debian-lxde -s 95 ;;
+			bb+b2 )		process -f fat -s 5 -b latest/beagleboard+b2 debian-lxde -s 95 ;;
+			bb+b4 )		process -f fat -s 5 -b latest/beagleboard+b4 debian-lxde -s 95 ;;
+			bb+b5 )		process -f fat -s 5 -b latest/beagleboard+b7 debian-lxde -s 95 ;;
+			panda-es )	process -f fat -s 5 -b latest/panda-es debian-lxde -s 95 ;;
+			omap5432evm | pyra )	process -f fat -s 5 -b latest/pyra debian-lxde -s 95 ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			-* )		echo "unknown option: $1"; useage; exit 1 ;;
 			* )		echo "unknown macro: $1"; useage; exit 1 ;;
@@ -339,7 +339,7 @@ echo "FORMAT; $(getparam $P FORMAT)"
 echo "sectors: $SECTORS"
 	case "$(getparam $P FORMAT)" in
 		none )
-			: skip
+			: skip (how?)
 			;;
 		fat )
 			echo "$PSTART","$SECTORS",0x0C,*	# FAT partition (bootable)
