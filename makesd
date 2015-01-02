@@ -133,7 +133,7 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/gta04/$1/u-boot.bin" ;;
+					* ) P="http://download.goldelico.com/gta04-u-boot/$1/u-boot.bin" ;;
 				esac
 				setparam $NP BOOT "$P"
 				;;
@@ -143,7 +143,7 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/gta04/$1/uImage" ;;
+					* ) P="http://download.goldelico.com/gta04-kernel/$1/uImage" ;;
 				esac
 				setparam $NP KERNEL "$P"
 				;;
@@ -153,7 +153,7 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/gta04/$1/modules.tgz" ;;
+					* ) P="http://download.goldelico.com/gta04-kernel/$1/modules.tgz" ;;
 				esac
 				setparam $NP MODULE "$P"
 				;;
@@ -180,11 +180,11 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					*-debian ) P="http://download.goldelico.com/gta04/debian/$1.tbz" ;;
-					*-lxde ) P="http://download.goldelico.com/gta04/debian/$1.tbz" ;;
-					*-qtmoko ) P="http://download.goldelico.com/gta04/qtmoko/$1.tbz" ;;
-					*-quantumstep ) P="http://download.goldelico.com/gta04/quantumstep/$1.tbz" ;;
-					*-replicant-*) P="http://download.goldelico.com/gta04/replicant/$1/latest-replicant.tbz" ;;
+					*-debian ) P="http://download.goldelico.com/gta04-rootfs/debian/$1.tbz" ;;
+					*-lxde ) P="http://download.goldelico.com/gta04-rootfs/debian/$1.tbz" ;;
+					*-qtmoko ) P="http://download.goldelico.com/gta04-rootfs/qtmoko/$1.tbz" ;;
+					*-quantumstep ) P="http://download.goldelico.com/quantumstep/$1.tbz" ;;
+					*-replicant-*) P="http://download.goldelico.com/gta04-replicant/$1/latest-replicant.tbz" ;;
 					* ) echo "unknown rootfs: $1"; useage; exit 1 ;;
 				esac
 				setparam $NP ROOTFS "$P"
@@ -195,7 +195,7 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/gta04/$1/config.tgz" ;;
+					* ) P="http://download.goldelico.com/gta04-kernel/$1/config.tgz" ;;
 				esac
 				setparam $NP CONFIG "$P"
 				;;
@@ -436,7 +436,9 @@ do # format partitions
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
 		ext* )
-			mke2fs -j -L "rootfs" ${DEVP}${P} &&
+			# FIXME: make different volume names for different rootfs???
+			PNAME="rootfs"
+			mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
 			fsck.ext3 -y ${DEVP}${P}
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
