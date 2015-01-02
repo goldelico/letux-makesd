@@ -155,7 +155,7 @@ function process() { # $1 .. $n
 					http://*/* | https://*/* ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04-kernel/$1/modules.tgz" ;;
 				esac
-				setparam $NP MODULE "$P"
+				setparam $NP MODULES "$P"
 				;;
 #
 # device trees are a special case
@@ -468,13 +468,22 @@ fi
 BOOT=$(getparam "$P" BOOT)
 KERNEL=$(getparam "$P" KERNEL)
 ROOTFS=$(getparam "$P" ROOTFS)
+MODULES=$(getparam "$P" MODULES)
 CONFIG=$(getparam "$P" CONFIG)
 
 ## FIXME: should also try .tbz and .tgz
 ## FIXME: and we should be able to unpack some .dd.bz2 or img.bz2
 
+if [ "$ROOTFS" != none ]
+then # a rootfs must be installed first so that we can overwrite by a kernel
+
+	ls -l /media/P${P}
+	fetch "$ROOTFS" /dev/fd/1 | ( cd "/media/P${P}" && tar xvjf - )
+fi
+
 if [ "$BOOT" != none ]
 then
+	mkdir -p "$BDEST"
 	# may fail to load if it does not exist for some variant - but we ignore
 	fetch "$(dirname "$BOOT")/MLO" "$BDEST/MLO"	# must come first
 	fetch "$(dirname "$BOOT")/x-load.flash" "$BDEST/x-load.flash"
@@ -491,34 +500,26 @@ fi
 
 if [ "$KERNEL" != none ]
 then
+	mkdir -p "$BDEST"
 	fetch "$KERNEL" "$BDEST/$(basename "$KERNEL")"
 	fetch "$(dirname "$KERNEL")/bootargs.scr" "$BDEST/bootargs.scr"
 fi
 
+if [ "$MODULES" != none ]
+then
+	fetch $(dirname "$KERNEL")/modules.tgz /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
+fi
+
+if [ "$CONFIG" != none ]
+then
+	fetch "$CONFIG" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
+fi
+
 for DT in $DTBS
 do
+	mkdir -p "$BDEST"
 	fetch "$KERNEL"/$DT "$BDEST"/$DT
 done
-
-if [ "$ROOTFS" != none ]
-then
-
-	ls -l /media/P${P}
-	( cd "/media/P${P}" && fetch "$ROOTFS" /dev/fd/1 | tar xvjf - )
-
-	# wipe out any old configs coming from the tbz
-	rm -rf /media/P${P}/boot/*
-	rm -rf /media/P${P}/lib/modules/kernel
-	rm -rf /media/P${P}/root
-	if [ "$KERNEL" != none ]
-	then
-		fetch $(dirname "$KERNEL")/modules.tgz /dev/fd/1 | (cd /media/P${P}/ && tar xvzf -)
-	fi
-	if [ "$CONFIG" != none ]
-	then
-		fetch "$CONFIG" /dev/fd/1 | (cd /media/P${P}/ && tar xvzf -)
-	fi
-fi
 
 ls -l /media/P[1-4]
 
