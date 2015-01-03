@@ -69,13 +69,15 @@ function useage()
 	echo "      all = debian-lxde qtmoko replicant quantumstep"
 	echo ""
 	echo "examples:"
-	echo "./makesd -- makes a LXDE image"
-	echo "DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)"
-	echo "./makesd -u -- self-update"
-	echo "./makesd gta04 -- makes the latest stable production image for the GTA04"
-	echo "./makesd -v unstable gta04 -- makes an unstable production image"
-	echo "./makesd all -- makes a 4-partition card"
-	echo "./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704"
+	echo "  ./makesd -- makes a single-partition LXDE image"
+	echo "  ./makesd debian-lxde -- also makes a LXDE image"
+	echo "  ./makesd replicant -- makes a single partition replicant image"
+	echo "  ./makesd gta04 -- makes the latest stable production image for the GTA04"
+	echo "  ./makesd all -- makes a 4-partition card"
+	echo "  ./makesd -v unstable gta04 -- makes an unstable production image"
+	echo "  ./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704"
+	echo "  DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)"
+	echo "  ./makesd -u -- self-update"
 }
 
 function setparam() { # $partition $name $value
@@ -157,19 +159,12 @@ function process() { # $1 .. $n
 				esac
 				setparam $NP MODULES "$P"
 				;;
-#
-# device trees are a special case
-# they more or less belong to the kernel
-# and the same is for the modules
-# only the storage location can vary
-# and the subset to be used
-#
 			-d ) # define device trees
 				shift
 				$DEBUG && echo "device trees $1"
 				case "$1" in
 					none ) P="$1";;
-					all ) P="omap3-gta04a2.dtb omap3-gta04a3.dtb omap3-gta04a4.dtb omap3-gta04a5.dtb" ;;
+					* ) P="http://download.goldelico.com/gta04-kernel/$1/device-trees.tbz" ;;
 					* ) P="$1";;
 				esac
 				setparam $NP DT "$P"
@@ -205,22 +200,22 @@ function process() { # $1 .. $n
 				[ "$1" ] && VARIANT="$1"	# overwrite
 				shift
 				;;
-			debian-lxde )	process -f ext4 -r $VARIANT-lxde -d all -k $VARIANT -m $VARIANT -c $VARIANT ;;
-			qtmoko )	process -f ext4 -r $VARIANT-qtmoko -d all -k $VARIANT ;;
-			replicant )	process -f ext4 -r $VARIANT-replicant-4.2 ;;
-			quantumstep )	process -f ext4 -r $VARIANT-quantumstep -d all -k $VARIANT -m $VARIANT -c $VARIANT ;;
-			gta04 | l2804 )	process -f fat -s 5 -b $VARIANT -k $VARIANT debian-lxde -k none -s 95 ;;
-			gta04b2 | l3704 )	process -f fat -s 5 -b $VARIANT/b2 -k $VARIANT debian-lxde -k none -s 95 ;;
-			gta04b3 | l7004 )	process -f fat -s 5 -b $VARIANT/b3 -k $VARIANT debian-lxde -k none -s 95 ;;
-			gta04b7 | neo900 )	process -f fat -s 5 -b $VARIANT/b7 -k $VARIANT debian-lxde -k none -s 95 ;;
-			bbb )		process -f fat -s 5 -b $VARIANT/beagleboneblack -k $VARIANT debian-lxde -k none -s 95 ;;
-			bb+b1 )		process -f fat -s 5 -b $VARIANT/beagleboard+b1 -k $VARIANT debian-lxde -k none -s 95 ;;
-			bb+b2 )		process -f fat -s 5 -b $VARIANT/beagleboard+b2 -k $VARIANT debian-lxde -k none -s 95 ;;
-			bb+b4 )		process -f fat -s 5 -b $VARIANT/beagleboard+b4 -k $VARIANT debian-lxde -k none -s 95 ;;
-			bb+b5 )		process -f fat -s 5 -b $VARIANT/beagleboard+b7 -k $VARIANT debian-lxde -k none -s 95 ;;
-			panda-es )	process -f fat -s 5 -b $VARIANT/panda-es -k $VARIANT debian-lxde -k none -s 95 ;;
-			omap5432evm | pyra )	process -f fat -s 5 -b $VARIANT/pyra debian-lxde -s 95 ;;
-			openpandora )	process debian-lxde -b $VARIANT/openpandora ;;
+			debian-lxde )	process -f ext4 -r "$VARIANT-lxde" -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			qtmoko )	process -f ext4 -r "$VARIANT-qtmoko" -k "$VARIANT" -d "$VARIANT" ;;
+			replicant )	process -f ext4 -r "$VARIANT-replicant-4.2" ;;
+			quantumstep )	process -f ext4 -r "$VARIANT-quantumstep" -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" debian-lxde -k none -s 95 ;;
+			gta04b2 | l3704 )	process -f fat -s 5 -b "$VARIANT/b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			gta04b3 | l7004 )	process -f fat -s 5 -b "$VARIANT/b3" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			gta04b7 | neo900 )	process -f fat -s 5 -b "$VARIANT/b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			bbb )		process -f fat -s 5 -b "$VARIANT/beagleboneblack" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			bb+b1 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b1" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			bb+b2 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			bb+b4 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b4" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			bb+b5 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			panda-es )	process -f fat -s 5 -b "$VARIANT/panda-es" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			omap5432evm | pyra )	process -f fat -s 5 -b "$VARIANT/pyra" debian-lxde -s 95 ;;
+			openpandora )	process debian-lxde -b "$VARIANT/openpandora" ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			-* )		echo "unknown option: $1"; useage; exit 1 ;;
 			* )		echo "unknown macro: $1"; useage; exit 1 ;;
@@ -466,9 +461,10 @@ fi
 [ "$FORMAT" = "fat" ] && BDEST="/media/P${P}" || BDEST="/media/P${P}/boot"
 
 BOOT=$(getparam "$P" BOOT)
-KERNEL=$(getparam "$P" KERNEL)
 ROOTFS=$(getparam "$P" ROOTFS)
+KERNEL=$(getparam "$P" KERNEL)
 MODULES=$(getparam "$P" MODULES)
+DT=$(getparam "$P" DT)
 CONFIG=$(getparam "$P" CONFIG)
 
 ## FIXME: should also try .tbz and .tgz
@@ -505,21 +501,20 @@ then
 	fetch "$(dirname "$KERNEL")/bootargs.scr" "$BDEST/bootargs.scr"
 fi
 
+if [ "$DT" != none ]
+then
+	fetch "$DT" /dev/fd/1 | (cd "$BDEST/" && tar xvjf -)
+fi
+
 if [ "$MODULES" != none ]
 then
-	fetch $(dirname "$KERNEL")/modules.tgz /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
+	fetch "$MODULES" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
 fi
 
 if [ "$CONFIG" != none ]
 then
 	fetch "$CONFIG" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
 fi
-
-for DT in $DTBS
-do
-	mkdir -p "$BDEST"
-	fetch "$KERNEL"/$DT "$BDEST"/$DT
-done
 
 ls -l /media/P[1-4]
 
