@@ -43,10 +43,10 @@ function useage()
 	echo "    root file system (OS):"
 	echo "    -r <url>"
 	echo "    -r none"
+	echo "    -r debian"
 	echo "    -r debian-lxde"
-	echo "    -r debian-minimal"
 	echo "    -r quantumstep"
-	echo "    -r replicant-4.2"
+	echo "    -r replicant"
 	echo "    -r qtmoko"
 	echo "    config patches:"
 	echo "    -c <url>"
@@ -175,11 +175,11 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					*-debian ) P="http://download.goldelico.com/gta04-rootfs/debian/$1.tbz" ;;
-					*-lxde ) P="http://download.goldelico.com/gta04-rootfs/debian/$1.tbz" ;;
-					*-qtmoko ) P="http://download.goldelico.com/gta04-rootfs/qtmoko/$1.tbz" ;;
-					*-quantumstep ) P="http://download.goldelico.com/quantumstep/$1.tbz" ;;
-					*-replicant-*) P="http://download.goldelico.com/gta04-replicant/$1/latest-replicant.tbz" ;;
+					debian ) P="http://download.goldelico.com/gta04-debian-lxde/${VARIANT}-debian.tbz" ;;
+					lxde ) P="http://download.goldelico.com/gta04-debian-lxde/${VARIANT}-lxde.tbz" ;;
+					qtmoko ) P="http://download.goldelico.com/gta04-qtmoko/${VARIANT}.tbz" ;;
+					replicant ) P="http://download.goldelico.com/gta04-replicant/4.2/${VARIANT}-replicant.tbz" ;;
+					quantumstep ) P="http://download.goldelico.com/quantumstep/debian/${VARIANT}-quantumstep.tbz" ;;
 					* ) echo "unknown rootfs: $1"; useage; exit 1 ;;
 				esac
 				setparam $NP ROOTFS "$P"
@@ -198,12 +198,12 @@ function process() { # $1 .. $n
 				shift
 				$DEBUG && echo "variant $1"
 				[ "$1" ] && VARIANT="$1"	# overwrite
-				shift
 				;;
-			debian-lxde )	process -f ext4 -r "$VARIANT-lxde" -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
-			qtmoko )	process -f ext4 -r "$VARIANT-qtmoko" -k "$VARIANT" -d "$VARIANT" ;;
-			replicant )	process -f ext4 -r "$VARIANT-replicant-4.2" ;;
-			quantumstep )	process -f ext4 -r "$VARIANT-quantumstep" -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			debian )	process -f ext4 -r debian -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			debian-lxde )	process -f ext4 -r lxde -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			qtmoko )	process -f ext4 -r qtmoko -k "$VARIANT" -d "$VARIANT" ;;
+			replicant )	process -f ext4 -r replicant ;;
+			quantumstep )	process -f ext4 -r quantumstep -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
 			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" debian-lxde -k none -s 95 ;;
 			gta04b2 | l3704 )	process -f fat -s 5 -b "$VARIANT/b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			gta04b3 | l7004 )	process -f fat -s 5 -b "$VARIANT/b3" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
