@@ -14,16 +14,21 @@ DRYRUN=false
 
 function useage()
 {
-	echo "useage: DEV=/dev/device makesd [partition1 [partition2 [partition3 [partition4]]]]"
+	echo "useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [partition2 [partition3 [partition4]]]]"
 	echo
 	echo "  DEV=/dev/device - specify the raw device (not the partitions), e.g. /dev/sdc"
+	echo "  general options:"
 	echo "  partition:"
+	echo "    -u | --update -- selfudate"
+	echo "    --dry -- dry run (don't touch SD card)"
+	echo "    --debug -- print internal activities and status"
+	echo "    --help -- print this help"
 	echo "    format (starts next partition):"
 	echo "    -f fat"
 	echo "    -f ext3"
 	echo "    -f ext4"
 	echo "    -f none"
-	echo "    -f[1-4] -- switch to given partition"
+	echo "    -f[0-4] -- switch to given partition - note that another -f will increment by 1"
 	echo "    -s size -- define relative size"
 	echo "    bootloader:"
 	echo "    -b <url>"
@@ -75,6 +80,7 @@ function useage()
 	echo "  ./makesd gta04 -- makes the latest stable production image for the GTA04"
 	echo "  ./makesd all -- makes a 4-partition card"
 	echo "  ./makesd -v unstable gta04 -- makes an unstable production image"
+	echo "  ./makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs"
 	echo "  ./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704"
 	echo "  DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)"
 	echo "  ./makesd -u -- self-update"
@@ -103,7 +109,7 @@ function process() { # $1 .. $n
 	while [ "$1" ]
 		do
 		case "$1" in
-			-f[1-4] ) # switch to given partition (but don't change type)
+			-f[0-4] ) # switch to given partition (but don't change type)
 				NP=$(expr "$1" : "-f\(.*\)" )
 				$DEBUG && echo "switched to partition $NP"
 				;;
@@ -199,11 +205,14 @@ function process() { # $1 .. $n
 				$DEBUG && echo "variant $1"
 				[ "$1" ] && VARIANT="$1"	# overwrite
 				;;
+			# single partition file system(s)
 			debian )	process -f ext4 -r debian -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
 			debian-lxde )	process -f ext4 -r lxde -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
-			qtmoko )	process -f ext4 -r qtmoko -k "$VARIANT" -d "$VARIANT" ;;
-			replicant )	process -f ext4 -r replicant ;;
+			qtmoko )	process -f ext4 -r qtmoko -k "$VARIANT" -d "$VARIANT" -m none -c none ;;
+			replicant )	process -f ext4 -r replicant -k none -d none -m none -c none ;;
 			quantumstep )	process -f ext4 -r quantumstep -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			all )		process debian-lxde qtmoko replicant quantumstep ;;
+			# production images (dual partition) for all hardware variants
 			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" debian-lxde -k none -s 95 ;;
 			gta04b2 | l3704 )	process -f fat -s 5 -b "$VARIANT/b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			gta04b3 | l7004 )	process -f fat -s 5 -b "$VARIANT/b3" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
@@ -214,9 +223,8 @@ function process() { # $1 .. $n
 			bb+b4 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b4" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			bb+b5 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			panda-es )	process -f fat -s 5 -b "$VARIANT/panda-es" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			omap5432evm | pyra )	process -f fat -s 5 -b "$VARIANT/pyra" debian-lxde -s 95 ;;
+			omap5432evm | pyra )	process -f fat -s 5 -b "$VARIANT/pyra" -k "$VARIANT" -d "$VARIANT" debian-lxde -s 95 ;;
 			openpandora )	process debian-lxde -b "$VARIANT/openpandora" ;;
-			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			-* )		echo "unknown option: $1"; useage; exit 1 ;;
 			* )		echo "unknown macro: $1"; useage; exit 1 ;;
 		esac
@@ -480,11 +488,12 @@ fi
 if [ "$BOOT" != none ]
 then
 	mkdir -p "$BDEST"
-	# may fail to load if it does not exist for some variant - but we ignore
+	# loading some files may fail since they does not exist for the chosen variant - but we ignore
 	fetch "$(dirname "$BOOT")/MLO" "$BDEST/MLO"	# must come first
 	fetch "$(dirname "$BOOT")/x-load.flash" "$BDEST/x-load.flash"
-## FIXME: some x-loaders want u-boot.bin others want u-boot.img
 	fetch "$BOOT" "$BDEST/u-boot.bin"
+	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
+	cp "$BDEST/u-boot.bin" "$BDEST/u-boot.img"
 	fetch "$(dirname "$BOOT")/u-boot.flash" "$BDEST/u-boot.flash"
 	fetch "$(dirname "$BOOT")/splash.rgb16z" "$BDEST/splash.rgb16z"
 	fetch "$(dirname "$BOOT")/menu.rgb16z" "$BDEST/menu.rgb16z"
@@ -509,6 +518,9 @@ fi
 if [ "$MODULES" != none ]
 then
 	fetch "$MODULES" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
+	echo "please run depmod -a after first boot and reboot"
+#	KERNEL_VERSION=$($MKIMAGE -l "$BDEST/uImage" | fgrep "Image Name:" | sed 's/Image Name:.*Linux-//')
+#	depmod -b /media/P${P}/ §$KERNEL_VERSION
 fi
 
 if [ "$CONFIG" != none ]
