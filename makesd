@@ -99,7 +99,7 @@ setparam 2 KERNEL 1234
 _TESTME=$(getparam 2 KERNEL)
 if [ "$_TESTME" != 1234 ]
 then
-	echo "error: getparam and setparam did not pass internal test - please check shell or script"
+	echo "error: getparam and setparam did not pass internal test - please check shell or script" >&2
 	set
 	exit
 fi
@@ -111,13 +111,13 @@ function process() { # $1 .. $n
 		case "$1" in
 			-f[0-4] ) # switch to given partition (but don't change type)
 				NP=$(expr "$1" : "-f\(.*\)" )
-				$DEBUG && echo "switched to partition $NP"
+				$DEBUG && echo "switched to partition $NP" >&2
 				;;
 			-f ) # switch to next partition
 				NP=$(expr "$NP" + 1)
 				if [ "$NP" -gt 4 ]
 				then
-					echo "too many partitions specified (max. 4)"
+					echo "too many partitions specified (max. 4)" >&2
 					useage
 					exit 1
 				fi
@@ -137,7 +137,7 @@ function process() { # $1 .. $n
 				;;
 			-b ) # define boot loader
 				shift
-				$DEBUG && echo "bootloader $1"
+				$DEBUG && echo "bootloader $1" >&2
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
@@ -147,7 +147,7 @@ function process() { # $1 .. $n
 				;;
 			-k ) # define kernel
 				shift
-				$DEBUG && echo "kernel $1"
+				$DEBUG && echo "kernel $1" >&2
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
@@ -157,7 +157,7 @@ function process() { # $1 .. $n
 				;;
 			-m ) # define modules
 				shift
-				$DEBUG && echo "modules $1"
+				$DEBUG && echo "modules $1" >&2
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
@@ -167,7 +167,7 @@ function process() { # $1 .. $n
 				;;
 			-d ) # define device trees
 				shift
-				$DEBUG && echo "device trees $1"
+				$DEBUG && echo "device trees $1" >&2
 				case "$1" in
 					none ) P="$1";;
 					* ) P="http://download.goldelico.com/gta04-kernel/$1/device-trees.tbz" ;;
@@ -177,7 +177,7 @@ function process() { # $1 .. $n
 				;;
 			-r ) # define root file system
 				shift
-				$DEBUG && echo "rootfs $1"
+				$DEBUG && echo "rootfs $1" >&2
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
@@ -186,13 +186,13 @@ function process() { # $1 .. $n
 					qtmoko ) P="http://download.goldelico.com/gta04-qtmoko/${VARIANT}.tbz" ;;
 					replicant ) P="http://download.goldelico.com/gta04-replicant/4.2/${VARIANT}-replicant.tbz" ;;
 					quantumstep ) P="http://download.goldelico.com/quantumstep/debian/${VARIANT}-quantumstep.tbz" ;;
-					* ) echo "unknown rootfs: $1"; useage; exit 1 ;;
+					* ) echo "unknown rootfs: $1" >&2; useage; exit 1 ;;
 				esac
 				setparam $NP ROOTFS "$P"
 				;;
 			-c ) # define config
 				shift
-				$DEBUG && echo "config $1"
+				$DEBUG && echo "config $1" >&2
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
@@ -202,7 +202,7 @@ function process() { # $1 .. $n
 				;;
 			-v ) # define variant
 				shift
-				$DEBUG && echo "variant $1"
+				$DEBUG && echo "variant $1" >&2
 				[ "$1" ] && VARIANT="$1"	# overwrite
 				;;
 			# single partition file system(s)
@@ -225,20 +225,21 @@ function process() { # $1 .. $n
 			panda-es )	process -f fat -s 5 -b "$VARIANT/panda-es" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			omap5432evm | pyra )	process -f fat -s 5 -b "$VARIANT/pyra" -k "$VARIANT" -d "$VARIANT" debian-lxde -s 95 ;;
 			openpandora )	process debian-lxde -b "$VARIANT/openpandora" ;;
-			-* )		echo "unknown option: $1"; useage; exit 1 ;;
-			* )		echo "unknown macro: $1"; useage; exit 1 ;;
+			-* )		echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
+			* )		echo "unknown macro: $1" >&2; useage >&2; exit 1 ;;
 		esac
 		shift
 	done
 }
 
 function fetch() { # $url $dest
+	$DEBUG && echo "-- fetch $1 $2 --" >&2
 	if $DRYRUN
 	then
-		echo "fetch $1 -> $2"
+		echo "fetch $1 -> $2" >&2
 	elif which wget >/dev/null
 	then # wget exists
-		$DEBUG && echo "-- wget -O - $1 >$2 --"
+		$DEBUG && echo "-- wget -O - $1 >$2 --" >&2
 		if [ -w "$2" ]
 		then # exists and we directly can write (might be /dev/fd/1)
 			wget -O - "$1" >"$2"
@@ -247,19 +248,23 @@ function fetch() { # $url $dest
 		fi
 	elif which curl >/dev/null
 	then # try curl
-		$DEBUG && echo "-- curl $1 -o $2 --"
+		$DEBUG && echo "-- curl $1 -o $2 --" >&2
 		curl "$1" -o "$2"
 	else
-		echo "error: can't fetch files (needs wget or curl)"
+		echo "error: can't fetch files (needs wget or curl)" >&2
 		exit 1
 	fi
+}
+
+function exists() { # check if tool exists
+	which $1 2>/dev/null
 }
 
 while [ "$1" ]
 do
 	case "$1" in
 		"-u" | "--update" )	# self-update
-			$DEBUG && echo "-- self-update --"
+			$DEBUG && echo "-- self-update --" >&2
 			fetch "http://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)" "$(basename $0).new" &&
 			chmod +x $(basename $0).new &&
 			mv $(basename $0).new $(basename $0)
@@ -283,19 +288,19 @@ do
 	esac
 done
 
-$DEBUG && echo "-- define defaults --"
+$DEBUG && echo "-- define defaults --" >&2
 NP=0
 process debian-lxde -f none -f none -f none
 
 if [ "$1" ]
 then
-	$DEBUG && echo "-- start over with given options --"
+	$DEBUG && echo "-- start over with given options --" >&2
 	# start over with given options
 	NP=0
 	process "$@" || exit 1
 fi
 
-$DEBUG && echo "-- prepare $DEV --"
+$DEBUG && echo "-- prepare $DEV --" >&2
 
 DEVP=$DEV
 if ! $DRYRUN
@@ -303,23 +308,23 @@ then
 	if [ -b "${DEV}p" ]
 	then
 		DEV=${DEV}p	# needs "p"artition suffix
-		$DEBUG && echo "-- suffix p added --"
+		$DEBUG && echo "-- suffix p added --" >&2
 	fi
 
 	if [ "${DEV}" = "/dev/sda" ]
 	then
-		echo "error: refuses to overwrite /dev/sda"
+		echo "error: refuses to overwrite /dev/sda" >&2
 		exit 1
 	elif [ -b "$DEV" ]
 	then
 		: ok
 	else
-		echo "error: not a block device: $DEV"
+		echo "error: not a block device: $DEV" >&2
 		exit 1
 	fi
 fi
 
-$DEBUG && echo "-- unmount partitions --"
+$DEBUG && echo "-- unmount partitions --" >&2
 
 TOTALSIZE=0
 
@@ -340,26 +345,26 @@ done
 
 ls -l /media/P[1-4]
 
-$DEBUG && echo "-- total size $TOTALSIZE --"
+$DEBUG && echo "-- total size $TOTALSIZE --" >&2
 
 ## the following code is roughly
 ## based on: http://omappedia.org/wiki/SD_Configuration#Script_to_partition.2Fformat_SDCards
 ## and: http://www.sakoman.com/OMAP/a-script-for-partitioningformatting-a-bootable-sdmicrosd-card.html
 
-$DEBUG && echo "-- clear boot record --"
+$DEBUG && echo "-- clear boot record --" >&2
 ! $DRYRUN && dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
 
-$DEBUG && echo "-- partitioning --"
+$DEBUG && echo "-- partitioning --" >&2
 SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
-$DEBUG && echo "-- DISK SIZE: $SIZE bytes --"
+$DEBUG && echo "-- DISK SIZE: $SIZE bytes --" >&2
 TOTALSECTORS=$(expr "$SIZE" / 512)
-$DEBUG && echo "-- TOTAL SECTORS: $TOTALSECTORS --"
+$DEBUG && echo "-- TOTAL SECTORS: $TOTALSECTORS --" >&2
 SECTORS=63
 HEADS=255
 CYLINDERS=$(expr "$TOTALSECTORS" / "$HEADS" / "$SECTORS")
-$DEBUG && echo "-- CYLINDERS: $CYLINDERS --"
+$DEBUG && echo "-- CYLINDERS: $CYLINDERS --" >&2
 SECTORSPERCYLINDER=$(expr "$TOTALSECTORS" / "$CYLINDERS")
-$DEBUG && echo "-- SECTORS PER CYLINDER: $SECTORSPERCYLINDER --"
+$DEBUG && echo "-- SECTORS PER CYLINDER: $SECTORSPERCYLINDER --" >&2
 
 { # run in an anonymous function, not a subprocess
 PSTART=128
@@ -380,15 +385,15 @@ do # calculate sizes of partitions
 #		echo "S2: $S2" >&2
 #		S3=$(expr "$S2" / "$SECTORSPERCYLINDER" )
 #		echo "S3: $S3" >&2
-		PSECTORS=$(expr \( \( "$PSTART" + "$PSECTORS" + "$SECTORSPERCYLINDER" - 1 \) / "$SECTORSPERCYLINDER" \) "*" "$SECTORSPERCYLINDER" - "$PSTART") # round up to end of full cylinder boundary
+#		PSECTORS=$(expr \( \( "$PSTART" + "$PSECTORS" + "$SECTORSPERCYLINDER" - 1 \) / "$SECTORSPERCYLINDER" \) "*" "$SECTORSPERCYLINDER" - "$PSTART") # round up to end of full cylinder boundary
 	else
 		PSECTORS=0	# must be a "none"
 	fi
 #(
-#echo "P: $P"
-#echo "FORMAT: $FORMAT"
-#echo "THISSIZE: $THISSIZE ($TOTALSIZE)"
-#echo "SECTORS: $PSTART + $PSECTORS .. $REMAINING"
+#echo "P: $P" >&2
+#echo "FORMAT: $FORMAT" >&2
+#echo "THISSIZE: $THISSIZE ($TOTALSIZE)" >&2
+#echo "SECTORS: $PSTART + $PSECTORS .. $REMAINING" >&2
 #) >&2
 	case "$FORMAT" in
 		none )
@@ -409,20 +414,20 @@ do # calculate sizes of partitions
 done
 if [ "$TOTALSIZE" != 0 -o "$REMAINING" != 0 ]
 	then
-	echo "error: error in partition calculation"
+	echo "error: error in partition calculation" >&2
 	exit 1
 fi
 } |
 if $DRYRUN
 then
-	cat # echo to stdout
+	cat >&2 # echo to stderr
 else
-	sfdisk --force -D -uS -H "$HEADS" -S "$SECTORS" -C "$CYLINDERS" "$DEV"
+	sfdisk -L --force -D -uS -H "$HEADS" -S "$SECTORS" -C "$CYLINDERS" "$DEV"
 fi
 
 /sbin/partprobe "$DEV"
 
-$DEBUG && echo "-- format partitions --"
+$DEBUG && echo "-- format partitions --" >&2
 
 if ! $DRYRUN
 then
@@ -451,10 +456,12 @@ fi
 
 df # should have been formatted and mounted now
 
-$DEBUG && echo "-- variables --"
-$DEBUG && set
+$DEBUG && echo "-- variables --" >&2
+$DEBUG && set >&2
 
-$DEBUG && echo "-- install --"
+$DEBUG && echo "-- install --" >&2
+
+KERNEL_VERSION=""
 
 for P in 1 2 3 4
 do
@@ -481,12 +488,15 @@ CONFIG=$(getparam "$P" CONFIG)
 if [ "$ROOTFS" != none ]
 then # a rootfs must be installed first so that we can overwrite by a kernel
 
+	$DEBUG && echo "-- fetch rootfs --" >&2
 	ls -l /media/P${P}
+	# run in a subshell so that we can really redirect ouput
 	fetch "$ROOTFS" /dev/fd/1 | ( cd "/media/P${P}" && tar xvjf - )
 fi
 
 if [ "$BOOT" != none ]
 then
+	$DEBUG && echo "-- fetch boot loader --" >&2
 	mkdir -p "$BDEST"
 	# loading some files may fail since they does not exist for the chosen variant - but we ignore
 	fetch "$(dirname "$BOOT")/MLO" "$BDEST/MLO"	# must come first
@@ -505,26 +515,37 @@ fi
 
 if [ "$KERNEL" != none ]
 then
+	$DEBUG && echo "-- fetch kernel --" >&2
 	mkdir -p "$BDEST"
-	fetch "$KERNEL" "$BDEST/$(basename "$KERNEL")"
+	KDEST="$BDEST/$(basename "$KERNEL")"
+	fetch "$KERNEL" "$KDEST"
 	fetch "$(dirname "$KERNEL")/bootargs.scr" "$BDEST/bootargs.scr"
+	KERNEL_VERSION=$(file "$KDEST")
+	KERNEL_VERSION=$(expr "$KERNEL_VERSION" : ".*Linux-\([^,]*\),.*")
+	$DEBUG && echo "-- installed $KERNEL_VERSION --" >&2
 fi
 
 if [ "$DT" != none ]
 then
-	fetch "$DT" /dev/fd/1 | (cd "$BDEST/" && tar xvjf -)
+	$DEBUG && echo "-- fetch device trees --" >&2
+	mkdir -p "$BDEST"
+	fetch "$DT" /dev/fd/1 | ( cd "$BDEST/" && tar xvjf - )
 fi
 
 if [ "$MODULES" != none ]
 then
+	$DEBUG && echo "-- fetch modules --" >&2
 	fetch "$MODULES" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
-	echo "please run depmod -a after first boot and reboot"
-#	KERNEL_VERSION=$($MKIMAGE -l "$BDEST/uImage" | fgrep "Image Name:" | sed 's/Image Name:.*Linux-//')
-#	depmod -b /media/P${P}/ §$KERNEL_VERSION
+	if [ "$KERNEL_VERSION" ] && exists depmod
+	then # run depmod on the installed root for the last kernel we have installed
+		$DEBUG && echo "-- run depmod $KERNEL_VERSION --" >&2
+		depmod -b "/media/P${P}/" "$KERNEL_VERSION"
+	fi
 fi
 
 if [ "$CONFIG" != none ]
 then
+	$DEBUG && echo "-- fetch config patches --" >&2
 	fetch "$CONFIG" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
 fi
 
@@ -532,25 +553,25 @@ ls -l /media/P[1-4]
 
 done
 
-$DEBUG && echo "-- sync --"
+$DEBUG && echo "-- sync --" >&2
 
 sync
 
 if [ "$DEV" ]
 then
-	$DEBUG && echo "-- show mounted partitions --"
+	$DEBUG && echo "-- show mounted partitions --" >&2
 	df
-	$DEBUG && echo "-- unmount --"
+	$DEBUG && echo "-- unmount --" >&2
 	for P in 1 2 3 4
 	do
 		umount ${DEVP}${P} 2>/dev/null
 		rmdir /media/P${P}
 	done
-	$DEBUG && echo "-- fsck --"
+	$DEBUG && echo "-- fsck --" >&2
 	for P in 1 2 3 4
 	do
 		fsck -f ${DEVP}${P}
 	done
 fi
 
-$DEBUG && echo "-- done --"
+$DEBUG && echo "-- done --" >&2
