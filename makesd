@@ -213,7 +213,7 @@ function process() { # $1 .. $n
 			quantumstep )	process -f ext4 -r quantumstep -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			# production images (dual partition) for all hardware variants
-			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" debian-lxde -k none -s 95 ;;
+			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			gta04b2 | l3704 )	process -f fat -s 5 -b "$VARIANT/b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			gta04b3 | l7004 )	process -f fat -s 5 -b "$VARIANT/b3" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			gta04b7 | neo900 )	process -f fat -s 5 -b "$VARIANT/b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
