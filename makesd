@@ -302,26 +302,23 @@ fi
 
 $DEBUG && echo "-- prepare $DEV --" >&2
 
-DEVP=$DEV
-if ! $DRYRUN
+if [ "${DEV}" = "/dev/sda" ]
 then
-	if [ -b "${DEV}p" ]
-	then
-		DEVP=${DEV}p	# needs "p"artition suffix
-		$DEBUG && echo "-- suffix p added --" >&2
-	fi
+	echo "error: refuses to overwrite /dev/sda" >&2
+	exit 1
+fi
 
-	if [ "${DEV}" = "/dev/sda" ]
-	then
-		echo "error: refuses to overwrite /dev/sda" >&2
-		exit 1
-	elif [ -b "$DEV" ]
-	then
-		: ok
-	else
-		echo "error: not a block device: $DEV" >&2
-		exit 1
-	fi
+if ! [ -b "$DEV" ] && ! $DRYRUN
+then
+	echo "error: not a block device: $DEV" >&2
+	exit 1
+fi
+
+DEVP=$DEV
+if [ -b "${DEV}p" ]
+then
+	DEVP=${DEV}p	# card reader expects "p"artition suffix
+	$DEBUG && echo "-- suffix p added --" >&2
 fi
 
 $DEBUG && echo "-- unmount partitions --" >&2
