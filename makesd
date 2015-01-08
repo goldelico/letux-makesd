@@ -315,9 +315,9 @@ then
 fi
 
 DEVP=$DEV
-if [ -b "${DEV}p" ]
+if [ -b "${DEV}p1" ] || expr "${DEV}" : "/dev/mmc.*" >/dev/null
 then
-	DEVP=${DEV}p	# card reader expects "p"artition suffix
+	DEVP=${DEV}p	# MMC card reader expects "p"artition suffix (hard coded into kernel)
 	$DEBUG && echo "-- suffix p added --" >&2
 fi
 
