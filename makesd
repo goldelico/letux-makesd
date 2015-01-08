@@ -307,7 +307,7 @@ if ! $DRYRUN
 then
 	if [ -b "${DEV}p" ]
 	then
-		DEV=${DEV}p	# needs "p"artition suffix
+		DEVP=${DEV}p	# needs "p"artition suffix
 		$DEBUG && echo "-- suffix p added --" >&2
 	fi
 
