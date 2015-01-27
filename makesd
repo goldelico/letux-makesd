@@ -31,20 +31,20 @@ function useage()
 	echo "    -f[0-4] -- switch to given partition - note that another -f will increment by 1"
 	echo "    -s size -- define relative size"
 	echo "    bootloader:"
-	echo "    -b <url>"
-	echo "    -b version"
+	echo "    -b[dir] <url>"
+	echo "    -b[dir] version"
 	echo "    -b none"
 	echo "    kernel:"
-	echo "    -k <url>"
-	echo "    -k version"
+	echo "    -k[dir] <url>"
+	echo "    -k[dir] version"
 	echo "    -k none"
-	echo "    modules (must come after kernel):"
+	echo "    device tree files:"
+	echo "    -d[dir] omap3-gta04a2"
+	echo "    -d[dir] <pattern>"
+	echo "    -d '*'"
+	echo "    modules:"
 	echo "    -m none"
 	echo "    -m version"
-	echo "    device tree files (mst come after kernel):"
-	echo "    -d omap3-gta04a2"
-	echo "    -d <pattern>"
-	echo "    -d '*'"
 	echo "    root file system (OS):"
 	echo "    -r <url>"
 	echo "    -r none"
@@ -135,7 +135,8 @@ function process() { # $1 .. $n
 				shift
 				setparam $NP SIZE "$1"
 				;;
-			-b ) # define boot loader
+			-b* ) # define boot loader
+				setparam $NP BOOTDIR "$(expr "$1" : "-b\(.*\)")"
 				shift
 				$DEBUG && echo "bootloader $1" >&2
 				case "$1" in
@@ -145,7 +146,8 @@ function process() { # $1 .. $n
 				esac
 				setparam $NP BOOT "$P"
 				;;
-			-k ) # define kernel
+			-k* ) # define kernel
+				setparam $NP KERNELDIR "$(expr "$1" : "-k\(.*\)")"
 				shift
 				$DEBUG && echo "kernel $1" >&2
 				case "$1" in
@@ -165,7 +167,8 @@ function process() { # $1 .. $n
 				esac
 				setparam $NP MODULES "$P"
 				;;
-			-d ) # define device trees
+			-d* ) # define device trees
+				setparam $NP DTDIR "$(expr "$1" : "-d\(.*\)")"
 				shift
 				$DEBUG && echo "device trees $1" >&2
 				case "$1" in
@@ -206,11 +209,11 @@ function process() { # $1 .. $n
 				[ "$1" ] && VARIANT="$1"	# overwrite
 				;;
 			# single partition file system(s)
-			debian )	process -f ext4 -r debian -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
-			debian-lxde )	process -f ext4 -r lxde -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
-			qtmoko )	process -f ext4 -r qtmoko -k "$VARIANT" -d "$VARIANT" -m none -c none ;;
+			debian )	process -f ext4 -r debian -kboot "$VARIANT" -dboot "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			debian-lxde )	process -f ext4 -r lxde -kboot "$VARIANT" -dboot "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			qtmoko )	process -f ext4 -r qtmoko -kboot "$VARIANT" -dboot "$VARIANT" -m none -c none ;;
 			replicant )	process -f ext4 -r replicant -k none -d none -m none -c none ;;
-			quantumstep )	process -f ext4 -r quantumstep -k "$VARIANT" -d "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			quantumstep )	process -f ext4 -r quantumstep -kboot "$VARIANT" -dboot "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			# production images (dual partition) for all hardware variants
 			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
@@ -469,14 +472,14 @@ then
 	continue	# skip
 fi
 
-# location on boot partition is depending on format
-[ "$FORMAT" = "fat" ] && BDEST="/media/P${P}" || BDEST="/media/P${P}/boot"
-
 BOOT=$(getparam "$P" BOOT)
-ROOTFS=$(getparam "$P" ROOTFS)
+BOOTDIR="/media/P${P}/$(getparam "$P" BOOTDIR)/"
 KERNEL=$(getparam "$P" KERNEL)
-MODULES=$(getparam "$P" MODULES)
+KERNELDIR="/media/P${P}/$(getparam "$P" KERNELDIR)/"
 DT=$(getparam "$P" DT)
+DTDIR="/media/P${P}/$(getparam "$P" DTDIR)/"
+ROOTFS=$(getparam "$P" ROOTFS)
+MODULES=$(getparam "$P" MODULES)
 CONFIG=$(getparam "$P" CONFIG)
 
 ## FIXME: should also try .tbz and .tgz
@@ -485,7 +488,7 @@ CONFIG=$(getparam "$P" CONFIG)
 if [ "$ROOTFS" != none ]
 then # a rootfs must be installed first so that we can overwrite by a kernel
 
-	$DEBUG && echo "-- fetch rootfs --" >&2
+	$DEBUG && echo "-- fetch rootfs to /media/P${P} --" >&2
 	ls -l /media/P${P}
 	# run in a subshell so that we can really redirect ouput
 	fetch "$ROOTFS" /dev/fd/1 | ( cd "/media/P${P}" && tar xvjf - )
@@ -493,28 +496,28 @@ fi
 
 if [ "$BOOT" != none ]
 then
-	$DEBUG && echo "-- fetch boot loader --" >&2
-	mkdir -p "$BDEST"
+	$DEBUG && echo "-- fetch boot loader to $BOOTDIR --" >&2
+	mkdir -p "$BOOTDIR" || exit 1
 	# loading some files may fail since they does not exist for the chosen variant - but we ignore
-	fetch "$(dirname "$BOOT")/MLO" "$BDEST/MLO"	# must come first
-	fetch "$(dirname "$BOOT")/x-load.flash" "$BDEST/x-load.flash"
-	fetch "$BOOT" "$BDEST/u-boot.bin"
+	fetch "$(dirname "$BOOT")/MLO" "$BOOTDIR/MLO"	# must come first
+	fetch "$(dirname "$BOOT")/x-load.flash" "$BOOTDIR/x-load.flash"
+	fetch "$BOOT" "$BOOTDIR/u-boot.bin"
 	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
-	cp "$BDEST/u-boot.bin" "$BDEST/u-boot.img"
-	fetch "$(dirname "$BOOT")/u-boot.flash" "$BDEST/u-boot.flash"
-	fetch "$(dirname "$BOOT")/splash.rgb16z" "$BDEST/splash.rgb16z"
-	fetch "$(dirname "$BOOT")/menu.rgb16z" "$BDEST/menu.rgb16z"
-	fetch "$(dirname "$BOOT")/boot.scr" "$BDEST/boot.scr"
-	fetch "$(dirname "$BOOT")/boot.txt" "$BDEST/boot.txt"
+	[ -r "$BOOTDIR/u-boot.bin" ] || cp "$BOOTDIR/u-boot.bin" "$BOOTDIR/u-boot.img"
+	fetch "$(dirname "$BOOT")/u-boot.flash" "$BOOTDIR/u-boot.flash"
+	fetch "$(dirname "$BOOT")/splash.rgb16z" "$BOOTDIR/splash.rgb16z"
+	fetch "$(dirname "$BOOT")/menu.rgb16z" "$BOOTDIR/menu.rgb16z"
+	fetch "$(dirname "$BOOT")/boot.scr" "$BOOTDIR/boot.scr"
+	fetch "$(dirname "$BOOT")/boot.txt" "$BOOTDIR/boot.txt"
 fi
 
 ## FIXME: some u-boots want uImage.bin others want uImage.img
 
 if [ "$KERNEL" != none ]
 then
-	$DEBUG && echo "-- fetch kernel --" >&2
-	mkdir -p "$BDEST"
-	KDEST="$BDEST/$(basename "$KERNEL")"
+	$DEBUG && echo "-- fetch kernel to $KERNELDIR --" >&2
+	mkdir -p "$KERNELDIR"
+	KDEST="$KERNELDIR/$(basename "$KERNEL")"
 	fetch "$KERNEL" "$KDEST"
 	fetch "$(dirname "$KERNEL")/bootargs.scr" "$BDEST/bootargs.scr"
 	KERNEL_VERSION=$(file "$KDEST")
@@ -524,14 +527,14 @@ fi
 
 if [ "$DT" != none ]
 then
-	$DEBUG && echo "-- fetch device trees --" >&2
-	mkdir -p "$BDEST"
-	fetch "$DT" /dev/fd/1 | ( cd "$BDEST/" && tar xvjf - )
+	$DEBUG && echo "-- fetch device trees to $DTDIR --" >&2
+	mkdir -p "$DTDIR"
+	fetch "$DT" /dev/fd/1 | ( cd "$DTDIR" && tar xvjf - )
 fi
 
 if [ "$MODULES" != none ]
 then
-	$DEBUG && echo "-- fetch modules --" >&2
+	$DEBUG && echo "-- fetch modules to /media/P${P} --" >&2
 	fetch "$MODULES" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
 	if [ "$KERNEL_VERSION" ] && exists depmod
 	then # run depmod on the installed root for the last kernel we have installed
@@ -542,7 +545,7 @@ fi
 
 if [ "$CONFIG" != none ]
 then
-	$DEBUG && echo "-- fetch config patches --" >&2
+	$DEBUG && echo "-- fetch config patches to /media/P${P} --" >&2
 	fetch "$CONFIG" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
 fi
 
