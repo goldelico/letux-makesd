@@ -220,6 +220,7 @@ function process() { # $1 .. $n
 			gta04b2 | l3704 )	process -f fat -s 5 -b "$VARIANT/b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			gta04b3 | l7004 )	process -f fat -s 5 -b "$VARIANT/b3" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			gta04b7 | neo900 )	process -f fat -s 5 -b "$VARIANT/b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			bb | beagleboard )	process -f fat -s 5 -b "$VARIANT/beagleboard" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			bbb )		process -f fat -s 5 -b "$VARIANT/beagleboneblack" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			bb+b1 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b1" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
 			bb+b2 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
