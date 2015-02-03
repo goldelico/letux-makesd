@@ -539,7 +539,7 @@ then
 	mkdir -p "$KERNELDIR"
 	KDEST="$KERNELDIR/$(basename "$KERNEL")"
 	fetch "$KERNEL" "$KDEST"
-	fetch "$(dirname "$KERNEL")/bootargs.scr" "$BOOTDIR/bootargs.scr"
+	fetch "$(dirname "$KERNEL")/bootargs.scr" "$KERNELDIR/bootargs.scr"
 	KERNEL_VERSION=$(file "$KDEST")
 	KERNEL_VERSION=$(expr "$KERNEL_VERSION" : ".*Linux-\([^,]*\),.*")
 	$DEBUG && echo "-- installed $KERNEL_VERSION --" >&2
