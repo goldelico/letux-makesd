@@ -511,7 +511,11 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	$DEBUG && echo "-- fetch rootfs to /media/P${P} --" >&2
 	ls -l /media/P${P}
 	# run in a subshell so that we can really redirect ouput
-	fetch "$ROOTFS" /dev/fd/1 | ( cd "/media/P${P}" && tar xvjf - )
+	case "$ROOTFS" in
+	*.tgz ) fetch "$ROOTFS" /dev/fd/1 | ( cd "/media/P${P}" && tar xvzf - ) ;;
+	*.tbz ) fetch "$ROOTFS" /dev/fd/1 | ( cd "/media/P${P}" && tar xvjf - ) ;;
+	* )	echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
+	esac
 fi
 
 if [ "$BOOT" != none ]
