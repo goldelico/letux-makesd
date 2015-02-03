@@ -233,6 +233,7 @@ function process() { # $1 .. $n
 			qtmoko )	process -f ext4 -r qtmoko -kboot "$VARIANT" -dboot "$VARIANT" -m none -c none ;;
 			replicant )	process -f ext4 -r replicant -k none -d none -m none -c none ;;
 			quantumstep )	process -f ext4 -r quantumstep -kboot "$VARIANT" -dboot "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+			pyra-os ) process debian -r http://packages.pyra-handheld.com/rootfs/pyra-debian-testing-xfce4-rootfs-2014-12-31_14-56.tgz -c none ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			# production images (dual partition) for all hardware variants
 			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
