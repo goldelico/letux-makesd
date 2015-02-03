@@ -29,6 +29,7 @@ function useage()
 	echo "    -f ext4"
 	echo "    -f none"
 	echo "    -f[0-4] -- switch to given partition - note that another -f will increment by 1"
+	echo "    -F -- go back one partition so that we can specify a macro that starts with -f"
 	echo "    -s size -- define relative size"
 	echo "    bootloader:"
 	echo "    -b[dir] <url>"
@@ -87,6 +88,12 @@ function useage()
 }
 
 function setparam() { # $partition $name $value
+	if [ "$1" -lt 1 -o "$1" -gt 4 ]
+		then
+		echo "invalid partition number $1" >&2
+		useage
+		exit 1
+	fi
 	$DEBUG && echo setparam $1 $2 $3
 	eval $2$1="'$3'"
 }
@@ -112,6 +119,15 @@ function process() { # $1 .. $n
 			-f[0-4] ) # switch to given partition (but don't change type)
 				NP=$(expr "$1" : "-f\(.*\)" )
 				$DEBUG && echo "switched to partition $NP" >&2
+				;;
+			-F ) # switch to previous partition
+				NP=$(expr "$NP" - 1)
+				if [ "$NP" -lt 0 ]
+				then
+					echo "can't go back that far" >&2
+					useage
+					exit 1
+				fi
 				;;
 			-f ) # switch to next partition
 				NP=$(expr "$NP" + 1)
