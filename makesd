@@ -140,12 +140,15 @@ function process() { # $1 .. $n
 				shift
 				setparam $NP FORMAT "$1"
 				setparam $NP SIZE "25"
-				setparam $NP BOOT "none"
-				setparam $NP KERNEL "none"
-				setparam $NP MODULES "none"
-				setparam $NP DT "none"
-				setparam $NP ROOTFS "none"
-				setparam $NP CONFIG "none"
+				if [ "$1" = "none" ]
+					then # don't install anything
+					setparam $NP BOOT "none"
+					setparam $NP KERNEL "none"
+					setparam $NP MODULES "none"
+					setparam $NP DT "none"
+					setparam $NP ROOTFS "none"
+					setparam $NP CONFIG "none"
+				fi
 				;;
 			-s ) # define relative size (typically in %)
 				shift
