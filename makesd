@@ -229,26 +229,26 @@ function process() { # $1 .. $n
 				;;
 			# single partition file system(s)
 			debian )	process -f ext4 -r debian -kboot "$VARIANT" -dboot "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
-			debian-lxde )	process -f ext4 -r lxde -kboot "$VARIANT" -dboot "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
-			qtmoko )	process -f ext4 -r qtmoko -kboot "$VARIANT" -dboot "$VARIANT" -m none -c none ;;
-			replicant )	process -f ext4 -r replicant -k none -d none -m none -c none ;;
-			quantumstep )	process -f ext4 -r quantumstep -kboot "$VARIANT" -dboot "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
-			pyra-os ) process debian -r http://packages.pyra-handheld.com/rootfs/pyra-debian-testing-xfce4-rootfs-2014-12-31_14-56.tgz -c none ;;
+			debian-lxde )	process debian -r lxde ;;
+			qtmoko )	process debian -c none -r qtmoko ;;
+			replicant )	process debian -k none -d none -m none -c none -r replicant ;;
+			quantumstep )	process debian -r quantumstep ;;
+			pyra-os ) process debian -c none -r http://packages.pyra-handheld.com/rootfs/pyra-debian-testing-xfce4-rootfs-2014-12-31_14-56.tgz ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 			# production images (dual partition) for all hardware variants
-			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			gta04b2 | l3704 )	process -f fat -s 5 -b "$VARIANT/b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			gta04b3 | l7004 )	process -f fat -s 5 -b "$VARIANT/b3" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			gta04b7 | neo900 )	process -f fat -s 5 -b "$VARIANT/b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			bb | beagleboard )	process -f fat -s 5 -b "$VARIANT/beagleboard" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			bbb )		process -f fat -s 5 -b "$VARIANT/beagleboneblack" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			bb+b1 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b1" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			bb+b2 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			bb+b4 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b4" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			bb+b5 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
-			panda-es )	process -f fat -s 5 -b "$VARIANT/panda-es" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -s 95 ;;
+			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			gta04b2 | l3704 )	process -f fat -s 5 -b "$VARIANT/b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			gta04b3 | l7004 )	process -f fat -s 5 -b "$VARIANT/b3" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			gta04b7 | neo900 )	process -f fat -s 5 -b "$VARIANT/b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			bb | beagleboard )	process -f fat -s 5 -b "$VARIANT/beagleboard" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			bbb )		process -f fat -s 5 -b "$VARIANT/beagleboneblack" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			bb+b1 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b1" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			bb+b2 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			bb+b4 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b4" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			bb+b5 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
+			panda-es )	process -f fat -s 5 -b "$VARIANT/panda-es" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
 			omap5432evm | pyra )	process -f fat -s 5 -b "$VARIANT/pyra" -k "$VARIANT" -d "$VARIANT" debian-lxde -s 95 ;;
-			openpandora )	process debian-lxde -b "$VARIANT/openpandora" ;;
+			openpandora )	process -b "$VARIANT/openpandora" debian-lxde ;;
 			-* )		echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
 			* )		echo "unknown macro: $1" >&2; useage >&2; exit 1 ;;
 		esac
@@ -314,7 +314,7 @@ done
 
 $DEBUG && echo "-- define defaults --" >&2
 NP=0
-process debian-lxde -f none -f none -f none
+process -f none -f none -f none -f none
 
 if [ "$1" ]
 then
@@ -527,8 +527,7 @@ then
 	fetch "$(dirname "$BOOT")/MLO" "$BOOTDIR/MLO"	# must come first
 	fetch "$(dirname "$BOOT")/x-load.flash" "$BOOTDIR/x-load.flash"
 	fetch "$BOOT" "$BOOTDIR/u-boot.bin"
-	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
-	[ -r "$BOOTDIR/u-boot.bin" ] || cp "$BOOTDIR/u-boot.bin" "$BOOTDIR/u-boot.img"
+	fetch "$BOOT" "$BOOTDIR/u-boot.img"	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
 	fetch "$(dirname "$BOOT")/u-boot.flash" "$BOOTDIR/u-boot.flash"
 	fetch "$(dirname "$BOOT")/splash.rgb16z" "$BOOTDIR/splash.rgb16z"
 	fetch "$(dirname "$BOOT")/menu.rgb16z" "$BOOTDIR/menu.rgb16z"
