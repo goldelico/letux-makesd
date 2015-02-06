@@ -523,16 +523,17 @@ if [ "$BOOT" != none ]
 then
 	$DEBUG && echo "-- fetch boot loader to $BOOTDIR --" >&2
 	mkdir -p "$BOOTDIR" || exit 1
-	# loading some files may fail since they does not exist for the chosen variant - but we ignore
+	# loading some files may fail since they do not exist for the chosen variant - but we ignore
 	fetch "$(dirname "$BOOT")/MLO" "$BOOTDIR/MLO"	# must come first
 	fetch "$(dirname "$BOOT")/x-load.flash" "$BOOTDIR/x-load.flash"
 	fetch "$BOOT" "$BOOTDIR/u-boot.bin"
-	fetch "$BOOT" "$BOOTDIR/u-boot.img"	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
+	fetch "$(dirname "$BOOT")/u-boot.img" "$BOOTDIR/u-boot.img"	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
 	fetch "$(dirname "$BOOT")/u-boot.flash" "$BOOTDIR/u-boot.flash"
 	fetch "$(dirname "$BOOT")/splash.rgb16z" "$BOOTDIR/splash.rgb16z"
 	fetch "$(dirname "$BOOT")/menu.rgb16z" "$BOOTDIR/menu.rgb16z"
 	fetch "$(dirname "$BOOT")/boot.scr" "$BOOTDIR/boot.scr"
 	fetch "$(dirname "$BOOT")/boot.txt" "$BOOTDIR/boot.txt"
+	fetch "$(dirname "$BOOT")/uEnv.txt" "$BOOTDIR/uEnv.txt"
 fi
 
 ## FIXME: some u-boots want uImage.bin others want uImage.img
