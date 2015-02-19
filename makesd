@@ -248,7 +248,7 @@ function process() { # $1 .. $n
 			bb+b7 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
 			panda-es )	process -f fat -s 5 -b "$VARIANT/panda-es" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
 			omap5432evm | pyra )	process -f fat -s 5 -b "$VARIANT/pyra" -k "$VARIANT" -d "$VARIANT" debian-lxde -s 95 ;;
-			openpandora )	process -b "$VARIANT/openpandora" debian-lxde ;;
+			openpandora )	process debian-lxde -b "$VARIANT/openpandora" ;;
 			-* )		echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
 			* )		echo "unknown macro: $1" >&2; useage >&2; exit 1 ;;
 		esac
