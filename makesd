@@ -31,6 +31,7 @@ function useage()
 	echo "    -f[0-4] -- switch to given partition - note that another -f will increment by 1"
 	echo "    -F -- go back one partition so that we can specify a macro that starts with -f"
 	echo "    -s size -- define relative size"
+	echo "	  -p sector -- force start of partition to a specific sector"
 	echo "    bootloader:"
 	echo "    -b[dir] <url>"
 	echo "    -b[dir] version"
@@ -153,6 +154,10 @@ function process() { # $1 .. $n
 			-s ) # define relative size (typically in %)
 				shift
 				setparam $NP SIZE "$1"
+				;;
+			-p ) # define partition start sector
+				shift
+				setparam $NP PSTART "$1"
 				;;
 			-b* ) # define boot loader
 				setparam $NP BOOTDIR "$(expr "$1" : "-b\(.*\)")"
@@ -392,14 +397,23 @@ PSTART=128
 for P in 1 2 3 4
 do # calculate sizes of partitions
 	FORMAT=$(getparam $P FORMAT)
-	REMAINING=$(expr "$TOTALSECTORS" - "$PSTART")
+	PS=$(getparam $P PSTART)
+	[ "$PS" ] || PS=$PSTART
+	REMAINING=$(expr "$TOTALSECTORS" - "$PS")
 	THISSIZE=$(getparam $P SIZE)
+	[ "$FORMAT" = none ] && THISSIZE=0	# overwrite (has not been counted for TOTALSIZE)
 	if [ "$THISSIZE" = "$TOTALSIZE" ]
 	then # last partition
 		PSECTORS="$REMAINING"	# take all remaining sectors
 	elif [ "$TOTALSIZE" -gt 0 ]
 	then # intermediate partition
-		PSECTORS=$(expr \( "$REMAINING" '*' "$THISSIZE" \) / "$TOTALSIZE")
+		PE=$(getparam $(expr $P + 1) PSTART)
+		if [ "$PE" ]
+		then # next sector has specified explicit start
+			PSECTORS=$(expr "$PE" - "$PSTART")
+		else
+			PSECTORS=$(expr \( "$REMAINING" '*' "$THISSIZE" \) / "$TOTALSIZE")
+		fi
 #		S1=$PSECTORS
 #		echo "S1: $S1" >&2
 #		S2=$(expr "$PSTART" + "$S1" + "$SECTORSPERCYLINDER" - 1 )
@@ -410,12 +424,13 @@ do # calculate sizes of partitions
 	else
 		PSECTORS=0	# must be a "none"
 	fi
-#(
-#echo "P: $P" >&2
-#echo "FORMAT: $FORMAT" >&2
-#echo "THISSIZE: $THISSIZE ($TOTALSIZE)" >&2
-#echo "SECTORS: $PSTART + $PSECTORS .. $REMAINING" >&2
-#) >&2
+if $DEBUG
+then
+	echo "P: $P" >&2
+	echo "FORMAT: $FORMAT" >&2
+	echo "THISSIZE: $THISSIZE ($TOTALSIZE)" >&2
+	echo "SECTORS: $PS + $PSECTORS .. $REMAINING" >&2
+fi
 	case "$FORMAT" in
 		none )
 			: skip # (how with sfdisk? do we have to read the current partition sizes)
@@ -423,19 +438,20 @@ do # calculate sizes of partitions
 			;;
 		fat )
 			echo "$PSTART,$PSECTORS,0x0C,*"	# FAT partition (bootable)
-			TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
-			PSTART=$(expr "$PSTART" + "$PSECTORS")
 			;;
 		ext* )
 			echo "$PSTART,$PSECTORS,,-"	# Linux partition
-			TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
-			PSTART=$(expr "$PSTART" + "$PSECTORS")
 			;;
 	esac
+	TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
+	PSTART=$(expr "$PS" + "$PSECTORS")	# calculated start of next partition
 done
 if [ "$TOTALSIZE" != 0 -o "$REMAINING" != 0 ]
 	then
 	echo "error: error in partition calculation" >&2
+        echo "TOTALSIZE: $TOTALSIZE" >&2
+        echo "REMAINING: $REMAINING" >&2
+	echo "did yo specify 4 empfy partitions?" >&2
 	exit 1
 fi
 } |
