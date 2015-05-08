@@ -459,7 +459,7 @@ if $DRYRUN
 then
 	cat >&2 # echo to stderr
 else
-	sfdisk -L --force -D -uS -H "$HEADS" -S "$SECTORS" -C "$CYLINDERS" "$DEV"
+	sfdisk -L --force -uS "$DEV"
 fi
 
 /sbin/partprobe "$DEV"
