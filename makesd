@@ -384,7 +384,8 @@ $DEBUG && echo "-- clear boot record --" >&2
 ! $DRYRUN && dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
 
 $DEBUG && echo "-- partitioning --" >&2
-SIZE=$(LC_ALL=C LANGUAGE=C fdisk -c -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
+SIZE=$(LC_ALL=C LANGUAGE=C fdisk -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
+#SIZE=$(expr 1024 '*' $(sfdisk -s "$DEV"))	# total size in bytes - but why 1024? is this well defined?
 $DEBUG && echo "-- DISK SIZE: $SIZE bytes --" >&2
 TOTALSECTORS=$(expr "$SIZE" / 512)
 $DEBUG && echo "-- TOTAL SECTORS: $TOTALSECTORS --" >&2
