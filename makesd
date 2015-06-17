@@ -465,7 +465,7 @@ else
 	sfdisk -L --force -uS "$DEV"
 fi
 
-/sbin/partprobe "$DEV"
+[ -x /sbin/partprobe ] && /sbin/partprobe "$DEV" || sleep 2
 
 $DEBUG && echo "-- format partitions --" >&2
 
