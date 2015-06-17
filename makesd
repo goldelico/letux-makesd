@@ -271,17 +271,24 @@ function fetch() { # $url $dest
 		echo "fetch $1 -> $2" >&2
 	elif which wget >/dev/null
 	then # wget exists
-		$DEBUG && echo "-- wget -O - $1 >$2 --" >&2
-		if [ -w "$2" ]
-		then # exists and we directly can write (might be /dev/fd/1)
+		if [ "$2" = "-" ]
+		then # to stdout
+			$DEBUG && echo "-- wget -O - $1 --" >&2
+			wget -O - "$1"
+		else
+			$DEBUG && echo "-- wget -O - $1 >$2 --" >&2
 			wget -O - "$1" >"$2"
-		else # write to a temp file and check for complete download
-			wget -O - "$1" >/tmp/$$ && mv /tmp/$$ "$2"
 		fi
 	elif which curl >/dev/null
 	then # try curl
-		$DEBUG && echo "-- curl $1 -o $2 --" >&2
-		curl "$1" -o "$2"
+		if [ "$2" = "-" ]
+		then # to stdout
+			$DEBUG && echo "-- curl $1 --" >&2
+			curl "$1"
+		else
+			$DEBUG && echo "-- curl $1 -o $2 --" >&2
+			curl "$1" -o "$2"
+		fi
 	else
 		echo "error: can't fetch files (needs wget or curl)" >&2
 		exit 1
@@ -533,8 +540,8 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	ls -l /media/P${P}
 	# run in a subshell so that we can really redirect ouput
 	case "$ROOTFS" in
-	*.tgz ) fetch "$ROOTFS" /dev/fd/1 | ( cd "/media/P${P}" && tar xvzf - ) ;;
-	*.tbz ) fetch "$ROOTFS" /dev/fd/1 | ( cd "/media/P${P}" && tar xvjf - ) ;;
+	*.tgz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - ) ;;
+	*.tbz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - ) ;;
 	* )	echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
 	esac
 fi
@@ -574,13 +581,13 @@ if [ "$DT" != none ]
 then
 	$DEBUG && echo "-- fetch device trees to $DTDIR --" >&2
 	mkdir -p "$DTDIR"
-	fetch "$DT" /dev/fd/1 | ( cd "$DTDIR" && tar xvjf - )
+	fetch "$DT" - | ( cd "$DTDIR" && tar xvjf - )
 fi
 
 if [ "$MODULES" != none ]
 then
 	$DEBUG && echo "-- fetch modules to /media/P${P} --" >&2
-	fetch "$MODULES" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
+	fetch "$MODULES" - | (cd "/media/P${P}/" && tar xvzf -)
 	if [ "$KERNEL_VERSION" ] && exists depmod
 	then # run depmod on the installed root for the last kernel we have installed
 		$DEBUG && echo "-- run depmod $KERNEL_VERSION --" >&2
@@ -591,7 +598,7 @@ fi
 if [ "$CONFIG" != none ]
 then
 	$DEBUG && echo "-- fetch config patches to /media/P${P} --" >&2
-	fetch "$CONFIG" /dev/fd/1 | (cd "/media/P${P}/" && tar xvzf -)
+	fetch "$CONFIG" - | (cd "/media/P${P}/" && tar xvzf -)
 fi
 
 ls -l /media/P[1-4]
