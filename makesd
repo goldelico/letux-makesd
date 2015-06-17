@@ -265,7 +265,7 @@ function process() { # $1 .. $n
 	done
 }
 
-function fetch() { # $url $dest
+function fetch() { # $url $dest - make sure that $dest exists only on success
 	$DEBUG && echo "-- fetch $1 $2 --" >&2
 	if $DRYRUN
 	then
@@ -278,7 +278,7 @@ function fetch() { # $url $dest
 			wget -O - "$1"
 		else
 			$DEBUG && echo "-- wget -O - $1 >$2 --" >&2
-			wget -O - "$1" >"$2"
+			wget -O - "$1" >"$2" || rm "$2"
 		fi
 	elif which curl >/dev/null
 	then # try curl
@@ -288,7 +288,7 @@ function fetch() { # $url $dest
 			curl "$1"
 		else
 			$DEBUG && echo "-- curl $1 -o $2 --" >&2
-			curl "$1" -o "$2"
+			curl "$1" -o "$2" || rm "$2"
 		fi
 	else
 		echo "error: can't fetch files (needs wget or curl)" >&2
@@ -526,7 +526,7 @@ for P in 1 2 3 4
 do
 
 FORMAT=$(getparam "$P" FORMAT)
-if [ "$FORMAT" = "none" -o ! -d /media/P${P} ]
+if [ "$FORMAT" = "none" -o "$FORMAT" = "swap" -o ! -d /media/P${P} ]
 then
 	continue	# skip
 fi
