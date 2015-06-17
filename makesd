@@ -122,6 +122,7 @@ function process() { # $1 .. $n
 		case "$1" in
 			-f[0-4] ) # switch to given partition (but don't change type)
 				NP=$(expr "$1" : "-f\(.*\)" )
+				# FIXME: check type!
 				$DEBUG && echo "switched to partition $NP" >&2
 				;;
 			-F ) # switch to previous partition
@@ -372,9 +373,13 @@ do
 			## check if this is the last or only followed by "none"
 			## i.e. there can't be "holes" in the partition numbers
 			;; # skip
-		fat | ext* )
+		fat | ext* | swap )
 			! $DRYRUN && mkdir -p /media/P${P}
 			TOTALSIZE=$(expr "$TOTALSIZE" + "$(getparam $P SIZE)")	# sum up
+			;;
+		* )
+			echo "error: invalid partition type '$(getparam $P FORMAT)' for partition $P" >&2
+			exit 1
 			;;
 	esac
 done
@@ -453,6 +458,9 @@ fi
 		ext* )
 			echo "$PSTART,$PSECTORS,,-"	# Linux partition
 			;;
+		swap )
+			echo "$PSTART,$PSECTORS,82,-"	# Linux swap partition
+			;;
 	esac
 	TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
 	PSTART=$(expr "$PS" + "$PSECTORS")	# calculated start of next partition
@@ -480,7 +488,7 @@ $DEBUG && echo "-- format partitions --" >&2
 if ! $DRYRUN
 then
 for P in 1 2 3 4
-do # format partitions
+do # format and mount partitions
 	umount ${DEVP}${P} 2>/dev/null
 	case "$(getparam $P FORMAT)" in
 		none )
@@ -497,6 +505,9 @@ do # format partitions
 			mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
 			fsck.ext3 -y ${DEVP}${P}
 			mount ${DEVP}${P} /media/P${P} || exit
+			;;
+		swap )
+			mkswap -L "swap$P" ${DEVP}${P}
 			;;
 	esac
 done
