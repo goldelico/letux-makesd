@@ -51,7 +51,7 @@ function useage()
 	echo "    -r <url>"
 	echo "    -r none"
 	echo "    -r debian"
-	echo "    -r debian-lxde"
+	echo "    -r lxde"
 	echo "    -r quantumstep"
 	echo "    -r replicant"
 	echo "    -r qtmoko"
@@ -59,8 +59,8 @@ function useage()
 	echo "    -c <url>"
 	echo "    -c none"
 	echo "    -c debian-wheezy"
-	echo "    choose variant:"
-	echo "    -v variant -- default is 'latest'"
+	echo "    choose variant (only for abbreviations):"
+	echo "    -v variant -- variant (default is 'latest')"
 	echo "    abbreviations for single partition cards:"
 	echo "      debian-lxde = -f ext4 -r debian-lxde -d all -k latest -m latest -c debian-wheezy"
 	echo "      qtmoko = -f ext4 -r qtmoko -d all -k latest (does not need config)"
@@ -82,8 +82,9 @@ function useage()
 	echo "  ./makesd -- makes a single-partition LXDE image"
 	echo "  ./makesd debian-lxde -- also makes a LXDE image"
 	echo "  ./makesd replicant -- makes a single partition replicant image"
-	echo "  ./makesd gta04 -- makes the latest stable production image for the GTA04"
 	echo "  ./makesd all -- makes a 4-partition card"
+	echo "  ./makesd gta04 -- makes the latest stable production (recovery) image for the GTA04"
+	echo "  ./makesd gta04 -f1 -b GTA04/2015-10-25 -- makes the latest image for the GTA04 but use U-Boot from 2015-10-25"
 	echo "  ./makesd -v unstable gta04 -- makes an unstable production image"
 	echo "  ./makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs"
 	echo "  ./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704"
@@ -170,7 +171,8 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/gta04-u-boot/$1/u-boot.bin" ;;
+## FIXME: adapt to latest download server layout
+					* ) P="http://download.goldelico.com/letux-u-boot/$1/u-boot.bin" ;;
 				esac
 				setparam $NP BOOT "$P"
 				;;
@@ -181,7 +183,7 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/gta04-kernel/$1/uImage" ;;
+					* ) P="http://download.goldelico.com/letux-kernel/$1/uImage" ;;
 				esac
 				setparam $NP KERNEL "$P"
 				;;
@@ -191,7 +193,7 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/gta04-kernel/$1/modules.tgz" ;;
+					* ) P="http://download.goldelico.com/letux-kernel/$1/modules.tgz" ;;
 				esac
 				setparam $NP MODULES "$P"
 				;;
@@ -201,8 +203,8 @@ function process() { # $1 .. $n
 				$DEBUG && echo "device trees $1" >&2
 				case "$1" in
 					none ) P="$1";;
-					* ) P="http://download.goldelico.com/gta04-kernel/$1/device-trees.tbz" ;;
-					* ) P="$1";;
+					http://*/* | https://*/* ) P="$1";;
+					* ) P="http://download.goldelico.com/letux-kernel/$1/device-trees.tbz" ;;
 				esac
 				setparam $NP DT "$P"
 				;;
@@ -212,22 +214,23 @@ function process() { # $1 .. $n
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					debian ) P="http://download.goldelico.com/gta04-debian-lxde/${VARIANT}-debian.tbz" ;;
-					lxde ) P="http://download.goldelico.com/gta04-debian-lxde/${VARIANT}-lxde.tbz" ;;
-					qtmoko ) P="http://download.goldelico.com/gta04-qtmoko/${VARIANT}.tbz" ;;
-					replicant ) P="http://download.goldelico.com/gta04-replicant/4.2/${VARIANT}-replicant.tbz" ;;
-					quantumstep ) P="http://download.goldelico.com/quantumstep/debian/${VARIANT}-quantumstep.tbz" ;;
+					debian ) P="http://download.goldelico.com/letux-debian-rootfs/$VARIANT-minimal.tbz" ;;
+					lxde ) P="http://download.goldelico.com/letux-debian-rootfs/$VARIANT-lxde.tbz" ;;
+					xfce ) P="http://download.goldelico.com/letux-debian-rootfs/$VARIANT-xfce4.tbz" ;;
+					qtmoko ) P="http://download.goldelico.com/letux-qtmoko/$VARIANT.tbz" ;;
+					replicant ) P="http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz" ;;
+					quantumstep ) P="http://download.goldelico.com/quantumstep/debian/$VARIANT-quantumstep.tbz" ;;
 					* ) echo "unknown rootfs: $1" >&2; useage; exit 1 ;;
 				esac
 				setparam $NP ROOTFS "$P"
 				;;
-			-c ) # define config
+			-c ) # define additional config
 				shift
 				$DEBUG && echo "config $1" >&2
 				case "$1" in
 					none ) P="$1";;
 					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/gta04-kernel/$1/config.tgz" ;;
+					* ) P="http://download.goldelico.com/letux-debian-rootfs/$1-config.tgz" ;;
 				esac
 				setparam $NP CONFIG "$P"
 				;;
@@ -236,28 +239,35 @@ function process() { # $1 .. $n
 				$DEBUG && echo "variant $1" >&2
 				[ "$1" ] && VARIANT="$1"	# overwrite
 				;;
-			# single partition file system(s)
-			debian )	process -f ext4 -r debian -kboot "$VARIANT" -dboot "$VARIANT" -m "$VARIANT" -c "$VARIANT" ;;
+
+			# single partition file system(s) - should boot if boot loader is in flash/eMMC
+			debian )	process -f ext4 -r debian -kboot latest -dboot latest -m latest -c latest ;;
 			debian-lxde )	process debian -r lxde ;;
+			debian-xfce )	process debian -r xfce ;;
+			quantumstep )	process debian -r quantumstep ;;
 			qtmoko )	process debian -c none -r qtmoko ;;
 			replicant )	process debian -k none -d none -m none -c none -r replicant ;;
-			quantumstep )	process debian -r quantumstep ;;
 			pyra-os ) process debian -c none -r http://packages.pyra-handheld.com/rootfs/pyra-debian-testing-xfce4-rootfs-2014-12-31_14-56.tgz ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
-			# production images (dual partition) for all hardware variants
-			gta04 | l2804 )	process -f fat -s 5 -b "$VARIANT" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			gta04b2 | l3704 )	process -f fat -s 5 -b "$VARIANT/b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			gta04b3 | l7004 )	process -f fat -s 5 -b "$VARIANT/b3" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			gta04b7 | neo900 )	process -f fat -s 5 -b "$VARIANT/b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			bb | beagleboard )	process -f fat -s 5 -b "$VARIANT/beagleboard" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			bbb )		process -f fat -s 5 -b "$VARIANT/beagleboneblack" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			bb+b1 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b1" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			bb+b2 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b2" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			bb+b4 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b4" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			bb+b7 )		process -f fat -s 5 -b "$VARIANT/beagleboard+b7" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			panda-es )	process -f fat -s 5 -b "$VARIANT/panda-es" -k "$VARIANT" -d "$VARIANT" debian-lxde -k none -d none -s 95 ;;
-			omap5432evm | pyra )	process -f fat -s 5 -b "$VARIANT/pyra" -k "$VARIANT" -d "$VARIANT" debian-lxde -s 95 ;;
-			openpandora | pandora )	process debian-lxde -b "$VARIANT/openpandora" ;;
+
+			# production images (dual partition) for specific devices
+			gta04 | l2804 )		process -f fat -s 5 -b GTA04/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			gta04b2 | l3704 )	process -f fat -s 5 -b Letux-3704/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			gta04b3 | l7004 )	process -f fat -s 5 -b Letux-7004/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			gta04b7 | neo900 )	process -f fat -s 5 -b Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			bb | beagleboard )	process -f fat -s 5 -b BeagleBoard/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			bbb )			process -f fat -s 5 -b BeagleBone-Black/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			bb+b1 )			process -f fat -s 5 -b OpenMoko-Beagle-Hybrid/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			bb+b2 )			process -f fat -s 5 -b BeagleBoard+b2/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			bb+b4 )			process -f fat -s 5 -b BeagleBoard+b4/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			bb+b7 )			process -f fat -s 5 -b BeagleBoard+Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			panda-es )		process -f fat -s 5 -b PandaBoard/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			omap5432evm | pyra )	process -f fat -s 5 -b Pyra/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			lc15 )			process -f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+
+			# for Pandora a single partition image can boot
+			openpandora | pandora )	process debian-lxde -B OpenPandora -b "$VARIANT" ;;
+
 			-* )		echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
 			* )		echo "unknown macro: $1" >&2; useage >&2; exit 1 ;;
 		esac
