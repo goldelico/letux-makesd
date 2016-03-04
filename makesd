@@ -74,7 +74,7 @@ function useage()
 	echo "      bb = -f fat -b latest/ beagleboard debian-lxde"
 	echo "      bbb = -f fat -b latest/ beagleboardblack debian-lxde"
 	echo "      panda-es = -f fat -b latest/panda-es debian-lxde"
-	echo "      pyra = -f fat -b latest/ pyra debian-lxde"
+	echo "      pyra = -f fat -b latest/ pyra pyra-os"
 	echo "      openpandora = -f fat -b latest/ openpandora debian-lxde"
 	echo "      all = debian-lxde qtmoko replicant quantumstep"
 	echo ""
@@ -247,7 +247,7 @@ function process() { # $1 .. $n
 			quantumstep )	process debian -r quantumstep ;;
 			qtmoko )	process debian -c none -r qtmoko ;;
 			replicant )	process debian -k none -d none -m none -c none -r replicant ;;
-			pyra-os ) process debian -c none -r http://packages.pyra-handheld.com/rootfs/pyra-debian-testing-xfce4-rootfs-2014-12-31_14-56.tgz ;;
+			pyra-os ) 	process debian -c none -r http://packages.pyra-handheld.com/rootfs/pyra-debian-jessie-xfce-rootfs.tgz ;;
 			all )		process debian-lxde qtmoko replicant quantumstep ;;
 
 			# production images (dual partition) for specific devices
@@ -261,8 +261,9 @@ function process() { # $1 .. $n
 			bb+b2 )			process -f fat -s 5 -b BeagleBoard+b2/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			bb+b4 )			process -f fat -s 5 -b BeagleBoard+b4/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			bb+b7 )			process -f fat -s 5 -b BeagleBoard+Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			panda-es )		process -f fat -s 5 -b PandaBoard/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			omap5432evm | pyra )	process -f fat -s 5 -b Pyra/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			panda-es )		process -f fat -s 5 -b PandaBoard-ES/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			omap5432evm )		process -f fat -s 5 -b OMAP5432-uEVM/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			pyra | pyra+lc15 )	process -f fat -s 5 -b Pyra+LC15/latest -k latest -d latest pyra-os -k none -d none -s 95 ;;
 			lc15 )			process -f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 
 			# for Pandora a single partition image can boot
