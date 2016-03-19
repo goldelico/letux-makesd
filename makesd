@@ -263,7 +263,8 @@ function process() { # $1 .. $n
 			bb+b7 )			process -f fat -s 5 -b BeagleBoard+Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			panda-es )		process -f fat -s 5 -b PandaBoard-ES/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			omap5432evm )		process -f fat -s 5 -b OMAP5432-uEVM/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			pyra | pyra+lc15 )	process -f fat -s 5 -b Pyra+LC15/latest -k latest -d latest pyra-os -k none -d none -s 95 ;;
+			pyra )			process -f fat -s 5 -b Pyra+LC15/latest -k latest -d latest pyra-os -k none -d none -s 95 ;;
+			pyra+lc15 )		process -f fat -s 5 -b Pyra+LC15/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			lc15 )			process -f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 
 			# for Pandora a single partition image can boot
