@@ -380,6 +380,7 @@ TOTALSIZE=0
 for P in 1 2 3 4
 do
 	umount -f ${DEVP}${P} 2>/dev/null
+	wait
 	case "$(getparam $P FORMAT)" in
 		none )
 			## check if this is the last or only followed by "none"
@@ -514,7 +515,7 @@ do # format and mount partitions
 		ext* )
 			# FIXME: make different volume names for different rootfs???
 			PNAME="rootfs"
-			mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
+			yes | mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
 			fsck.ext3 -y ${DEVP}${P}
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
