@@ -509,7 +509,7 @@ do # format and mount partitions
 			;;
 		fat )
 			mkfs.vfat -F 32 -n "boot" ${DEVP}${P} &&
-			fsck.vfat -y ${DEVP}${P}
+			fsck.vfat -a -y ${DEVP}${P}
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
 		ext* )
@@ -646,7 +646,7 @@ then
 	$DEBUG && echo "-- fsck --" >&2
 	for P in 1 2 3 4
 	do
-		fsck -f ${DEVP}${P}
+		fsck -a -f ${DEVP}${P}
 	done
 fi
 
