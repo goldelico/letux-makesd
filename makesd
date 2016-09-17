@@ -10,6 +10,7 @@
 DEBUG=false
 DRYRUN=false
 [ "$VARIANT" ] || VARIANT=latest
+[ "$DEV" ] || DEV="$(cat ~/.makesd.conf 2>/dev/null)"
 [ "$DEV" ] || DEV=/dev/sdc
 
 function useage()
