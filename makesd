@@ -224,7 +224,7 @@ function process() { # $1 .. $n
 					xfce ) P="http://download.goldelico.com/letux-debian-rootfs/$VARIANT-xfce4.tbz" ;;
 					qtmoko ) P="http://download.goldelico.com/letux-qtmoko/$VARIANT.tbz" ;;
 					replicant ) P="http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz" ;;
-					quantumstep ) P="http://download.goldelico.com/quantumstep/debian/$VARIANT-quantumstep.tbz" ;;
+					quantumstep ) P="http://download.goldelico.com/letux-debian-rootfs/$VARIANT-quantumstep.tbz" ;;
 					* ) echo "unknown rootfs: $1" >&2; useage; exit 1 ;;
 				esac
 				setparam $NP ROOTFS "$P"
