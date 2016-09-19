@@ -273,7 +273,7 @@ function process() { # $1 .. $n
 			lc15 )			process -f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 
 			# for Pandora a single partition image can boot
-			openpandora | pandora )	process debian-lxde -B OpenPandora -b "$VARIANT" ;;
+			openpandora | pandora )	process debian-lxde -b OpenPandora/latest ;;
 
 			-* )		echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
 			* )		echo "unknown macro: $1" >&2; useage >&2; exit 1 ;;
