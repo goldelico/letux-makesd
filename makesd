@@ -15,82 +15,86 @@ DRYRUN=false
 
 function useage()
 {
-	echo "useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [partition2 [partition3 [partition4]]]]"
-	echo
-	echo "  DEV=/dev/device - specify the raw device (not the partitions), e.g. /dev/sdc"
-	echo "  general options:"
-	echo "  partition:"
-	echo "    -u | --update -- selfudate"
-	echo "    --dry -- dry run (don't touch SD card)"
-	echo "    --debug -- print internal activities and status"
-	echo "    --help -- print this help"
-	echo "    format (starts next partition):"
-	echo "    -f fat"
-	echo "    -f ext3"
-	echo "    -f ext4"
-	echo "    -f none"
-	echo "    -f[0-4] -- switch to given partition - note that another -f will increment by 1"
-	echo "    -F -- go back one partition so that we can specify a macro that starts with -f"
-	echo "    -s size -- define relative size"
-	echo "	  -p sector -- force start of partition to a specific sector"
-	echo "    bootloader:"
-	echo "    -b[dir] <url>"
-	echo "    -b[dir] version"
-	echo "    -b none"
-	echo "    kernel:"
-	echo "    -k[dir] <url>"
-	echo "    -k[dir] version"
-	echo "    -k none"
-	echo "    device tree files:"
-	echo "    -d[dir] omap3-gta04a2"
-	echo "    -d[dir] <pattern>"
-	echo "    -d '*'"
-	echo "    modules:"
-	echo "    -m none"
-	echo "    -m version"
-	echo "    root file system (OS):"
-	echo "    -r <url>"
-	echo "    -r none"
-	echo "    -r debian"
-	echo "    -r lxde"
-	echo "    -r quantumstep"
-	echo "    -r replicant"
-	echo "    -r qtmoko"
-	echo "    config patches:"
-	echo "    -c <url>"
-	echo "    -c none"
-	echo "    -c debian-wheezy"
-	echo "    choose variant (only for abbreviations):"
-	echo "    -v variant -- variant (default is 'latest')"
-	echo "    abbreviations for single partition cards:"
-	echo "      debian-lxde = -f ext4 -r debian-lxde -d all -k latest -m latest -c debian-wheezy"
-	echo "      qtmoko = -f ext4 -r qtmoko -d all -k latest (does not need config)"
-	echo "      replicant = -f ext4 -d all -r replicant-4.2 (has its own kernel)"
-	echo "      quantumstep = -f ext4 -r quantumstep -d all -k latest -m latest -c debian-wheezy"
-	echo "    abbreviations for multiple partitions (to create bootable production image SD card):"
-	echo "      gta04 | l2804 = -f fat -b latest debian-lxde"
-	echo "      gta04b2 | l3704 = -f fat -b latest/b2 debian-lxde"
-	echo "      gta04b3 | l7004 = -f fat -b latest/b3 debian-lxde"
-	echo "      gta04b7 | neo900 = -f fat -b latest/b7 debian-lxde"
-	echo "      bb = -f fat -b latest/ beagleboard debian-lxde"
-	echo "      bbb = -f fat -b latest/ beagleboardblack debian-lxde"
-	echo "      panda-es = -f fat -b latest/panda-es debian-lxde"
-	echo "      pyra = -f fat -b latest/ pyra pyra-os"
-	echo "      openpandora = -f fat -b latest/ openpandora debian-lxde"
-	echo "      all = debian-lxde qtmoko replicant quantumstep"
-	echo ""
-	echo "examples:"
-	echo "  ./makesd -- makes a single-partition LXDE image"
-	echo "  ./makesd debian-lxde -- also makes a LXDE image"
-	echo "  ./makesd replicant -- makes a single partition replicant image"
-	echo "  ./makesd all -- makes a 4-partition card"
-	echo "  ./makesd gta04 -- makes the latest stable production (recovery) image for the GTA04"
-	echo "  ./makesd gta04 -f1 -b GTA04/2015-10-25 -- makes the latest image for the GTA04 but use U-Boot from 2015-10-25"
-	echo "  ./makesd -v unstable gta04 -- makes an unstable production image"
-	echo "  ./makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs"
-	echo "  ./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704"
-	echo "  DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)"
-	echo "  ./makesd -u -- self-update"
+	cat <<END
+useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [partition2 [partition3 [partition4]]]]"
+
+  DEV=/dev/device - specify the raw device (not the partitions), e.g. /dev/sdc
+  general options:
+  partition:
+    -u | --update -- selfudate
+    --dry -- dry run (don't touch SD card)
+    --debug -- print internal activities and status
+    --help -- print this help
+    format (starts next partition):
+    -f fat
+    -f ext3
+    -f ext4
+    -f none
+    -f[0-4] -- switch to given partition - note that another -f will increment by 1
+    -F -- go back one partition so that we can specify a macro that starts with -f
+    -s size -- define relative size
+	  -p sector -- force start of partition to a specific sector
+    bootloader:
+    -b[dir] <url>
+    -b[dir] version
+    -b none
+    kernel:
+    -k[dir] <url>
+    -k[dir] version
+    -k none
+    device tree files:
+    -d[dir] omap3-gta04a2
+    -d[dir] <pattern>
+    -d *
+    modules:
+    -m none
+    -m version
+    root file system (OS):
+    -r <url>
+    -r none
+    -r debian
+    -r lxde
+    -r quantumstep
+    -r replicant
+    -r qtmoko
+    config patches:
+    -c <url>
+    -c none
+    -c debian-wheezy
+    choose variant (only for abbreviations):
+    -v variant -- variant (default is 'latest')
+    abbreviations for single partition cards:
+      debian-lxde = -f ext4 -r debian-lxde -d all -k latest -m latest -c latest
+      qtmoko = -f ext4 -r qtmoko -d all -k latest (does not need config)
+      replicant = -f ext4 -d all -r replicant-4.2 (has its own kernel)
+      quantumstep = -f ext4 -r quantumstep -d all -k latest -m latest -c latest
+    abbreviations for multiple partitions (to create bootable production image SD card):
+      gta04 | l2804 = -f fat -b latest debian-lxde
+      gta04b2 | l3704 = -f fat -b latest/b2 debian-lxde
+      gta04b3 | l7004 = -f fat -b latest/b3 debian-lxde
+      gta04b7 | neo900 = -f fat -b latest/b7 debian-lxde
+      bb = -f fat -b latest/ beagleboard debian-lxde
+      bbb = -f fat -b latest/ beagleboardblack debian-lxde
+      panda-es = -f fat -b latest/panda-es debian-lxde
+      pyra = -f fat -b latest/ pyra pyra-os
+      openpandora = -f fat -b latest/ openpandora debian-lxde
+      all = debian-lxde qtmoko replicant quantumstep
+
+examples:"
+  ./makesd -- makes a single-partition LXDE image
+  ./makesd debian-lxde -- also makes a LXDE image
+  ./makesd replicant -- makes a single partition replicant image
+  ./makesd all -- makes a 4-partition card
+  ./makesd gta04 -- makes the latest stable production (recovery) image for the GTA04
+  ./makesd gta04 -f1 -b GTA04/2015-10-25 -- makes the latest image for the GTA04 but use U-Boot from 2015-10-25
+  ./makesd -v unstable gta04 -- makes an unstable production image
+  ./makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs
+  ./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704
+  DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)
+  ./makesd -u -- self-update
+  DEV=/dev/sdd ./makesd omap5432evm -f1 -b OMAP5432-uEVM/2016-05-10 -k letux-4.8-rc6 -d letux-4.8-rc6 -f2 -m letux-4.8-rc6 xfce
+
+END
 }
 
 function setparam() { # $partition $name $value
