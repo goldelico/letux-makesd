@@ -357,6 +357,24 @@ then
 	process "$@" || exit 1
 fi
 
+for P in 1 2 3 4
+do
+	FORMAT="$(getparam "$P" FORMAT)"
+	SIZE="$(getparam "$P" SIZE)"
+	[ "$FORMAT" = none ] && SIZE=0
+	BOOT="$(getparam "$P" BOOT)"
+	[ "$BOOT" != none ] && BOOT="$(dirname "$BOOT")/*" # remove u-boot.bin and replace
+	BOOTDIR=/"$(getparam "$P" BOOTDIR)"
+	KERNEL="$(getparam "$P" KERNEL)"
+	KERNELDIR="/$(getparam "$P" KERNELDIR)"
+	DT="$(getparam "$P" DT)"
+	DTDIR="/$(getparam "$P" DTDIR)"
+	ROOTFS="$(getparam "$P" ROOTFS)"
+	MODULES="$(getparam "$P" MODULES)"
+	CONFIG="$(getparam "$P" CONFIG)"
+	echo "$P: $FORMAT $SIZE% b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
+done
+
 $DEBUG && echo "-- prepare $DEV --" >&2
 
 if [ "${DEV}" = "/dev/sda" ]
