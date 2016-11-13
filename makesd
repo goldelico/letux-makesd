@@ -270,6 +270,7 @@ function process() { # $1 .. $n
 			gta04b7 | neo900 )	process -f fat -s 5 -b Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			bb | beagleboard )	process -f fat -s 5 -b Letux-BeagleBoard/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			bbb )			process -f fat -s 5 -b Letux-BeagleBone-Black/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			lc8 )			process -f fat -s 5 -b Letux-Cortex-8/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			bb+b1 )			process -f fat -s 5 -b OpenMoko-Beagle-Hybrid/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			bb+b2 )			process -f fat -s 5 -b Openmoko-Beagle-Hybrid-b2/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			bb+b4 )			process -f fat -s 5 -b Openmoko-Beagle-Hybrid-b4/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
