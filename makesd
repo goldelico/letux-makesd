@@ -13,6 +13,9 @@ DRYRUN=false
 [ "$DEV" ] || DEV="$(cat ~/.makesd.conf 2>/dev/null)"
 [ "$DEV" ] || DEV=/dev/sdc
 
+## FIXME:
+## setup list of macros here so that we can use them during "help"
+
 function useage()
 {
 	cat <<END
@@ -245,6 +248,10 @@ function process() { # $1 .. $n
 				[ "$1" ] && VARIANT="$1"	# overwrite
 				;;
 
+## FIXME:
+## register these scripts in a small associative mapping
+## which allows to print the up-to-date list during help
+##
 			# single partition file system(s) - should boot if boot loader is in flash/eMMC
 			debian )	process -f ext4 -r debian -kboot latest -dboot latest -m latest -c latest ;;
 			debian-lxde )	process debian -r lxde ;;
@@ -280,7 +287,11 @@ function process() { # $1 .. $n
 			openpandora | pandora )	process debian-lxde -b OpenPandora/latest ;;
 
 			-* )		echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
-			* )		echo "unknown macro: $1" >&2; useage >&2; exit 1 ;;
+			* )
+## FIXME:
+## look up macros here
+##
+				echo "unknown macro: $1" >&2; useage >&2; exit 1 ;;
 		esac
 		shift
 	done
