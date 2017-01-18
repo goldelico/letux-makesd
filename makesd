@@ -73,6 +73,7 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
       quantumstep = -f ext4 -r quantumstep -d all -k latest -m latest -c latest
     abbreviations for multiple partitions (to create bootable production image SD card):
       gta04 | l2804 = -f fat -b latest debian-lxde
+      gta04one | gta04a5 = -f fat -b latest/GTA04A5 debian-lxde
       gta04b2 | l3704 = -f fat -b latest/b2 debian-lxde
       gta04b3 | l7004 = -f fat -b latest/b3 debian-lxde
       gta04b7 | neo900 = -f fat -b latest/b7 debian-lxde
@@ -264,7 +265,7 @@ function process() { # $1 .. $n
 
 			# production images (dual partition) for specific devices
 			gta04 | l2804 )		process -f fat -s 5 -b GTA04/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			gta04a5 | l2804-5 )	process -f fat -s 5 -b GTA04A5/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+			gta04one | gta04a5 | l2804a5 )	process -f fat -s 5 -b GTA04-OneNAND/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			gta04b2 | l3704 )	process -f fat -s 5 -b Letux-3704/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			gta04b3 | l7004 )	process -f fat -s 5 -b Letux-7004/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
 			gta04b7 | neo900 )	process -f fat -s 5 -b Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
@@ -616,9 +617,11 @@ then
 	# loading some files may fail since they do not exist for the chosen variant - but we ignore
 	fetch "$(dirname "$BOOT")/MLO" "$BOOTDIR/MLO"	# must come first
 	fetch "$(dirname "$BOOT")/x-load.flash" "$BOOTDIR/x-load.flash"
+	fetch "$(dirname "$BOOT")/MLO.flash" "$BOOTDIR/MLO.flash"
 	fetch "$BOOT" "$BOOTDIR/u-boot.bin"
 	fetch "$(dirname "$BOOT")/u-boot.img" "$BOOTDIR/u-boot.img"	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
 	fetch "$(dirname "$BOOT")/u-boot.flash" "$BOOTDIR/u-boot.flash"
+	fetch "$(dirname "$BOOT")/u-boot.img.flash" "$BOOTDIR/u-boot.img.flash"
 	fetch "$(dirname "$BOOT")/splash.rgb16z" "$BOOTDIR/splash.rgb16z"
 	fetch "$(dirname "$BOOT")/menu.rgb16z" "$BOOTDIR/menu.rgb16z"
 	fetch "$(dirname "$BOOT")/boot.scr" "$BOOTDIR/boot.scr"
