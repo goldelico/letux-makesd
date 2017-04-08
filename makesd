@@ -19,6 +19,57 @@ CMDLINE="$0 $@"		# how makesd was called
 ## FIXME:
 ## setup list of macros here so that we can use them during "help"
 
+function macros()
+{
+# format: macro-name macro-body
+# it is valid to use shell variables in the body since they are expanded by the here-document
+# comments (lines starting with "# " can be used and are ignored
+# macros can be recursive
+
+cat <<END
+# single partition file system(s) - should boot if boot loader is in flash/eMMC
+debian			-f ext4 -r debian -kboot latest -dboot latest -m latest -c latest ;;
+debian-lxde		debian -r lxde ;;
+debian-xfce		debian -r xfce ;;
+quantumstep		debian -r quantumstep ;;
+qtmoko			debian -c none -r qtmoko ;;
+replicant		debian -k none -d none -m none -c none -r replicant ;;
+pyra-os			debian -c none -r http://packages.pyra-handheld.com/rootfs/pyra-debian-jessie-xfce-rootfs.tgz ;;
+all 			debian-lxde qtmoko replicant quantumstep ;;
+# production images (dual partition) for specific devices
+gta04			-f fat -s 5 -b GTA04/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+l2804			gta04
+gta04one		-f fat -s 5 -b GTA04-OneNAND/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+gta04a5			gta04one
+l2804a5			gta04one
+gta04b2			-f fat -s 5 -b Letux-3704/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+l3704			gta04b2
+gta04b3			-f fat -s 5 -b Letux-7004/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+l7004			gta04b3
+gta04b7			-f fat -s 5 -b Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+neo900			gta04b7
+bb			-f fat -s 5 -b Letux-BeagleBoard/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+beagleboard		bb
+bbb			-f fat -s 5 -b Letux-BeagleBone-Black/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+lc8			-f fat -s 5 -b Letux-Cortex-8/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+bb+b1			-f fat -s 5 -b OpenMoko-Beagle-Hybrid/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+bb+b2			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b2/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+bb+b4			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b4/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+bb+b7			-f fat -s 5 -b BeagleBoard-Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+panda-es		-f fat -s 5 -b PandaBoard-ES/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+omap5432evm		-f fat -s 5 -b OMAP5-uEVM/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+omap5432evm+pyra	-f fat -s 5 -b OMAP5-uEVM+Pyra4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+pyra			-f fat -s 5 -b Pyra+LC15/latest -k latest -d latest pyra-os -k none -d none -s 95 ;;
+pyra+lc15		-f fat -s 5 -b Pyra+LC15/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+pyra+lc15-4.9		-f fat -s 5 -b Pyra+LC15-4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+lc15			-f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+lc15-4.9		-f fat -s 5 -b Letux-Cortex-15-4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
+# for Pandora a single partition image can boot
+openpandora		debian-lxde -b OpenPandora/latest ;;
+pandora			openpandora
+END
+}
+
 function useage()
 {
 	cat <<END
@@ -299,10 +350,25 @@ function process() { # $1 .. $n
 
 			-* )		echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
 			* )
-## FIXME:
-## look up macros here
-##
-				echo "unknown macro: $1" >&2; useage >&2; exit 1 ;;
+				FOUND=false
+				macros | while read MACRO COMMAND
+				do
+					case "$MACRO" in
+						'' | '#' | '#'* ) continue;;
+						* )
+							if [ "$MACRO" = "$1" ]
+							then # found
+								FOUND=true
+								process $COMMAND
+								break
+							fi
+							;;
+					esac
+				done
+				if ! $FOUND
+				then
+					echo "unknown macro: $1" >&2; useage >&2; exit 1 ;;
+				fi
 		esac
 		shift
 	done
