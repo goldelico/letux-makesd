@@ -9,6 +9,9 @@
 
 DEBUG=false
 DRYRUN=false
+CMDLINE="$0 $@"		# how makesd was called
+[ "$DEV" ] && CMDLINE="DEV=$DEV $CMDLINE"
+
 [ "$VARIANT" ] || VARIANT=latest
 [ "$DEV" ] || DEV="$(cat ~/.makesd.conf 2>/dev/null)"
 [ "$DEV" ] || DEV=/dev/sdc
@@ -23,35 +26,40 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
 
   DEV=/dev/device - specify the raw device (not the partitions), e.g. /dev/sdc
   general options:
-  partition:
-    -u | --update -- selfudate
-    --dry -- dry run (don't touch SD card)
+
     --debug -- print internal activities and status
+    --dry -- dry run (don't touch SD card)
     --help -- print this help
+    -u | --update -- selfudate
+
+  partition:
     format (starts next partition):
     -f fat
     -f ext3
     -f ext4
     -f none
     -f[0-4] -- switch to given partition - note that another -f will increment by 1
-    -F -- go back one partition so that we can specify a macro that starts with -f
+    -F -- go back one partition so that we can specify a macro that contains a -f
     -s size -- define relative size
 	  -p sector -- force start of partition to a specific sector
     bootloader:
     -b[dir] <url>
     -b[dir] version
     -b none
+    device tree files:
+    -d[dir] <url>
+    -d[dir] version
+    -d none
     kernel:
     -k[dir] <url>
     -k[dir] version
     -k none
-    device tree files:
-    -d[dir] omap3-gta04a2
-    -d[dir] <pattern>
-    -d *
     modules:
-    -m none
     -m version
+    -m none
+    config patches:
+    -c <url>
+    -c none
     root file system (OS):
     -r <url>
     -r none
@@ -60,18 +68,16 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -r quantumstep
     -r replicant
     -r qtmoko
-    config patches:
-    -c <url>
-    -c none
-    -c debian-wheezy
-    choose variant (only for abbreviations):
-    -v variant -- variant (default is 'latest')
-    abbreviations for single partition cards:
-      debian-lxde = -f ext4 -r debian-lxde -d all -k latest -m latest -c latest
+    -r pyra
+    -v variant -- choose different variant for -r (default is 'latest')
+
+    macros for single partition cards:
+      debian-lxde = -f ext4 -r lxde -d all -k latest -m latest -c latest
       qtmoko = -f ext4 -r qtmoko -d all -k latest (does not need config)
       replicant = -f ext4 -d all -r replicant-4.2 (has its own kernel)
       quantumstep = -f ext4 -r quantumstep -d all -k latest -m latest -c latest
-    abbreviations for multiple partitions (to create bootable production image SD card):
+
+    macros for multiple partitions (to create bootable production image SD card):
       gta04 | l2804 = -f fat -b latest debian-lxde
       gta04one | gta04a5 = -f fat -b latest/GTA04A5 debian-lxde
       gta04b2 | l3704 = -f fat -b latest/b2 debian-lxde
@@ -89,14 +95,17 @@ examples:"
   ./makesd debian-lxde -- also makes a LXDE image
   ./makesd replicant -- makes a single partition replicant image
   ./makesd all -- makes a 4-partition card
-  ./makesd gta04 -- makes the latest stable production (recovery) image for the GTA04
+  ./makesd gta04 -- makes the latest stable production (recovery) image for the GTA04 (includes boot loader)
   ./makesd gta04 -f1 -b GTA04/2015-10-25 -- makes the latest image for the GTA04 but use U-Boot from 2015-10-25
+  ./makesd gta04 -d letux-4.10.4 -k letux-4.10.4 -m letux-4.10.4-- replace DT, kernel and modules by specific version
+  ./makesd pyra -c none -r http://download.goldelico.com/letux-debian-rootfs/latest-pyra.tbz -- install latest PyraOS
   ./makesd -v unstable gta04 -- makes an unstable production image
   ./makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs
   ./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704
   DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)
   ./makesd -u -- self-update
   DEV=/dev/sdd ./makesd omap5432evm -f1 -b OMAP5432-uEVM/2016-05-10 -k letux-4.8-rc6 -d letux-4.8-rc6 -f2 -m letux-4.8-rc6 xfce
+  DEV=/dev/sdb ./makesd pyra -f1 -k letux-4.11-rc4 -d letux-4.11-rc4 -v 20170401-jessie-8.7 debian-lxde -m etux-4.11-rc4
 
 END
 }
@@ -532,6 +541,7 @@ then
 	cat >&2 # echo to stderr
 else
 	sfdisk -L --force -uS "$DEV"
+	sleep 1
 fi
 
 [ -x /sbin/partprobe ] && /sbin/partprobe "$DEV" || sleep 2
@@ -627,6 +637,7 @@ then
 	fetch "$(dirname "$BOOT")/boot.scr" "$BOOTDIR/boot.scr"
 	fetch "$(dirname "$BOOT")/boot.txt" "$BOOTDIR/boot.txt"
 	fetch "$(dirname "$BOOT")/uEnv.txt" "$BOOTDIR/uEnv.txt"
+	echo "$CMDLINE" >"$BOOTDIR/makesd.call"	# so that we can easily find out for which device this is formatted
 fi
 
 ## FIXME: some u-boots want uImage.bin others want uImage.img
@@ -682,6 +693,7 @@ then
 	$DEBUG && echo "-- unmount --" >&2
 	for P in 1 2 3 4
 	do
+		sync
 		umount ${DEVP}${P} 2>/dev/null
 		rmdir /media/P${P}
 	done
