@@ -111,9 +111,10 @@ END
 
 function lookup()
 {
-# "$1" is key
-# returns expanded macro or empty string if not found
+	# "$1" is key
+	# returns expanded macro or empty string if not found
 	# pass our $1 after stripping -? to $1 within here-document
+	local MACRO COMMAND
 	macros $(expr "$1" : "-.\(.*\)") | {
 		while read MACRO COMMAND
 		do
@@ -228,7 +229,8 @@ examples:"
 END
 }
 
-function setparam() { # $partition $name $value
+function setparam()
+{ # $partition $name $value
 	if [ "$1" -lt 1 -o "$1" -gt 4 ]
 		then
 		echo "invalid partition number $1" >&2
@@ -239,21 +241,13 @@ function setparam() { # $partition $name $value
 	eval $2$1="'$3'"
 }
 
-function getparam() { # $partition $name
+function getparam()
+{ # $partition $name
 	eval echo \$$2$1
 }
 
-setparam 2 KERNEL 1234
-_TESTME=$(getparam 2 KERNEL)
-if [ "$_TESTME" != 1234 ]
-then
-	echo "error: getparam and setparam did not pass internal test - please check shell or script" >&2
-	set
-	exit
-fi
-unset _TESTME
-
-function process() { # $1 .. $n
+function process()
+{ # $1 .. $n
 	while [ "$1" ]
 		do
 		case "$1" in
@@ -304,7 +298,7 @@ function process() { # $1 .. $n
 				setparam $NP BOOTDIR "$(expr "$1" : "-b\(.*\)")"
 				shift
 				$DEBUG && echo "bootloader $1" >&2
-				P=$(lookup "-b$1")
+				local P=$(lookup "-b$1")
 				if [ ! "$P" ]
 				then
 					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
@@ -315,7 +309,7 @@ function process() { # $1 .. $n
 				setparam $NP KERNELDIR "$(expr "$1" : "-k\(.*\)")"
 				shift
 				$DEBUG && echo "kernel $1" >&2
-				P=$(lookup "-k$1")
+				local P=$(lookup "-k$1")
 				if [ ! "$P" ]
 				then
 					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
@@ -325,7 +319,7 @@ function process() { # $1 .. $n
 			-m ) # define modules
 				shift
 				$DEBUG && echo "modules $1" >&2
-				P=$(lookup "-m$1")
+				local P=$(lookup "-m$1")
 				if [ ! "$P" ]
 				then
 					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
@@ -336,7 +330,7 @@ function process() { # $1 .. $n
 				setparam $NP DTDIR "$(expr "$1" : "-d\(.*\)")"
 				shift
 				$DEBUG && echo "device trees $1" >&2
-				P=$(lookup "-d$1")
+				local P=$(lookup "-d$1")
 				if [ ! "$P" ]
 				then
 					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
@@ -346,7 +340,7 @@ function process() { # $1 .. $n
 			-r ) # define root file system
 				shift
 				$DEBUG && echo "rootfs $1" >&2
-				P=$(lookup "-r$1")
+				local P=$(lookup "-r$1")
 				if [ ! "$P" ]
 				then
 					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
@@ -356,7 +350,7 @@ function process() { # $1 .. $n
 			-c ) # define additional config
 				shift
 				$DEBUG && echo "config $1" >&2
-				P=$(lookup "-c$1")
+				local P=$(lookup "-c$1")
 				if [ ! "$P" ]
 				then
 					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
@@ -372,7 +366,7 @@ function process() { # $1 .. $n
 			-* )
 				echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
 			* )
-				COMMAND=$(lookup "$1")
+				local COMMAND=$(lookup "$1")
 				if [ "$COMMAND" ]
 				then
 					process $COMMAND
@@ -385,7 +379,8 @@ function process() { # $1 .. $n
 	done
 }
 
-function fetch() { # $url $dest - make sure that $dest exists only on success
+function fetch()
+{ # $url $dest - make sure that $dest exists only on success
 	$DEBUG && echo "-- fetch $1 $2 --" >&2
 	if $DRYRUN
 	then
@@ -416,9 +411,42 @@ function fetch() { # $url $dest - make sure that $dest exists only on success
 	fi
 }
 
-function exists() { # check if tool exists
+function exists()
+{ # check if tool exists
 	which $1 2>/dev/null
 }
+
+function partitions()
+{ # print partition table
+	local P
+	for P in 1 2 3 4
+	do
+		FORMAT="$(getparam "$P" FORMAT)"
+		SIZE="$(getparam "$P" SIZE)"
+		[ "$FORMAT" = none ] && SIZE=0
+		BOOT="$(getparam "$P" BOOT)"
+		[ "$BOOT" != none ] && BOOT="$(dirname "$BOOT")/*" # remove u-boot.bin and replace
+		BOOTDIR=/"$(getparam "$P" BOOTDIR)"
+		KERNEL="$(getparam "$P" KERNEL)"
+		KERNELDIR="/$(getparam "$P" KERNELDIR)"
+		DT="$(getparam "$P" DT)"
+		DTDIR="/$(getparam "$P" DTDIR)"
+		ROOTFS="$(getparam "$P" ROOTFS)"
+		MODULES="$(getparam "$P" MODULES)"
+		CONFIG="$(getparam "$P" CONFIG)"
+		echo "$P: $FORMAT $SIZE% b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
+	done
+}
+
+setparam 2 KERNEL 1234
+_TESTME=$(getparam 2 KERNEL)
+if [ "$_TESTME" != 1234 ]
+then
+	echo "error: getparam and setparam did not pass internal test - please check shell or script" >&2
+	set
+	exit
+fi
+unset _TESTME
 
 while [ "$1" ]
 do
@@ -460,23 +488,7 @@ then
 	process "$@" || exit 1
 fi
 
-for P in 1 2 3 4
-do
-	FORMAT="$(getparam "$P" FORMAT)"
-	SIZE="$(getparam "$P" SIZE)"
-	[ "$FORMAT" = none ] && SIZE=0
-	BOOT="$(getparam "$P" BOOT)"
-	[ "$BOOT" != none ] && BOOT="$(dirname "$BOOT")/*" # remove u-boot.bin and replace
-	BOOTDIR=/"$(getparam "$P" BOOTDIR)"
-	KERNEL="$(getparam "$P" KERNEL)"
-	KERNELDIR="/$(getparam "$P" KERNELDIR)"
-	DT="$(getparam "$P" DT)"
-	DTDIR="/$(getparam "$P" DTDIR)"
-	ROOTFS="$(getparam "$P" ROOTFS)"
-	MODULES="$(getparam "$P" MODULES)"
-	CONFIG="$(getparam "$P" CONFIG)"
-	echo "$P: $FORMAT $SIZE% b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
-done
+partitions
 
 $DEBUG && echo "-- prepare $DEV --" >&2
 
@@ -501,8 +513,10 @@ fi
 
 $DEBUG && echo "-- unmount partitions --" >&2
 
+function totalsize()
+{ # also create mount points!
+local P
 TOTALSIZE=0
-
 for P in 1 2 3 4
 do
 	umount -f ${DEVP}${P} 2>/dev/null
@@ -522,19 +536,25 @@ do
 			;;
 	esac
 done
+}
+
+totalsize
 
 ls -l /media/P[1-4]
 
 $DEBUG && echo "-- total size $TOTALSIZE --" >&2
 
+$DEBUG && echo "-- clear boot record --" >&2
+! $DRYRUN && dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
+
 ## the following code is roughly
 ## based on: http://omappedia.org/wiki/SD_Configuration#Script_to_partition.2Fformat_SDCards
 ## and: http://www.sakoman.com/OMAP/a-script-for-partitioningformatting-a-bootable-sdmicrosd-card.html
 
-$DEBUG && echo "-- clear boot record --" >&2
-! $DRYRUN && dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
-
 $DEBUG && echo "-- partitioning --" >&2
+
+function sfdisk_table()
+{ # run in an anonymous function, not a subprocess
 SIZE=$(LC_ALL=C LANGUAGE=C fdisk -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
 #SIZE=$(expr 1024 '*' $(sfdisk -s "$DEV"))	# total size in bytes - but why 1024? is this well defined?
 $DEBUG && echo "-- DISK SIZE: $SIZE bytes --" >&2
@@ -546,9 +566,8 @@ CYLINDERS=$(expr "$TOTALSECTORS" / "$HEADS" / "$SECTORS")
 $DEBUG && echo "-- CYLINDERS: $CYLINDERS --" >&2
 SECTORSPERCYLINDER=$(expr "$TOTALSECTORS" / "$CYLINDERS")
 $DEBUG && echo "-- SECTORS PER CYLINDER: $SECTORSPERCYLINDER --" >&2
-
-{ # run in an anonymous function, not a subprocess
 PSTART=128
+local P
 for P in 1 2 3 4
 do # calculate sizes of partitions
 	FORMAT=$(getparam $P FORMAT)
@@ -607,17 +626,19 @@ done
 if [ "$TOTALSIZE" != 0 -o "$REMAINING" != 0 ]
 	then
 	echo "error: error in partition calculation" >&2
-        echo "TOTALSIZE: $TOTALSIZE" >&2
-        echo "REMAINING: $REMAINING" >&2
+	echo "TOTALSIZE: $TOTALSIZE" >&2
+	echo "REMAINING: $REMAINING" >&2
 	echo "did yo specify 4 empfy partitions?" >&2
 	exit 1
 fi
-} |
+}
+
 if $DRYRUN
 then
-	cat >&2 # echo to stderr
+	sfdisk_table >&2
 else
-	sfdisk -L --force -uS "$DEV"
+	$DEBUG && sfdisk_table >&2
+	sfdisk_table | sfdisk -L --force -uS "$DEV"
 	sleep 1
 fi
 
@@ -671,19 +692,10 @@ then
 	continue	# skip
 fi
 
-BOOT=$(getparam "$P" BOOT)
-BOOTDIR="/media/P${P}/$(getparam "$P" BOOTDIR)/"
-KERNEL=$(getparam "$P" KERNEL)
-KERNELDIR="/media/P${P}/$(getparam "$P" KERNELDIR)/"
-DT=$(getparam "$P" DT)
-DTDIR="/media/P${P}/$(getparam "$P" DTDIR)/"
-ROOTFS=$(getparam "$P" ROOTFS)
-MODULES=$(getparam "$P" MODULES)
-CONFIG=$(getparam "$P" CONFIG)
-
 ## FIXME: should also try .tbz and .tgz
-## FIXME: and we should be able to unpack some .dd.bz2 or img.bz2
+## FIXME: and we should be able to unpack .dd.bz2 or img.bz2
 
+ROOTFS=$(getparam "$P" ROOTFS)
 if [ "$ROOTFS" != none ]
 then # a rootfs must be installed first so that we can overwrite by a kernel
 
@@ -697,6 +709,8 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	esac
 fi
 
+BOOT=$(getparam "$P" BOOT)
+BOOTDIR="/media/P${P}/$(getparam "$P" BOOTDIR)/"
 if [ "$BOOT" != none ]
 then
 	$DEBUG && echo "-- fetch boot loader to $BOOTDIR --" >&2
@@ -715,10 +729,11 @@ then
 	fetch "$(dirname "$BOOT")/boot.txt" "$BOOTDIR/boot.txt"
 	fetch "$(dirname "$BOOT")/uEnv.txt" "$BOOTDIR/uEnv.txt"
 	echo "$CMDLINE" >"$BOOTDIR/makesd.call"	# so that we can easily find out for which device this is formatted
+	partitions >>"$BOOTDIR/makesd.call"
 fi
 
-## FIXME: some u-boots want uImage.bin others want uImage.img
-
+KERNEL=$(getparam "$P" KERNEL)
+KERNELDIR="/media/P${P}/$(getparam "$P" KERNELDIR)/"
 if [ "$KERNEL" != none ]
 then
 	$DEBUG && echo "-- fetch kernel to $KERNELDIR --" >&2
@@ -731,6 +746,8 @@ then
 	$DEBUG && echo "-- installed $KERNEL_VERSION --" >&2
 fi
 
+DT=$(getparam "$P" DT)
+DTDIR="/media/P${P}/$(getparam "$P" DTDIR)/"
 if [ "$DT" != none ]
 then
 	$DEBUG && echo "-- fetch device trees to $DTDIR --" >&2
@@ -738,6 +755,7 @@ then
 	fetch "$DT" - | ( cd "$DTDIR" && tar xvjf - )
 fi
 
+MODULES=$(getparam "$P" MODULES)
 if [ "$MODULES" != none ]
 then
 	$DEBUG && echo "-- fetch modules to /media/P${P} --" >&2
@@ -749,6 +767,7 @@ then
 	fi
 fi
 
+CONFIG=$(getparam "$P" CONFIG)
 if [ "$CONFIG" != none ]
 then
 	$DEBUG && echo "-- fetch config patches to /media/P${P} --" >&2
