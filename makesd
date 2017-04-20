@@ -20,12 +20,51 @@ CMDLINE="$0 $@"		# how makesd was called
 
 function macros()
 {
-# format: macro-name macro-body
+# format: macro-pattern macro-body
 # it is valid to use shell variables in the body since they are expanded by the here-document
-# comments (lines starting with "# " can be used and are ignored
+# $1 is expanded by the first argument given to the macros call
+# patterns are regexp (expr : command)
+# comments (lines starting with "#" can be used and they are ignored
 # macros can be recursive
 
 cat <<END
+# basic macros
+# boot loader
+-bnone			$1
+-bhttp://.*/.*		$1
+-bhttps://.*/.*		$1
+-b.*			http://download.goldelico.com/letux-u-boot/$1/u-boot.bin
+# kernel
+-knone			$1
+-khttp://.*/.*		$1
+-khttps://.*/.*		$1
+-k.*			http://download.goldelico.com/letux-kernel/$1/uImage
+# device tree
+-dnone			$1
+-dhttp://.*/.*		$1
+-dhttps://.*/.*		$1
+-d.*			http://download.goldelico.com/letux-kernel/$1/device-trees.tbz
+# kernel modules
+-mnone			$1
+-mhttp://.*/.*		$1
+-mhttps://.*/.*		$1
+-m.*			http://download.goldelico.com/letux-kernel/$1/modules.tgz
+# additional config
+-cnone			$1
+-chttp://.*/.*		$1
+-chttps://.*/.*		$1
+-c.*			http://download.goldelico.com/letux-debian-rootfs/$1-config.tgz
+# rootfs
+-rnone			$1
+-rhttp://.*/.*		$1
+-rhttps://.*/.*		$1
+-rdebian		http://download.goldelico.com/letux-debian-rootfs/$VARIANT-minimal.tbz
+-rlxde			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-lxde.tbz
+-rxfce			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-xfce4.tbz
+-rqtmoko		http://download.goldelico.com/letux-qtmoko/$VARIANT.tbz
+-rreplicant		http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz
+-re17			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-e17.tbz
+-rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT-quantumstep.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
 debian			-f ext4 -r debian -kboot latest -dboot latest -m latest -c latest
 debian-lxde		debian -r lxde
@@ -63,14 +102,42 @@ pyra+lc15		-f fat -s 5 -b Pyra+LC15/latest -k latest -d latest debian-lxde -k no
 pyra+lc15-4.9		-f fat -s 5 -b Pyra+LC15-4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95
 lc15			-f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest debian-lxde -k none -d none -s 95
 lc15-4.9		-f fat -s 5 -b Letux-Cortex-15-4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95
-# for Pandora a single partition image can boot
+# for Pandora, a single partition image can boot
 openpandora		debian-lxde -b OpenPandora/latest
 pandora			openpandora
 END
 }
 
+function lookup()
+{
+# "$1" is key
+# returns expanded macro or empty string if not found
+	# pass our $1 after stripping -? to $1 within here-document
+	macros $(expr "$1" : "-.\(.*\)") | {
+		while read MACRO COMMAND
+		do
+			case "$MACRO" in
+				'' | '#' | '#'* )
+					continue;;
+				* )
+					if expr "$1" : "^$MACRO\$" >/dev/null
+						then # found
+						$DEBUG && echo "$1" matches "$MACRO -> $COMMAND" >&2
+						echo "$COMMAND"
+						return
+					fi
+			esac
+			done
+			$DEBUG && echo "$1" no match >&2
+			echo ""
+		}
+}
+
 function useage()
 {
+
+## fixme: list available macros separately
+
 	cat <<END
 useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [partition2 [partition3 [partition4]]]]"
 
@@ -88,10 +155,10 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -f ext3
     -f ext4
     -f none
-    -f[0-4] -- switch to given partition - note that another -f will increment by 1
-    -F -- go back one partition so that we can specify a macro that contains a -f
-    -s size -- define relative size
-	  -p sector -- force start of partition to a specific sector
+    -f[0-4]	switch to given partition - note that another -f will increment by 1
+    -F		go back one partition so that we can specify a macro that contains a -f
+    -s size	define relative size
+    -p sector	force start of partition to a specific sector
     bootloader:
     -b[dir] <url>
     -b[dir] version
@@ -236,70 +303,63 @@ function process() { # $1 .. $n
 				setparam $NP BOOTDIR "$(expr "$1" : "-b\(.*\)")"
 				shift
 				$DEBUG && echo "bootloader $1" >&2
-				case "$1" in
-					none ) P="$1";;
-					http://*/* | https://*/* ) P="$1";;
-## FIXME: adapt to latest download server layout
-					* ) P="http://download.goldelico.com/letux-u-boot/$1/u-boot.bin" ;;
-				esac
+				P=$(lookup "-b$1")
+				if [ ! "$P" ]
+				then
+					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+				fi
 				setparam $NP BOOT "$P"
 				;;
 			-k* ) # define kernel
 				setparam $NP KERNELDIR "$(expr "$1" : "-k\(.*\)")"
 				shift
 				$DEBUG && echo "kernel $1" >&2
-				case "$1" in
-					none ) P="$1";;
-					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/letux-kernel/$1/uImage" ;;
-				esac
+				P=$(lookup "-k$1")
+				if [ ! "$P" ]
+				then
+					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+				fi
 				setparam $NP KERNEL "$P"
 				;;
 			-m ) # define modules
 				shift
 				$DEBUG && echo "modules $1" >&2
-				case "$1" in
-					none ) P="$1";;
-					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/letux-kernel/$1/modules.tgz" ;;
-				esac
+				P=$(lookup "-m$1")
+				if [ ! "$P" ]
+				then
+					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+				fi
 				setparam $NP MODULES "$P"
 				;;
 			-d* ) # define device trees
 				setparam $NP DTDIR "$(expr "$1" : "-d\(.*\)")"
 				shift
 				$DEBUG && echo "device trees $1" >&2
-				case "$1" in
-					none ) P="$1";;
-					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/letux-kernel/$1/device-trees.tbz" ;;
-				esac
+				P=$(lookup "-d$1")
+				if [ ! "$P" ]
+				then
+					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+				fi
 				setparam $NP DT "$P"
 				;;
 			-r ) # define root file system
 				shift
 				$DEBUG && echo "rootfs $1" >&2
-				case "$1" in
-					none ) P="$1";;
-					http://*/* | https://*/* ) P="$1";;
-					debian ) P="http://download.goldelico.com/letux-debian-rootfs/$VARIANT-minimal.tbz" ;;
-					lxde ) P="http://download.goldelico.com/letux-debian-rootfs/$VARIANT-lxde.tbz" ;;
-					xfce ) P="http://download.goldelico.com/letux-debian-rootfs/$VARIANT-xfce4.tbz" ;;
-					qtmoko ) P="http://download.goldelico.com/letux-qtmoko/$VARIANT.tbz" ;;
-					replicant ) P="http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz" ;;
-					quantumstep ) P="http://download.goldelico.com/letux-debian-rootfs/$VARIANT-quantumstep.tbz" ;;
-					* ) echo "unknown rootfs: $1" >&2; useage; exit 1 ;;
-				esac
+				P=$(lookup "-r$1")
+				if [ ! "$P" ]
+				then
+					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+				fi
 				setparam $NP ROOTFS "$P"
 				;;
 			-c ) # define additional config
 				shift
 				$DEBUG && echo "config $1" >&2
-				case "$1" in
-					none ) P="$1";;
-					http://*/* | https://*/* ) P="$1";;
-					* ) P="http://download.goldelico.com/letux-debian-rootfs/$1-config.tgz" ;;
-				esac
+				P=$(lookup "-c$1")
+				if [ ! "$P" ]
+				then
+					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+				fi
 				setparam $NP CONFIG "$P"
 				;;
 			-v ) # define variant
@@ -308,60 +368,14 @@ function process() { # $1 .. $n
 				[ "$1" ] && VARIANT="$1"	# overwrite
 				;;
 
-			# single partition file system(s) - should boot if boot loader is in flash/eMMC
-			debian )	process -f ext4 -r debian -kboot latest -dboot latest -m latest -c latest ;;
-			debian-lxde )	process debian -r lxde ;;
-			debian-xfce )	process debian -r xfce ;;
-			quantumstep )	process debian -r quantumstep ;;
-			qtmoko )	process debian -c none -r qtmoko ;;
-			replicant )	process debian -k none -d none -m none -c none -r replicant ;;
-			pyra-os ) 	process debian -c none -r http://packages.pyra-handheld.com/rootfs/pyra-debian-jessie-xfce-rootfs.tgz ;;
-			all )		process debian-lxde qtmoko replicant quantumstep ;;
-
-			# production images (dual partition) for specific devices
-			gta04 | l2804 )		process -f fat -s 5 -b GTA04/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			gta04one | gta04a5 | l2804a5 )	process -f fat -s 5 -b GTA04-OneNAND/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			gta04b2 | l3704 )	process -f fat -s 5 -b Letux-3704/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			gta04b3 | l7004 )	process -f fat -s 5 -b Letux-7004/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			gta04b7 | neo900 )	process -f fat -s 5 -b Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			bb | beagleboard )	process -f fat -s 5 -b Letux-BeagleBoard/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			bbb )			process -f fat -s 5 -b Letux-BeagleBone-Black/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			lc8 )			process -f fat -s 5 -b Letux-Cortex-8/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			bb+b1 )			process -f fat -s 5 -b OpenMoko-Beagle-Hybrid/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			bb+b2 )			process -f fat -s 5 -b Openmoko-Beagle-Hybrid-b2/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			bb+b4 )			process -f fat -s 5 -b Openmoko-Beagle-Hybrid-b4/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			bb+b7 )			process -f fat -s 5 -b BeagleBoard-Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			panda-es )		process -f fat -s 5 -b PandaBoard-ES/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			omap5432evm )		process -f fat -s 5 -b OMAP5-uEVM/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			omap5432evm+pyra )	process -f fat -s 5 -b OMAP5-uEVM+Pyra4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			pyra )			process -f fat -s 5 -b Pyra+LC15/latest -k latest -d latest pyra-os -k none -d none -s 95 ;;
-			pyra+lc15 )		process -f fat -s 5 -b Pyra+LC15/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			pyra+lc15-4.9 )		process -f fat -s 5 -b Pyra+LC15-4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			lc15 )			process -f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-			lc15-4.9 )		process -f fat -s 5 -b Letux-Cortex-15-4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95 ;;
-
-			# for Pandora a single partition image can boot
-			openpandora | pandora )	process debian-lxde -b OpenPandora/latest ;;
-
-			-* )		echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
+			-* )
+				echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
 			* )
-				FOUND=false
-				macros | while read MACRO COMMAND
-				do
-					case "$MACRO" in
-						'' | '#' | '#'* ) continue;;
-						* )
-							if [ "$MACRO" = "$1" ]
-							then # found
-								FOUND=true
-								process $COMMAND
-								break
-							fi
-							;;
-					esac
-				done
-				if ! $FOUND
+				COMMAND=$(lookup "$1")
+				if [ "$COMMAND" ]
 				then
+					process $COMMAND
+				else
 					echo "unknown macro: $1" >&2; useage >&2; exit 1
 				fi
 				;;
