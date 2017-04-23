@@ -729,8 +729,8 @@ then
 	fetch "$(dirname "$BOOT")/boot.scr" "$BOOTDIR/boot.scr"
 	fetch "$(dirname "$BOOT")/boot.txt" "$BOOTDIR/boot.txt"
 	fetch "$(dirname "$BOOT")/uEnv.txt" "$BOOTDIR/uEnv.txt"
-	echo "$CMDLINE" >"$BOOTDIR/makesd.call"	# so that we can easily find out for which device this is formatted
-	partitions >>"$BOOTDIR/makesd.call"
+	echo "$CMDLINE" >"$BOOTDIR/makesd.info"	# so that we can easily find out for which device this is formatted
+	partitions >>"$BOOTDIR/makesd.info"
 fi
 
 KERNEL=$(getparam "$P" KERNEL)
