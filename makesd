@@ -63,6 +63,7 @@ cat <<END
 -rxfce			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-xfce4.tbz
 -rqtmoko		http://download.goldelico.com/letux-qtmoko/$VARIANT.tbz
 -rreplicant		http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz
+-rpyraos		http://packages.pyra-handheld.com/rootfs/pyra-debian-jessie-xfce-rootfs.tgz
 -re17			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-e17.tbz
 -rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT-quantumstep.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
@@ -72,7 +73,7 @@ debian-xfce		debian -r xfce
 quantumstep		debian -r quantumstep
 qtmoko			debian -c none -r qtmoko
 replicant		debian -k none -d none -m none -c none -r replicant
-pyra-os			debian -c none -r http://packages.pyra-handheld.com/rootfs/pyra-debian-jessie-xfce-rootfs.tgz
+pyra-os			debian -c none -r pyra-os
 all 			debian-lxde qtmoko replicant quantumstep
 # production images (dual partition) for specific devices
 gta04			-f fat -s 5 -b GTA04/latest -k latest -d latest debian-lxde -k none -d none -s 95
