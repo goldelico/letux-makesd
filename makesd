@@ -549,7 +549,11 @@ ls -l /media/P[1-4]
 $DEBUG && echo "-- total size $TOTALSIZE --" >&2
 
 $DEBUG && echo "-- clear boot record --" >&2
-! $DRYRUN && dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
+if ! $DRYRUN
+then
+	dd if=/dev/zero of=$DEV bs=1024 count=1024	# clear boot records
+	dd if=/dev/urandom bs=1 count=4 seek=440 of=$DEV	# write a fresh random unique disk identifier (MBR)
+fi
 
 ## the following code is roughly
 ## based on: http://omappedia.org/wiki/SD_Configuration#Script_to_partition.2Fformat_SDCards
