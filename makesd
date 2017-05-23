@@ -542,6 +542,11 @@ do
 done
 }
 
+# make sure we are not mounted anywhere
+umount ${DEV}*
+sleep 2
+umount ${DEV}*
+
 totalsize
 
 ls -l /media/P[1-4]
