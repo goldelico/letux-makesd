@@ -542,7 +542,7 @@ do
 done
 }
 
-# make sure we are not mounted anywhere
+# make sure we are not mounted anywhere else
 umount ${DEV}*
 sleep 2
 umount ${DEV}*
@@ -651,11 +651,12 @@ then
 	sfdisk_table >&2
 else
 	$DEBUG && sfdisk_table >&2
-	sfdisk_table | sfdisk -L --force -uS "$DEV"
-	sleep 1
+	sfdisk_table | sfdisk -L --force -uS "$DEV" | exit 1
+	sleep 2
+	# this may try to remount!
+	[ -x /sbin/partprobe ] && /sbin/partprobe "$DEV"
+	sleep 2
 fi
-
-[ -x /sbin/partprobe ] && /sbin/partprobe "$DEV" || sleep 2
 
 $DEBUG && echo "-- format partitions --" >&2
 
@@ -664,6 +665,7 @@ then
 for P in 1 2 3 4
 do # format and mount partitions
 	umount ${DEVP}${P} 2>/dev/null
+	sleep 1
 	case "$(getparam $P FORMAT)" in
 		none )
 			: skip
