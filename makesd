@@ -153,7 +153,9 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     --debug -- print internal activities and status
     --dry -- dry run (don't touch SD card)
     --help -- print this help
+    -i | --no-format -- install only
     -u | --update -- selfudate
+    -a -- list all macros
 
   partition:
     format (starts next partition):
@@ -455,6 +457,20 @@ unset _TESTME
 while [ "$1" ]
 do
 	case "$1" in
+		"-a" )	# list all macros
+		macros | while read MACRO COMMAND
+				do
+				case "$MACRO" in
+					'' | '#' | '#'* )	continue;;	# comment
+					-* | '*' )		continue;;	# pattern
+					* )			echo "$MACRO";;
+				esac
+			done | sort
+			exit
+			;;
+		"-i" | "--no-format" )
+			NOFORMAT=yes
+			;;
 		"-u" | "--update" )	# self-update
 			$DEBUG && echo "-- self-update --" >&2
 			fetch "http://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)" "$(basename $0).new" &&
@@ -464,11 +480,9 @@ do
 			;;
 		"--debug" )
 			DEBUG=true
-			shift
 			;;
 		"--dry" )
 			DRYRUN=true
-			shift
 			;;
 		"--help" )
 			useage
@@ -478,6 +492,7 @@ do
 			break
 			;;
 	esac
+	shift
 done
 
 $DEBUG && echo "-- define defaults --" >&2
@@ -553,6 +568,9 @@ totalsize
 ls -l /media/P[1-4]
 
 $DEBUG && echo "-- total size $TOTALSIZE --" >&2
+
+if ! [ "$NOFORMAT" ]
+then
 
 $DEBUG && echo "-- clear boot record --" >&2
 if ! $DRYRUN
@@ -661,6 +679,8 @@ fi
 
 $DEBUG && echo "-- format partitions --" >&2
 
+fi	# ! NOFORMAT
+
 if ! $DRYRUN
 then
 for P in 1 2 3 4
@@ -672,15 +692,21 @@ do # format and mount partitions
 			: skip
 			;;
 		fat )
-			mkfs.vfat -F 32 -n "boot" ${DEVP}${P} &&
-			fsck.vfat -a -y ${DEVP}${P}
+			if ! [ "$NOFORMAT" ]
+			then
+				mkfs.vfat -F 32 -n "boot" ${DEVP}${P} &&
+				fsck.vfat -a -y ${DEVP}${P}
+			fi
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
 		ext* )
-			# FIXME: make different volume names for different rootfs???
-			PNAME="rootfs"
-			yes | mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
-			fsck.ext3 -y ${DEVP}${P}
+			if ! [ "$NOFORMAT" ]
+			then
+				# FIXME: make different volume names for different rootfs???
+				PNAME="rootfs"
+				yes | mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
+				fsck.ext3 -y ${DEVP}${P}
+			fi
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
 		swap )
