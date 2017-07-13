@@ -110,6 +110,8 @@ lc15-4gb		-f fat -s 5 -b Letux-Cortex-15-4GB/latest -k latest-lpae -d latest-lpa
 # for Pandora, a single partition image can boot
 openpandora		debian-lxde -b OpenPandora/latest
 pandora			openpandora
+# Udoo Neo needs a pseudo-single -partition but SPL and u-boot must be copied by dd
+udoo-neo		debian-lxde -p 2048 -b Udoo-Neo/latest -kboot latest-udoo -dboot latest-udoo -m latest-udoo
 END
 }
 
@@ -771,6 +773,18 @@ then
 	fetch "$(dirname "$BOOT")/boot.txt" "$BOOTDIR/boot.txt"
 	fetch "$(dirname "$BOOT")/uEnv.txt" "$BOOTDIR/uEnv.txt"
 	echo "$CMDLINE" >"$BOOTDIR/makesd.info"	# so that we can easily find out for which device this is formatted
+#echo test for Udoo-Neo: "$BOOT" >&2
+	B=$(dirname "$BOOT");
+#echo test for Udoo-Neo: "$B" >&2
+	B=$(dirname "$B");
+#echo test for Udoo-Neo: "$B" >&2
+	B=$(basename "$B");
+#echo test for Udoo-Neo: "$B" >&2
+	if [ "$B" = "Udoo-Neo" ]
+	then # special rule for installing SPL&U-Boot on Udoo-Neo
+		fetch "$(dirname "$BOOT")/SPL" - | dd of=$DEV bs=1K seek=1
+		fetch "$(dirname "$BOOT")/u-boot.img" - | dd of=$DEV bs=1K seek=69
+	fi
 	partitions >>"$BOOTDIR/makesd.info"
 fi
 
