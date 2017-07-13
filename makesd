@@ -106,7 +106,7 @@ pyra-lxde		pyra+lc15 -r lxde
 pyra-4gb		pyra+lc15-4gb -r pyra-os
 lc15			-f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest debian-lxde -k none -d none -s 95
 lc15-4.9		-f fat -s 5 -b Letux-Cortex-15-4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95
-lc15-4gb		-f fat -s 5 -b Letux-Cortex-15-4GB/latest -k latest-lpae -d latest-lpae debian-lxde -m latest-lpae -k none -d none -s 95
+lc15-4gb		-f fat -s 5 -b Letux-Cortex-15-4GB/latest -k latest-lpae -d latest-lpae debian-lxde -k none -d none -m latest-lpae -s 95
 # for Pandora, a single partition image can boot
 openpandora		debian-lxde -b OpenPandora/latest
 pandora			openpandora
