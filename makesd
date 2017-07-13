@@ -589,6 +589,7 @@ $DEBUG && echo "-- partitioning --" >&2
 
 function sfdisk_table()
 { # run in an anonymous function, not a subprocess
+TS=$TOTALSIZE	# save for next call
 SIZE=$(LC_ALL=C LANGUAGE=C fdisk -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
 #SIZE=$(expr 1024 '*' $(sfdisk -s "$DEV"))	# total size in bytes - but why 1024? is this well defined?
 $DEBUG && echo "-- DISK SIZE: $SIZE bytes --" >&2
@@ -632,39 +633,49 @@ do # calculate sizes of partitions
 	else
 		PSECTORS=0	# must be a "none"
 	fi
+	TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
+	PSTART=$(expr "$PS" + "$PSECTORS")	# calculated start of next partition
 if $DEBUG
 then
 	echo "P: $P" >&2
 	echo "FORMAT: $FORMAT" >&2
+	echo "REMAINING: $REMAINING" >&2
 	echo "THISSIZE: $THISSIZE ($TOTALSIZE)" >&2
-	echo "SECTORS: $PS + $PSECTORS .. $REMAINING" >&2
+	echo "SECTORS: $PS + $PSECTORS .. $PSTART" >&2
 fi
+	# FIXME: use "Named-fields format" to specify data for a specific partition
+	# e.g. $P: start=$PS,size=$PSECTORS,type=0c,bootable
+	# e.g. $P: start=$PS,size=$PSECTORS,type=83
+	# bot sfdisk in Debian Jessie does not yet understand
 	case "$FORMAT" in
 		none )
 			: skip # (how with sfdisk? do we have to read the current partition sizes)
 			# this gives the wrong impression that we could define just a partition 3 and none for 1 & 2
+			echo "$PS,0,0,-"	# empty partition (bootable)
 			;;
 		fat )
-			echo "$PSTART,$PSECTORS,0x0C,*"	# FAT partition (bootable)
+			# echo "$P: start=$PSTART,size=$PSECTORS,type=0c,bootable"	# FAT partition (bootable)
+			echo "$PS,$PSECTORS,0x0C,*"	# FAT partition (bootable)
 			;;
 		ext* )
-			echo "$PSTART,$PSECTORS,,-"	# Linux partition
+			# echo "$P: start=$PSTART,size=$PSECTORS,type=83"	# Linux partition
+			echo "$PS,$PSECTORS,83,-"	# Linux partition
 			;;
 		swap )
-			echo "$PSTART,$PSECTORS,82,-"	# Linux swap partition
+			## echo "$P: start=$PSTART,size=$PSECTORS,type=82"	# Linux swap partition
+			echo "$PS,$PSECTORS,82,-"	# Linux swap partition
 			;;
 	esac
-	TOTALSIZE=$(expr "$TOTALSIZE" - "$THISSIZE")	# this is not exactly correct
-	PSTART=$(expr "$PS" + "$PSECTORS")	# calculated start of next partition
 done
 if [ "$TOTALSIZE" != 0 -o "$REMAINING" != 0 ]
 	then
 	echo "error: error in partition calculation" >&2
 	echo "TOTALSIZE: $TOTALSIZE" >&2
 	echo "REMAINING: $REMAINING" >&2
-	echo "did yo specify 4 empfy partitions?" >&2
+	echo "did yo specify 4 empty partitions?" >&2
 	exit 1
 fi
+TOTALSIZE=$TS	# restore for next call
 }
 
 if $DRYRUN
@@ -678,6 +689,8 @@ else
 	[ -x /sbin/partprobe ] && /sbin/partprobe "$DEV"
 	sleep 2
 fi
+
+# fdisk -l "$DEV"
 
 $DEBUG && echo "-- format partitions --" >&2
 
@@ -759,7 +772,9 @@ if [ "$BOOT" != none ]
 then
 	$DEBUG && echo "-- fetch boot loader to $BOOTDIR --" >&2
 	mkdir -p "$BOOTDIR" || exit 1
+	#
 	# loading some files may fail since they do not exist for the chosen variant - but we ignore
+	#
 	fetch "$(dirname "$BOOT")/MLO" "$BOOTDIR/MLO"	# must come first
 	fetch "$(dirname "$BOOT")/x-load.flash" "$BOOTDIR/x-load.flash"
 	fetch "$(dirname "$BOOT")/MLO.flash" "$BOOTDIR/MLO.flash"
