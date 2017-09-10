@@ -13,6 +13,7 @@ CMDLINE="$0 $@"		# how makesd was called
 [ "$DEV" ] && CMDLINE="DEV=$DEV $CMDLINE"
 
 [ "$VARIANT" ] || VARIANT=latest
+[ "$ARCHITECTURE" ] || ARCHITECTURE=armhf
 [ "$DEV" ] || DEV="$(cat ~/.makesd.conf 2>/dev/null)"
 [ "$DEV" ] || DEV=/dev/sdc
 
@@ -58,6 +59,7 @@ cat <<END
 -rnone			$1
 -rhttp://.*/.*		$1
 -rhttps://.*/.*		$1
+# fixme: apply $ARCHITECTURE here
 -rdebian		http://download.goldelico.com/letux-debian-rootfs/$VARIANT-minimal.tbz
 -rlxde			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-lxde.tbz
 -rxfce			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-xfce4.tbz
@@ -197,6 +199,7 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -r qtmoko
     -r pyra
     -v variant -- choose different variant for -r (default is 'latest')
+    -A architecture -- choose different architecture variant
 
     macros for single partition cards:
       debian-lxde = -f ext4 -r lxde -d all -k latest -m latest -c latest
@@ -370,6 +373,12 @@ function process()
 				$DEBUG && echo "variant $1" >&2
 				[ "$1" ] && VARIANT="$1"	# overwrite
 				;;
+			-A ) # define architecture
+				shift
+				$DEBUG && echo "architecture $1" >&2
+				[ "$1" ] && ARCHITECTURE="$1"	# overwrite
+				;;
+
 
 			-* )
 				echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
