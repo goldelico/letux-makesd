@@ -232,7 +232,7 @@ examples:"
   ./makesd all -- makes a 4-partition card
   ./makesd gta04 -- makes the latest stable production (recovery) image for the GTA04 (includes boot loader)
   ./makesd gta04 -f1 -b GTA04/2015-10-25 -- makes the latest image for the GTA04 but use U-Boot from 2015-10-25
-  ./makesd gta04 -d letux-4.10.4 -k letux-4.10.4 -m letux-4.10.4-- replace DT, kernel and modules by specific version
+  ./makesd gta04 -d letux-4.10.4 -k letux-4.10.4 -m letux-4.10.4 -- replace DT, kernel and modules by specific version
   ./makesd pyra -c none -r http://download.goldelico.com/letux-debian-rootfs/latest-pyra.tbz -- install latest PyraOS
   ./makesd -v unstable gta04 -- makes an unstable production image
   ./makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs
@@ -240,7 +240,7 @@ examples:"
   DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)
   ./makesd -u -- self-update
   DEV=/dev/sdd ./makesd omap5432evm -f1 -b OMAP5432-uEVM/2016-05-10 -k letux-4.8-rc6 -d letux-4.8-rc6 -f2 -m letux-4.8-rc6 xfce
-  DEV=/dev/sdb ./makesd pyra -f1 -k letux-4.11-rc4 -d letux-4.11-rc4 -v 20170401-jessie-8.7 debian-lxde -m etux-4.11-rc4
+  DEV=/dev/sdb ./makesd pyra -f1 -k letux-4.11-rc4 -d letux-4.11-rc4 -v 20170401-jessie-8.7 debian-lxde -m letux-4.11-rc4
 
 END
 }
