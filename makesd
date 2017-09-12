@@ -114,9 +114,11 @@ openpandora		debian-lxde -b OpenPandora/latest
 pandora			openpandora
 # Udoo Neo needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 udoo-neo		debian-lxde -p 2048 -b Udoo-Neo/latest -kboot latest-udoo -dboot latest-udoo -m latest-udoo
-# we must make sure that we load the mipsel variant and not ARM
+# we must make sure that we load the mipsel variants and not armel/armhf
 lenny400		-A mipsel -f fat -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
-letux-400		-A mipsel -f fat -s 2 -k latest-l400 -d latest-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m latest-l400
+mipsbook-400		-A mipsel -f fat -s 2 -k latest-l400 -d latest-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m latest-l400
+mipsbook		mipsbook-400
+letux-400		mipsbook-400
 END
 }
 
