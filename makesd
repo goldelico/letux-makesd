@@ -774,8 +774,8 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	ls -l /media/P${P}
 	# run in a subshell so that we can really redirect ouput
 	case "$ROOTFS" in
-	*.tgz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - ) ;;
-	*.tbz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - ) ;;
+	*.tgz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - --numeric-owner ) ;;
+	*.tbz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
 	* )	echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
 	esac
 fi
@@ -844,7 +844,7 @@ MODULES=$(getparam "$P" MODULES)
 if [ "$MODULES" != none ]
 then
 	$DEBUG && echo "-- fetch modules to /media/P${P} --" >&2
-	fetch "$MODULES" - | (cd "/media/P${P}/" && tar xvzf -)
+	fetch "$MODULES" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner)
 	if [ "$KERNEL_VERSION" ] && exists depmod
 	then # run depmod on the installed root for the last kernel we have installed
 		$DEBUG && echo "-- run depmod $KERNEL_VERSION --" >&2
@@ -856,7 +856,7 @@ CONFIG=$(getparam "$P" CONFIG)
 if [ "$CONFIG" != none ]
 then
 	$DEBUG && echo "-- fetch config patches to /media/P${P} --" >&2
-	fetch "$CONFIG" - | (cd "/media/P${P}/" && tar xvzf -)
+	fetch "$CONFIG" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner)
 fi
 
 ls -l /media/P[1-4]
