@@ -462,6 +462,13 @@ function partitions()
 	done
 }
 
+### here starts real processing ###
+
+for TOOL in sfdisk fdisk partprobe dd mkfs.vfat mke2fs fsck.vfat fsck.ext3 fsck
+do
+	[ $(which $TOOL) ] || { echo "please install '$TOOL'" >&2; exit 1; }
+done
+
 setparam 2 KERNEL 1234
 _TESTME=$(getparam 2 KERNEL)
 if [ "$_TESTME" != 1234 ]
