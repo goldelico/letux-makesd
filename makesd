@@ -462,6 +462,29 @@ function partitions()
 	done
 }
 
+# https://stackoverflow.com/questions/4023830/how-to-compare-two-strings-in-dot-separated-version-format-in-bash
+function version
+{
+	printf "%03d%03d%03d%03d" $(echo "$1" | tr '.' ' ')
+}
+
+function sane_sfdisk {
+	SFVER=$(sfdisk -v | awk '{print $4}')
+echo sfdisk version: $SFVER $(version $SFVER) >&2
+	if [ "$(version $SFVER)" -ge "$(version 2.26)" ]
+	then
+		# 2.26.2 and later have changed API
+		# compare to http://linux-sunxi.org/Bootable_SD_card#Partitioning
+		# -L		is deprecated and default
+		# -uS		is default now and deprecated
+		# --in-order	is gone and default
+		# -R		is removed
+		sfdisk "$@"
+	else
+		sfdisk --in-order --Linux -uS "$@"
+	fi
+}
+
 ### here starts real processing ###
 
 for TOOL in sfdisk fdisk partprobe dd mkfs.vfat mke2fs fsck.vfat fsck.ext3 fsck
@@ -614,7 +637,7 @@ function sfdisk_table()
 { # run in an anonymous function, not a subprocess
 TS=$TOTALSIZE	# save for next call
 SIZE=$(LC_ALL=C LANGUAGE=C fdisk -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
-#SIZE=$(expr 1024 '*' $(sfdisk -s "$DEV"))	# total size in bytes - but why 1024? is this well defined?
+#SIZE=$(expr 1024 '*' $(sane_sfdisk -s "$DEV"))	# total size in bytes - but why 1024? is this well defined?
 $DEBUG && echo "-- DISK SIZE: $SIZE bytes --" >&2
 TOTALSECTORS=$(expr "$SIZE" / 512)
 $DEBUG && echo "-- TOTAL SECTORS: $TOTALSECTORS --" >&2
@@ -706,7 +729,7 @@ then
 	sfdisk_table >&2
 else
 	$DEBUG && sfdisk_table >&2
-	sfdisk_table | sfdisk -L --force -uS "$DEV" | exit 1
+	sfdisk_table | sane_sfdisk --force "$DEV" || exit
 	sleep 2
 	# this may try to remount!
 	[ -x /sbin/partprobe ] && /sbin/partprobe "$DEV"
