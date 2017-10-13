@@ -387,7 +387,8 @@ function process()
 
 
 			-* )
-				echo "unknown option: $1" >&2; useage >&2; exit 1 ;;
+				echo "unknown option: $1" >&2; useage >&2; exit 1
+				;;
 			* )
 				local COMMAND=$(lookup "$1")
 				if [ "$COMMAND" ]
@@ -429,7 +430,7 @@ function fetch()
 			curl "$1" -o "$2" || rm "$2"
 		fi
 	else
-		echo "error: can't fetch files (needs wget or curl)" >&2
+		echo "error: can't fetch files (please install 'wget' or 'curl')" >&2
 		exit 1
 	fi
 }
@@ -661,7 +662,7 @@ fi
 	# FIXME: use "Named-fields format" to specify data for a specific partition
 	# e.g. $P: start=$PS,size=$PSECTORS,type=0c,bootable
 	# e.g. $P: start=$PS,size=$PSECTORS,type=83
-	# bot sfdisk in Debian Jessie does not yet understand
+	# but sfdisk in Debian Jessie does not yet understand
 	case "$FORMAT" in
 		none )
 			: skip # (how with sfdisk? do we have to read the current partition sizes)
@@ -702,6 +703,7 @@ else
 	sleep 2
 	# this may try to remount!
 	[ -x /sbin/partprobe ] && /sbin/partprobe "$DEV"
+	# alternative? blockdev --rereadpt "$DEV"
 	sleep 2
 fi
 
@@ -786,7 +788,7 @@ BOOTDIR="/media/P${P}/$(getparam "$P" BOOTDIR)/"
 if [ "$BOOT" != none ]
 then
 	$DEBUG && echo "-- fetch boot loader to $BOOTDIR --" >&2
-	mkdir -p "$BOOTDIR" || exit 1
+	mkdir -p "$BOOTDIR" || exit
 	#
 	# loading some files may fail since they do not exist for the chosen variant - but we ignore
 	#
@@ -811,7 +813,8 @@ then
 	B=$(basename "$B");
 #echo test for Udoo-Neo: "$B" >&2
 	if [ "$B" = "Udoo-Neo" ]
-	then # special rule for installing SPL&U-Boot on Udoo-Neo
+	then # hack: special rule for installing SPL&U-Boot on Udoo-Neo
+	     # it should be possible to specify the dd command by macro options, e.g. -dd:sector=file
 		fetch "$(dirname "$BOOT")/SPL" - | dd of=$DEV bs=1K seek=1
 		fetch "$(dirname "$BOOT")/u-boot.img" - | dd of=$DEV bs=1K seek=69
 	fi
