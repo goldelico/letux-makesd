@@ -639,6 +639,7 @@ TS=$TOTALSIZE	# save for next call
 SIZE=$(LC_ALL=C LANGUAGE=C fdisk -l "$DEV" | grep Disk | awk '{print $5}')	# make sure fdisk runs in default LANGUAGE
 #SIZE=$(expr 1024 '*' $(sane_sfdisk -s "$DEV"))	# total size in bytes - but why 1024? is this well defined?
 $DEBUG && echo "-- DISK SIZE: $SIZE bytes --" >&2
+[ "$SIZE" ] || { echo "error: can't determine size of disk $DEV" >&2; exit 1; }
 TOTALSECTORS=$(expr "$SIZE" / 512)
 $DEBUG && echo "-- TOTAL SECTORS: $TOTALSECTORS --" >&2
 SECTORS=63
