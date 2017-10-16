@@ -65,7 +65,7 @@ cat <<END
 -rxfce			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-xfce4.tbz
 -rqtmoko		http://download.goldelico.com/letux-qtmoko/$VARIANT.tbz
 -rreplicant		http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz
--rpyra-os		http://packages.pyra-handheld.com/rootfs/pyra-debian-jessie-xfce-rootfs.tgz
+-rpyra-os		http://packages.pyra-handheld.com/rootfs/stretch/pyra-debian-stretch-mate-rootfs.tgz
 -re17			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-e17.tbz
 -rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT-quantumstep.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
