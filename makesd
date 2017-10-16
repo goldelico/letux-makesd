@@ -70,51 +70,51 @@ cat <<END
 -rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT-quantumstep.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
 debian			-f ext4 -r debian -kboot latest -dboot latest -m latest -c latest
-debian-lxde		debian -r lxde
-debian-xfce		debian -r xfce
+lxde			debian -r lxde
+xfce			debian -r xfce
 quantumstep		debian -r quantumstep
 qtmoko			debian -c none -r qtmoko
 replicant		debian -k none -d none -m none -c none -r replicant
 pyra-os			debian -c none -r pyra-os
-all 			debian-lxde qtmoko replicant quantumstep
+all 			lxde qtmoko replicant quantumstep
 # production images (dual partition) for specific devices
-gta04			-f fat -s 5 -b GTA04/latest -k latest -d latest debian-lxde -k none -d none -s 95
+gta04			-f fat -s 5 -b GTA04/latest -k latest -d latest lxde -k none -d none -s 95
 l2804			gta04
-gta04one		-f fat -s 5 -b GTA04-OneNAND/latest -k latest -d latest debian-lxde -k none -d none -s 95
+gta04one		-f fat -s 5 -b GTA04-OneNAND/latest -k latest -d latest lxde -k none -d none -s 95
 gta04a5			gta04one
 l2804a5			gta04one
-gta04b2			-f fat -s 5 -b Letux-3704/latest -k latest -d latest debian-lxde -k none -d none -s 95
+gta04b2			-f fat -s 5 -b Letux-3704/latest -k latest -d latest lxde -k none -d none -s 95
 l3704			gta04b2
-gta04b3			-f fat -s 5 -b Letux-7004/latest -k latest -d latest debian-lxde -k none -d none -s 95
+gta04b3			-f fat -s 5 -b Letux-7004/latest -k latest -d latest lxde -k none -d none -s 95
 l7004			gta04b3
-gta04b7			-f fat -s 5 -b Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95
+gta04b7			-f fat -s 5 -b Neo900/latest -k latest -d latest lxde -k none -d none -s 95
 neo900			gta04b7
-bb			-f fat -s 5 -b Letux-BeagleBoard/latest -k latest -d latest debian-lxde -k none -d none -s 95
+bb			-f fat -s 5 -b Letux-BeagleBoard/latest -k latest -d latest lxde -k none -d none -s 95
 beagleboard		bb
-bbb			-f fat -s 5 -b Letux-BeagleBone-Black/latest -k latest -d latest debian-lxde -k none -d none -s 95
-lc8			-f fat -s 5 -b Letux-Cortex-8/latest -k latest -d latest debian-lxde -k none -d none -s 95
+bbb			-f fat -s 5 -b Letux-BeagleBone-Black/latest -k latest -d latest lxde -k none -d none -s 95
+lc8			-f fat -s 5 -b Letux-Cortex-8/latest -k latest -d latest lxde -k none -d none -s 95
 pocketeagle		lc8
-bb+b1			-f fat -s 5 -b OpenMoko-Beagle-Hybrid/latest -k latest -d latest debian-lxde -k none -d none -s 95
-bb+b2			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b2/latest -k latest -d latest debian-lxde -k none -d none -s 95
-bb+b4			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b4/latest -k latest -d latest debian-lxde -k none -d none -s 95
-bb+b7			-f fat -s 5 -b BeagleBoard-Neo900/latest -k latest -d latest debian-lxde -k none -d none -s 95
-panda-es		-f fat -s 5 -b PandaBoard-ES/latest -k latest -d latest debian-lxde -k none -d none -s 95
-omap5432evm		-f fat -s 5 -b OMAP5-uEVM/latest -k latest -d latest debian-lxde -k none -d none -s 95
-omap5432evm+pyra	-f fat -s 5 -b OMAP5-uEVM+Pyra4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95
-pyra+lc15		-f fat -s 5 -b Pyra+LC15/latest -k latest -d latest debian-lxde -k none -d none -s 95
-pyra+lc15-4.9		-f fat -s 5 -b Pyra+LC15-4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95
-pyra+lc15-4gb		-f fat -s 5 -b Pyra+LC15-4GB/latest -k latest-lpae -d latest-lpae debian-lxde -m latest-lpae -k none -d none -s 95
+bb+b1			-f fat -s 5 -b OpenMoko-Beagle-Hybrid/latest -k latest -d latest lxde -k none -d none -s 95
+bb+b2			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b2/latest -k latest -d latest lxde -k none -d none -s 95
+bb+b4			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b4/latest -k latest -d latest lxde -k none -d none -s 95
+bb+b7			-f fat -s 5 -b BeagleBoard-Neo900/latest -k latest -d latest lxde -k none -d none -s 95
+panda-es		-f fat -s 5 -b PandaBoard-ES/latest -k latest -d latest lxde -k none -d none -s 95
+omap5432evm		-f fat -s 5 -b OMAP5-uEVM/latest -k latest -d latest lxde -k none -d none -s 95
+omap5432evm+pyra	-f fat -s 5 -b OMAP5-uEVM+Pyra4.9/latest -k latest -d latest lxde -k none -d none -s 95
+pyra+lc15		-f fat -s 5 -b Pyra+LC15/latest -k latest -d latest lxde -k none -d none -s 95
+pyra+lc15-4.9		-f fat -s 5 -b Pyra+LC15-4.9/latest -k latest -d latest lxde -k none -d none -s 95
+pyra+lc15-4gb		-f fat -s 5 -b Pyra+LC15-4GB/latest -k latest-lpae -d latest-lpae lxde -m latest-lpae -k none -d none -s 95
 pyra			pyra+lc15 -r pyra-os
 pyra-lxde		pyra+lc15 -r lxde
 pyra-4gb		pyra+lc15-4gb -r pyra-os
-lc15			-f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest debian-lxde -k none -d none -s 95
-lc15-4.9		-f fat -s 5 -b Letux-Cortex-15-4.9/latest -k latest -d latest debian-lxde -k none -d none -s 95
-lc15-4gb		-f fat -s 5 -b Letux-Cortex-15-4GB/latest -k latest-lpae -d latest-lpae debian-lxde -k none -d none -m latest-lpae -s 95
+lc15			-f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest lxde -k none -d none -s 95
+lc15-4.9		-f fat -s 5 -b Letux-Cortex-15-4.9/latest -k latest -d latest lxde -k none -d none -s 95
+lc15-4gb		-f fat -s 5 -b Letux-Cortex-15-4GB/latest -k latest-lpae -d latest-lpae lxde -k none -d none -m latest-lpae -s 95
 # for Pandora, a single partition image can boot
-openpandora		debian-lxde -b OpenPandora/latest
+openpandora		lxde -b OpenPandora/latest
 pandora			openpandora
 # Udoo Neo needs a pseudo-single -partition but SPL and u-boot must be copied by dd
-udoo-neo		debian-lxde -p 2048 -b Udoo-Neo/latest -kboot latest-udoo -dboot latest-udoo -m latest-udoo
+udoo-neo		lxde -p 2048 -b Udoo-Neo/latest -kboot latest-udoo -dboot latest-udoo -m latest-udoo
 # we must make sure that we load the mipsel variants and not armel/armhf
 lenny400		-A mipsel -f fat -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
 mipsbook-400		-A mipsel -f fat -s 2 -k latest-l400 -d latest-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m latest-l400
@@ -208,27 +208,27 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -A architecture -- choose different architecture variant
 
     macros for single partition cards:
-      debian-lxde = -f ext4 -r lxde -d all -k latest -m latest -c latest
+      lxde = -f ext4 -r lxde -d all -k latest -m latest -c latest
       qtmoko = -f ext4 -r qtmoko -d all -k latest (does not need config)
       replicant = -f ext4 -d all -r replicant-4.2 (has its own kernel)
       quantumstep = -f ext4 -r quantumstep -d all -k latest -m latest -c latest
 
     macros for multiple partitions (to create bootable production image SD card):
-      gta04 | l2804 = -f fat -b latest debian-lxde
-      gta04one | gta04a5 = -f fat -b latest/GTA04A5 debian-lxde
-      gta04b2 | l3704 = -f fat -b latest/b2 debian-lxde
-      gta04b3 | l7004 = -f fat -b latest/b3 debian-lxde
-      gta04b7 | neo900 = -f fat -b latest/b7 debian-lxde
-      bb = -f fat -b latest/ beagleboard debian-lxde
-      bbb = -f fat -b latest/ beagleboardblack debian-lxde
-      panda-es = -f fat -b latest/panda-es debian-lxde
+      gta04 | l2804 = -f fat -b latest lxde
+      gta04one | gta04a5 = -f fat -b latest/GTA04A5 lxde
+      gta04b2 | l3704 = -f fat -b latest/b2 lxde
+      gta04b3 | l7004 = -f fat -b latest/b3 lxde
+      gta04b7 | neo900 = -f fat -b latest/b7 lxde
+      bb = -f fat -b latest/ beagleboard lxde
+      bbb = -f fat -b latest/ beagleboardblack lxde
+      panda-es = -f fat -b latest/panda-es lxde
       pyra = -f fat -b latest/ pyra pyra-os
-      openpandora = -f fat -b latest/ openpandora debian-lxde
-      all = debian-lxde qtmoko replicant quantumstep
+      openpandora = -f fat -b latest/ openpandora lxde
+      all = lxde qtmoko replicant quantumstep
 
 examples:"
   ./makesd -- makes a single-partition LXDE image
-  ./makesd debian-lxde -- also makes a LXDE image
+  ./makesd lxde -- also makes a LXDE image
   ./makesd replicant -- makes a single partition replicant image
   ./makesd all -- makes a 4-partition card
   ./makesd gta04 -- makes the latest stable production (recovery) image for the GTA04 (includes boot loader)
@@ -241,7 +241,7 @@ examples:"
   DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)
   ./makesd -u -- self-update
   DEV=/dev/sdd ./makesd omap5432evm -f1 -b OMAP5432-uEVM/2016-05-10 -k letux-4.8-rc6 -d letux-4.8-rc6 -f2 -m letux-4.8-rc6 xfce
-  DEV=/dev/sdb ./makesd pyra -f1 -k letux-4.11-rc4 -d letux-4.11-rc4 -v 20170401-jessie-8.7 debian-lxde -m letux-4.11-rc4
+  DEV=/dev/sdb ./makesd pyra -f1 -k letux-4.11-rc4 -d letux-4.11-rc4 -v 20170401-jessie-8.7 lxde -m letux-4.11-rc4
 
 END
 }
