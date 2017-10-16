@@ -698,7 +698,13 @@ fi
 		none )
 			: skip # (how with sfdisk? do we have to read the current partition sizes)
 			# this gives the wrong impression that we could define just a partition 3 and none for 1 & 2
-			echo "$PS,0,0,-"	# empty partition (bootable)
+			# in other words: there should only be "none" records after the first "none"
+			# but we don't check that yet
+			SFVER=$(sfdisk -v | awk '{print $4}')
+			if [ "$(version $SFVER)" -lt "$(version 2.26)" ]
+			then
+				echo "$PS,0,0,-"	# empty partition
+			fi
 			;;
 		fat )
 			# echo "$P: start=$PSTART,size=$PSECTORS,type=0c,bootable"	# FAT partition (bootable)
