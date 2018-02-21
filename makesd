@@ -62,7 +62,7 @@ cat <<END
 -rdebian		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-minimal.tbz
 -rlxde			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-lxde.tbz
 -rxfce			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-xfce4.tbz
--rqtmoko		http://download.goldelico.com/letux-qtmoko/$VARIANT$ARCHITECTURE-qtmoko.tbz
+-rqtmoko		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-qtmoko.tbz
 -rreplicant		http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz
 -rpyra-os		http://packages.pyra-handheld.com/rootfs/stretch/pyra-debian-stretch-mate-rootfs.tgz
 -re17			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-e17.tbz
