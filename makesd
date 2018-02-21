@@ -13,7 +13,7 @@ CMDLINE="$0 $@"		# how makesd was called
 [ "$DEV" ] && CMDLINE="DEV=$DEV $CMDLINE"
 
 [ "$VARIANT" ] || VARIANT=latest
-[ "$ARCHITECTURE" ] || ARCHITECTURE=armhf
+[ "$ARCHITECTURE" ] || ARCHITECTURE=-armhf
 [ "$DEV" ] || DEV="$(cat ~/.makesd.conf 2>/dev/null)"
 [ "$DEV" ] || DEV=/dev/sdc
 
@@ -59,15 +59,14 @@ cat <<END
 -rnone			$1
 -rhttp://.*/.*		$1
 -rhttps://.*/.*		$1
-# fixme: apply $ARCHITECTURE here
--rdebian		http://download.goldelico.com/letux-debian-rootfs/$VARIANT-minimal.tbz
--rlxde			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-lxde.tbz
--rxfce			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-xfce4.tbz
--rqtmoko		http://download.goldelico.com/letux-qtmoko/$VARIANT.tbz
+-rdebian		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-minimal.tbz
+-rlxde			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-lxde.tbz
+-rxfce			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-xfce4.tbz
+-rqtmoko		http://download.goldelico.com/letux-qtmoko/$VARIANT$ARCHITECTURE-qtmoko.tbz
 -rreplicant		http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz
 -rpyra-os		http://packages.pyra-handheld.com/rootfs/stretch/pyra-debian-stretch-mate-rootfs.tgz
--re17			http://download.goldelico.com/letux-debian-rootfs/$VARIANT-e17.tbz
--rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT-quantumstep.tbz
+-re17			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-e17.tbz
+-rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-quantumstep.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
 debian			-f ext4 -r debian -kboot latest -dboot latest -m latest -c latest
 lxde			debian -r lxde
