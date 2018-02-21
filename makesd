@@ -489,7 +489,7 @@ echo sfdisk version: $SFVER $(version $SFVER) >&2
 
 for TOOL in sfdisk fdisk partprobe dd mkfs.vfat mke2fs fsck.vfat fsck.ext3 fsck
 do
-	[ $(which $TOOL) ] || { echo "please install '$TOOL'" >&2; exit 1; }
+	[ $(which $TOOL) ] || { echo "please install '$TOOL' (apt-get install util-linux)" >&2; exit 1; }
 done
 
 setparam 2 KERNEL 1234
