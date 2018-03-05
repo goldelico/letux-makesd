@@ -9,13 +9,12 @@
 
 DEBUG=false
 DRYRUN=false
-CMDLINE="$0 $@"		# save how makesd was called
-[ "$DEV" ] && CMDLINE="DEV=$DEV $CMDLINE"
 
 [ "$VARIANT" ] || VARIANT=latest
 [ "$ARCHITECTURE" ] || ARCHITECTURE=-armhf
 [ "$DEV" ] || DEV="$(cat ~/.makesd.conf 2>/dev/null)"
-[ "$DEV" ] || DEV=/dev/sdc
+[ "$DEV" ] || DEV=/dev/null	# no default set!
+CMDLINE="DEV=$DEV $0 $@"		# save how makesd was called
 
 function macros()
 {
