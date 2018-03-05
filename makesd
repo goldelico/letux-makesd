@@ -920,12 +920,15 @@ then
 	do
 		sync
 		umount ${DEVP}${P} 2>/dev/null
-		rmdir /media/P${P}
+		[ -d "/media/P${P}" ] && rmdir "/media/P${P}"
 	done
 	$DEBUG && echo "-- fsck --" >&2
 	for P in 1 2 3 4
 	do
-		fsck -a -f ${DEVP}${P}
+		if [ -b "${DEVP}${P}" ]
+		then
+			echo "${DEVP}${P}" = $(fsck -T -a -f "${DEVP}${P}")
+		fi
 	done
 fi
 
