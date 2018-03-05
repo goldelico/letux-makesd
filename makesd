@@ -567,6 +567,13 @@ then
 	exit 1
 fi
 
+if ! [ -w "$DEV" ] && ! $DRYRUN
+then
+	echo "error: you do not have write permission for: $DEV" >&2
+	echo "Maybe you should run as root - but beware you may loose all data if you choose the wrong device!" >&2
+	exit 1
+fi
+
 DEVP=$DEV
 if [ -b "${DEV}p1" ] || expr "${DEV}" : "/dev/mmc.*" >/dev/null
 then
