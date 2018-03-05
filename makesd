@@ -234,7 +234,7 @@ examples:"
   ./makesd -v unstable gta04 -- makes an unstable production image
   ./makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs
   ./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704
-  DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)
+  DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd
   ./makesd -u -- self-update
   DEV=/dev/sdd ./makesd omap5432evm -f1 -b OMAP5432-uEVM/2016-05-10 -k letux-4.8-rc6 -d letux-4.8-rc6 -f2 -m letux-4.8-rc6 xfce
   DEV=/dev/sdb ./makesd pyra -f1 -k letux-4.11-rc4 -d letux-4.11-rc4 -v 20170401-jessie-8.7 lxde -m letux-4.11-rc4
