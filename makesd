@@ -3,21 +3,18 @@
 # makesd
 # partition and format an SD card suitable for GTA04 devices (Letux 2804 etc.)
 # run this script on some host with a SD interface
-# (c) Golden Delicious Comp. GmbH&Co. KG, 2014
+# (c) Golden Delicious Comp. GmbH&Co. KG, 2014-2018
 # Licenced under GPLv2
 #
 
 DEBUG=false
 DRYRUN=false
-CMDLINE="$0 $@"		# how makesd was called
-[ "$DEV" ] && CMDLINE="DEV=$DEV $CMDLINE"
 
 [ "$VARIANT" ] || VARIANT=latest
 [ "$ARCHITECTURE" ] || ARCHITECTURE=-armhf
 [ "$DEV" ] || DEV="$(cat ~/.makesd.conf 2>/dev/null)"
-[ "$DEV" ] || DEV=/dev/sdc
-
-## FIXME: also set up macros for -r quantumstep etc.
+[ "$DEV" ] || DEV=/dev/null	# no default set!
+CMDLINE="DEV=$DEV $0 $@"		# save how makesd was called
 
 function macros()
 {
@@ -62,7 +59,7 @@ cat <<END
 -rdebian		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-minimal.tbz
 -rlxde			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-lxde.tbz
 -rxfce			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-xfce4.tbz
--rqtmoko		http://download.goldelico.com/letux-qtmoko/$VARIANT$ARCHITECTURE-qtmoko.tbz
+-rqtmoko		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-qtmoko.tbz
 -rreplicant		http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz
 -rpyra-os		http://packages.pyra-handheld.com/rootfs/stretch/pyra-debian-stretch-mate-rootfs.tgz
 -re17			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-e17.tbz
@@ -237,7 +234,7 @@ examples:"
   ./makesd -v unstable gta04 -- makes an unstable production image
   ./makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs
   ./makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704
-  DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd (instead of sdc)
+  DEV=/dev/sdd ./makesd --dry -- does a dry run on /dev/sdd
   ./makesd -u -- self-update
   DEV=/dev/sdd ./makesd omap5432evm -f1 -b OMAP5432-uEVM/2016-05-10 -k letux-4.8-rc6 -d letux-4.8-rc6 -f2 -m letux-4.8-rc6 xfce
   DEV=/dev/sdb ./makesd pyra -f1 -k letux-4.11-rc4 -d letux-4.11-rc4 -v 20170401-jessie-8.7 lxde -m letux-4.11-rc4
@@ -402,13 +399,18 @@ function process()
 	done
 }
 
+function exists()
+{ # check if tool exists
+	which "$1" >/dev/null
+}
+
 function fetch()
 { # $url $dest - make sure that $dest exists only on success
 	$DEBUG && echo "-- fetch $1 $2 --" >&2
 	if $DRYRUN
 	then
 		echo "fetch $1 -> $2" >&2
-	elif which wget >/dev/null
+	elif exists wget
 	then # wget exists
 		if [ "$2" = "-" ]
 		then # to stdout
@@ -418,7 +420,7 @@ function fetch()
 			$DEBUG && echo "-- wget -O - $1 >$2 --" >&2
 			wget -O - "$1" >"$2" || rm "$2"
 		fi
-	elif which curl >/dev/null
+	elif exists curl
 	then # try curl
 		if [ "$2" = "-" ]
 		then # to stdout
@@ -432,11 +434,6 @@ function fetch()
 		echo "error: can't fetch files (please install 'wget' or 'curl')" >&2
 		exit 1
 	fi
-}
-
-function exists()
-{ # check if tool exists
-	which $1 2>/dev/null
 }
 
 function partitions()
@@ -567,6 +564,13 @@ fi
 if ! [ -b "$DEV" ] && ! $DRYRUN
 then
 	echo "error: not a block device: $DEV" >&2
+	exit 1
+fi
+
+if ! [ -w "$DEV" ] && ! $DRYRUN
+then
+	echo "error: you do not have write permission for: $DEV" >&2
+	echo "Maybe you should run as root - but beware you may loose all data if you choose the wrong device!" >&2
 	exit 1
 fi
 
@@ -916,12 +920,15 @@ then
 	do
 		sync
 		umount ${DEVP}${P} 2>/dev/null
-		rmdir /media/P${P}
+		[ -d "/media/P${P}" ] && rmdir "/media/P${P}"
 	done
 	$DEBUG && echo "-- fsck --" >&2
 	for P in 1 2 3 4
 	do
-		fsck -a -f ${DEVP}${P}
+		if [ -b "${DEVP}${P}" ]
+		then
+			echo "${DEVP}${P}" = $(fsck -T -a -f "${DEVP}${P}")
+		fi
 	done
 fi
 
