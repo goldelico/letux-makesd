@@ -924,6 +924,8 @@ then
 	for P in 1 2 3 4
 	do
 		sync
+		[ -r "/media/P${P}/u-boot.img" ] && file "/media/P${P}/u-boot.img"
+		[ -r "/media/P${P}/uImage" ] && file "/media/P${P}/uImage"
 		umount ${DEVP}${P} 2>/dev/null
 		[ -d "/media/P${P}" ] && rmdir "/media/P${P}"
 	done
