@@ -569,6 +569,8 @@ fi
 if ! [ -b "$DEV" ] && ! $DRYRUN
 then
 	echo "error: not a block device: $DEV" >&2
+	echo "  either edit echo /dev/device > ~/.makesd.conf" >&2
+	echo "  or pass DEV=/dev/device" >&2
 	exit 1
 fi
 
