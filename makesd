@@ -162,6 +162,7 @@ function useage()
 useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [partition2 [partition3 [partition4]]]]"
 
   DEV=/dev/device - specify the raw device (not the partitions), e.g. /dev/sdc
+                    alternatively echo to ~/.makesd.conf
   general options:
 
     --debug -- print internal activities and status
