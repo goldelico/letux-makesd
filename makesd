@@ -32,6 +32,7 @@ cat <<END
 -bhttp://.*/.*		$1
 -bhttps://.*/.*		$1
 -b.*			http://download.goldelico.com/letux-u-boot/$1/u-boot.bin
+-B.*			http://download.goldelico.com/letux-u-boot/$1
 # kernel
 -knone			$1
 -khttp://.*/.*		$1
@@ -176,9 +177,10 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -f none
     -f[0-4]	switch to given partition - note that another -f will increment by 1
     -F		go back one partition so that we can specify a macro that contains a -f
-    -s size	define relative size
-    -p sector	force start of partition to a specific sector
+    -s size	define relative size (do not specify a % suffix or other units!)
+    -p sector	force start of partition to a specific sector (512 byte / sector)
     bootloader:
+    -dd <url>	copy file to current sector defined by -p
     -b[dir] <url>
     -b[dir] version
     -b none
@@ -264,6 +266,8 @@ function getparam()
 	eval echo \$$2$1
 }
 
+DDLIST=""
+
 function process()
 { # $1 .. $n
 	while [ "$1" ]
@@ -311,6 +315,13 @@ function process()
 			-p ) # define partition start sector
 				shift
 				setparam $NP PSTART "$1"
+				;;
+			-dd )	# copy (raw) file to current start
+				shift
+				SECTOR=$(getparam "$NP" PSTART)	# current sector
+				local F=$(lookup "-B$1")
+				DDLIST="$DDLIST
+					 $SECTOR $F"
 				;;
 			-b* ) # define boot loader
 				setparam $NP BOOTDIR "$(expr "$1" : "-b\(.*\)")"
@@ -444,6 +455,13 @@ function fetch()
 function partitions()
 { # print partition table
 	local P
+	if [ "$DDLIST" ]
+	then
+		echo "$DDLIST" | while read SECTOR FILE
+		do
+			[ "$SECTOR" ] && echo "-: s:$SECTOR dd:$FILE"
+		done
+	fi
 	for P in 1 2 3 4
 	do
 		FORMAT="$(getparam "$P" FORMAT)"
@@ -804,8 +822,23 @@ $DEBUG && echo "-- install --" >&2
 
 KERNEL_VERSION=""
 
+$DEBUG && echo "-- process -dd --" >&2
+if [ "$DDLIST" ]
+then
+	echo "$DDLIST" | while read SECTOR FILE
+		do
+		if [ "$SECTOR" ]
+		then
+			$DEBUG && echo "-- fetch $FILE tosector $SECTOR --" >&2
+			fetch "$FILE" - | dd of=$DEV bs=512 seek=$SECTOR
+		fi
+		done
+fi
+
 for P in 1 2 3 4
 do
+
+$DEBUG && echo "-- process partition $P --" >&2
 
 FORMAT=$(getparam "$P" FORMAT)
 if [ "$FORMAT" = "none" -o "$FORMAT" = "swap" -o ! -d /media/P${P} ]
