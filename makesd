@@ -116,7 +116,9 @@ pyraphone		gta15
 openpandora		lxde -b OpenPandora/latest
 pandora			openpandora
 # Udoo Neo needs a pseudo-single -partition but SPL and u-boot must be copied by dd
-udoo-neo		lxde -p 2048 -b Udoo-Neo/latest -kboot latest-udoo -dboot latest-udoo -m latest-udoo
+udoo-neo		lxde -p 2 -dd Udoo-Neo/latest/SPL -p 138 -dd Udoo-Neo/latest/u-boot.img -p 2048 -bboot Udoo-Neo/latest -kboot latest-udoo -dboot latest-udoo -m latest-udoo
+# Raspi 3B+ needs special setup with bootloader and boot plus rootfs partitions
+raspi3b+		-f fat -s 5 -p 2 -dd RasPi-3B+/latest/hidden.dd -p 8192 -b RasPi-3B+/latest -k latest -d latest -c raspi lxde -s 95 -k none -d none -c none
 # we must make sure that we load the mipsel variants and not armel/armhf
 lenny400		-A mipsel -f fat -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
 mipsbook-400		-A mipsel -f fat -s 2 -k latest-l400 -d latest-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m latest-l400
@@ -885,6 +887,8 @@ then
 	fetch "$(dirname "$BOOT")/boot.txt" "$BOOTDIR/boot.txt"
 	fetch "$(dirname "$BOOT")/uEnv.txt" "$BOOTDIR/uEnv.txt"
 	! $DRYRUN && echo "$CMDLINE" >"$BOOTDIR/makesd.info"	# so that we can easily find out for which device this is formatted
+if false
+then
 #echo test for Udoo-Neo: "$BOOT" >&2
 	B=$(dirname "$BOOT");
 #echo test for Udoo-Neo: "$B" >&2
@@ -898,6 +902,7 @@ then
 		fetch "$(dirname "$BOOT")/SPL" - | dd of=$DEV bs=1K seek=1
 		fetch "$(dirname "$BOOT")/u-boot.img" - | dd of=$DEV bs=1K seek=69
 	fi
+fi
 	! $DRYRUN && partitions >>"$BOOTDIR/makesd.info"
 fi
 
