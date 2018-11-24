@@ -118,7 +118,7 @@ pandora			openpandora
 # Udoo Neo needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 udoo-neo		lxde -p 2 -dd Udoo-Neo/latest/SPL -p 138 -dd Udoo-Neo/latest/u-boot.img -p 2048 -bboot Udoo-Neo/latest -kboot latest-udoo -dboot latest-udoo -m latest-udoo
 # Raspi 3B+ needs special setup with bootloader and boot plus rootfs partitions
-raspi3b+		-f fat -s 5 -p 2 -dd RasPi-3B+/latest/hidden.dd -p 8192 -b RasPi-3B+/latest -k latest -d latest -c raspi lxde -s 95 -k none -d none -c none
+raspi3b+		-f fat -s 5 -p 2 -dd RasPi-3B+/latest/hidden.dd -p 16384 -xkernel7.img http://download.goldelico.com/letux-kernel/letux-4.14.71-raspi/uImage -x http://download.goldelico.com/letux-kernel/letux-4.14.71-raspi/cmdline.txt -d letux-4.14.71-raspi -x http://download.goldelico.com/letux-u-boot/RasPi-3B+/2018-11-20/bootcode.bin -x http://download.goldelico.com/letux-u-boot/RasPi-3B+/2018-11-20/config.txt -x http://download.goldelico.com/letux-u-boot/RasPi-3B+/2018-11-20/fixup+start lxde -s 95 -k none -m latest -d none -c none
 # we must make sure that we load the mipsel variants and not armel/armhf
 lenny400		-A mipsel -f fat -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
 mipsbook-400		-A mipsel -f fat -s 2 -k latest-l400 -d latest-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m latest-l400
