@@ -319,7 +319,7 @@ function process()
 				shift
 				setparam $NP PSTART "$1"
 				;;
-			-dd )	# copy (raw) file to current start
+			-dd )	# copy (raw) file to current partition start
 				shift
 				SECTOR=$(getparam "$NP" PSTART)	# current sector
 				local F=$(lookup "-B$1")
@@ -781,10 +781,13 @@ $DEBUG && echo "-- format partitions --" >&2
 
 fi	# ! NOFORMAT
 
-if ! $DRYRUN
-then
 for P in 1 2 3 4
 do # format and mount partitions
+	if $DRYRUN
+	then
+		$DEBUG && echo "-- format ${DEVP}${P} as $(getparam $P FORMAT) --" >&2
+		continue
+	fi
 	umount ${DEVP}${P} 2>/dev/null
 	sleep 1
 	case "$(getparam $P FORMAT)" in
@@ -814,7 +817,6 @@ do # format and mount partitions
 			;;
 	esac
 done
-fi
 
 df # should have been formatted and mounted now
 
@@ -832,8 +834,8 @@ then
 		do
 		if [ "$SECTOR" ]
 		then
-			$DEBUG && echo "-- fetch $FILE tosector $SECTOR --" >&2
-			fetch "$FILE" - | dd of=$DEV bs=512 seek=$SECTOR
+			$DEBUG && echo "-- fetch $FILE to sector $SECTOR --" >&2
+			! $DRYRUN && fetch "$FILE" - | dd of=$DEV bs=512 seek=$SECTOR
 		fi
 		done
 fi
@@ -841,16 +843,18 @@ fi
 for P in 1 2 3 4
 do
 
-$DEBUG && echo "-- process partition $P --" >&2
-
 FORMAT=$(getparam "$P" FORMAT)
-if [ "$FORMAT" = "none" -o "$FORMAT" = "swap" -o ! -d /media/P${P} ]
+$DEBUG && echo "-- process partition $P with format $FORMAT --" >&2
+
+if [ "$FORMAT" = "none" -o "$FORMAT" = "swap" ]
 then
 	continue	# skip
 fi
 
-## FIXME: should also try .tbz and .tgz
-## FIXME: and we should be able to unpack .dd.bz2 or img.bz2
+if [ ! -d /media/P${P} ]
+then
+	echo "-- partition /media/P${P} not mounted --" >&2
+fi
 
 ROOTFS=$(getparam "$P" ROOTFS)
 if [ "$ROOTFS" != none ]
