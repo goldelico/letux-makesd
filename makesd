@@ -266,7 +266,7 @@ function setparam()
 
 function getparam()
 { # $partition $name
-	eval echo \$$2$1
+	eval echo \"\$$2$1\"
 }
 
 DDLIST=""
