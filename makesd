@@ -888,22 +888,6 @@ then
 	fetch "$(dirname "$BOOT")/boot.txt" "$BOOTDIR/boot.txt"
 	fetch "$(dirname "$BOOT")/uEnv.txt" "$BOOTDIR/uEnv.txt"
 	! $DRYRUN && echo "$CMDLINE" >"$BOOTDIR/makesd.info"	# so that we can easily find out for which device this is formatted
-if false
-then
-#echo test for Udoo-Neo: "$BOOT" >&2
-	B=$(dirname "$BOOT");
-#echo test for Udoo-Neo: "$B" >&2
-	B=$(dirname "$B");
-#echo test for Udoo-Neo: "$B" >&2
-	B=$(basename "$B");
-#echo test for Udoo-Neo: "$B" >&2
-	if [ "$B" = "Udoo-Neo" ]
-	then # hack: special rule for installing SPL&U-Boot on Udoo-Neo
-	     # it should be possible to specify the dd command by macro options, e.g. -dd:sector=file
-		fetch "$(dirname "$BOOT")/SPL" - | dd of=$DEV bs=1K seek=1
-		fetch "$(dirname "$BOOT")/u-boot.img" - | dd of=$DEV bs=1K seek=69
-	fi
-fi
 	! $DRYRUN && partitions >>"$BOOTDIR/makesd.info"
 fi
 
