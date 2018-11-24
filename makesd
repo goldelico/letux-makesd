@@ -182,8 +182,12 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -F		go back one partition so that we can specify a macro that contains a -f
     -s size	define relative size (do not specify a % suffix or other units!)
     -p sector	force start of partition to a specific sector (512 byte / sector)
+    low level copy:
+    -x[dirfile] <url>	raw expand of remote file into directory dir or file (trying different suffixes like .tar, .tbz)
+		[can be specified multiple times]
+    -dd <url>	copy file to start of current sector (as defined by -p)
+		[can be specified multiple times]
     bootloader:
-    -dd <url>	copy file to current sector defined by -p
     -b[dir] <url>
     -b[dir] version
     -b none
@@ -270,6 +274,7 @@ function getparam()
 }
 
 DDLIST=""
+XLIST=""
 
 function process()
 { # $1 .. $n
@@ -323,8 +328,23 @@ function process()
 				shift
 				SECTOR=$(getparam "$NP" PSTART)	# current sector
 				local F=$(lookup "-B$1")
-				DDLIST="$DDLIST
-					 $SECTOR $F"
+				if [ "$DDLIST" ]
+				then DDLIST="$DDLIST
+$SECTOR $F"	# append new line
+				else DDLIST="$SUBDIR $1"	# first line
+				fi
+				;;
+			-x* )	# low level extract of url file/package into given directory/file
+				SUBDIR=${1:2}
+				[ "$SUBDIR" ] || SUBDIR=./
+				shift
+				XLIST="$(getparam $NP XLIST)"
+				if [ "$XLIST" ]
+				then XLIST="$XLIST
+$SUBDIR $1"	# append new line
+				else XLIST="$SUBDIR $1"	# first line
+				fi
+				setparam $NP XLIST "$XLIST"
 				;;
 			-b* ) # define boot loader
 				setparam $NP BOOTDIR "$(expr "$1" : "-b\(.*\)")"
@@ -481,6 +501,8 @@ function partitions()
 		MODULES="$(getparam "$P" MODULES)"
 		CONFIG="$(getparam "$P" CONFIG)"
 		echo "$P: $FORMAT $SIZE% b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
+		XLIST="$(getparam "$P" XLIST)"
+		[ "$XLIST" ] && echo "$P: $FORMAT $SIZE% x:$(echo $XLIST)"
 	done
 }
 
@@ -936,6 +958,24 @@ then
 	$DEBUG && echo "-- fetch config patches to /media/P${P} --" >&2
 	fetch "$CONFIG" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner)
 fi
+
+XLIST="$(getparam $P XLIST)"
+$DEBUG && echo "-- x: $(echo $XLIST) --" >&2
+
+echo "$XLIST" | while read DIRFILE URL
+do
+	# if DIRFILE ends in / use basename of url or unpack there
+	# if not, use as file name
+	$DEBUG && echo "-- fetch file(s) $URL to /media/P${P}/$DIRFILE --" >&2
+
+	case "$DIRFILE" in
+		*/ )	fetch "$URL" "/media/P${P}/$DIRFILE/$(basename "$URL")"	;; # load single file into directory
+		* )	fetch "$URL" "/media/P${P}/$DIRFILE" ;; # load single file with rename
+	esac
+	fetch "$URL.tgz" - | (cd "/media/P${P}/$DIRFILE)" && tar xvzf - --numeric-owner)	# try to unpack into directory
+	fetch "$URL.tbz" - | (cd "/media/P${P}/$DIRFILE)" && tar xvjf - --numeric-owner)	# try to unpack into directory
+
+done
 
 ls -l /media/P[1-4]
 
