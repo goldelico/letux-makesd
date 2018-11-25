@@ -336,7 +336,7 @@ function process()
 				if [ "$DDLIST" ]
 				then DDLIST="$DDLIST
 $SECTOR $F"	# append new line
-				else DDLIST="$SUBDIR $1"	# first line
+				else DDLIST="$SECTOR $F"	# first line
 				fi
 				;;
 			-x* )	# low level extract of url file/package into given directory/file
