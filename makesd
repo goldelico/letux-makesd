@@ -340,10 +340,11 @@ $SECTOR $F"	# append new line
 				fi
 				;;
 			-x* )	# low level extract of url file/package into given directory/file
-				SUBDIR=${1:2}
-				[ "$SUBDIR" ] || SUBDIR=./
+				local SUBDIR=${1:2}
+				[ "$SUBDIR" ] || SUBDIR=/
+				SUBDIR=$(echo "$SUBDIR" | sed 's|../||g')	# protect
 				shift
-				XLIST="$(getparam $NP XLIST)"
+				local XLIST="$(getparam $NP XLIST)"
 				if [ "$XLIST" ]
 				then XLIST="$XLIST
 $SUBDIR $1"	# append new line
@@ -507,7 +508,7 @@ function partitions()
 		CONFIG="$(getparam "$P" CONFIG)"
 		echo "$P: $FORMAT $SIZE% b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
 		XLIST="$(getparam "$P" XLIST)"
-		[ "$XLIST" ] && echo "$P: $FORMAT $SIZE% x:$(echo $XLIST)"
+		[ "$XLIST" ] && echo "$P: x:$(echo $XLIST)"
 	done
 }
 
@@ -969,6 +970,9 @@ $DEBUG && echo "-- x: $(echo $XLIST) --" >&2
 
 echo "$XLIST" | while read DIRFILE URL
 do
+	if [ ! "$URL" ]
+	then continue
+	fi
 	# if DIRFILE ends in / use basename of url or unpack there
 	# if not, use as file name
 	$DEBUG && echo "-- fetch file(s) $URL to /media/P${P}/$DIRFILE --" >&2
@@ -977,8 +981,8 @@ do
 		*/ )	fetch "$URL" "/media/P${P}/$DIRFILE/$(basename "$URL")"	;; # load single file into directory
 		* )	fetch "$URL" "/media/P${P}/$DIRFILE" ;; # load single file with rename
 	esac
-	fetch "$URL.tgz" - | (cd "/media/P${P}/$DIRFILE)" && tar xvzf - --numeric-owner)	# try to unpack into directory
-	fetch "$URL.tbz" - | (cd "/media/P${P}/$DIRFILE)" && tar xvjf - --numeric-owner)	# try to unpack into directory
+	fetch "$URL.tgz" - | (cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner)	# try to unpack into directory
+	fetch "$URL.tbz" - | (cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner)	# try to unpack into directory
 
 done
 
