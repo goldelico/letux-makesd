@@ -187,6 +187,7 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
 		[can be specified multiple times]
     -dd <url>	copy file to start of current sector (as defined by -p)
 		[can be specified multiple times]
+    -I		write makesd.info to current partition
     bootloader:
     -b[dir] <url>
     -b[dir] version
@@ -323,6 +324,10 @@ function process()
 			-p ) # define partition start sector
 				shift
 				setparam $NP PSTART "$1"
+				;;
+			-I* )	# write info
+				# should we allow a subdirectory?
+				setparam $NP INFO "true"
 				;;
 			-dd )	# copy (raw) file to current partition start
 				shift
@@ -976,6 +981,18 @@ do
 	fetch "$URL.tbz" - | (cd "/media/P${P}/$DIRFILE)" && tar xvjf - --numeric-owner)	# try to unpack into directory
 
 done
+
+INFO="$(getparam $P INFO)"
+if [ "$INFO" ]
+then
+	$DEBUG && echo "-- write info >/media/P${P}/makesd.info --" >&2
+	! $DRYRUN && (
+	echo "+++ this system was created by makesd (http://projects.goldelico.com/p/gta04-makesd/) at $(date) +++"
+	echo "$CMDLINE"
+	partitions
+	) >"/media/P${P}/makesd.info"	# so that we can easily find out for which device this is formatted
+fi
+
 
 ls -l /media/P[1-4]
 
