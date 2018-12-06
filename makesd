@@ -118,7 +118,10 @@ pandora			openpandora
 # Udoo Neo needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 udoo-neo		lxde -p 2 -dd Udoo-Neo/latest/SPL -p 138 -dd Udoo-Neo/latest/u-boot.img -p 2048 -bboot Udoo-Neo/latest -kboot latest-udoo -dboot latest-udoo -m latest-udoo
 # Raspi 3B+ needs special setup with bootloader and boot plus rootfs partitions
-raspi3b+		-f fat -s 5 -p 2 -dd RasPi-3B+/nonfree/preamble.dd -p 16384 -I -x http://download.goldelico.com/letux-u-boot/RasPi-3B+/nonfree/bootcode.bin -x http://download.goldelico.com/letux-u-boot/RasPi-3B+/latest/cmdline.txt -x http://download.goldelico.com/letux-u-boot/RasPi-3B+/latest/config.txt -x http://download.goldelico.com/letux-u-boot/RasPi-3B+/nonfree/fixup+start -k none -xkernel7.img http://download.goldelico.com/letux-kernel/latest/zImage -d latest lxde -s 95 -k none -d none
+raspi-boot		-f fat -s 5 -I -x https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin -x https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat -x https://github.com/raspberrypi/firmware/raw/master/boot/start.elf -x http://download.goldelico.com/letux-u-boot/RasPi-3B+/latest/config.txt -x http://download.goldelico.com/letux-u-boot/RasPi-3B+/latest/cmdline.txt -k none -x http://download.goldelico.com/letux-kernel/latest/zImage
+# install 4.14.79-raspi kernel until we have a working letux-kernel...
+raspi-old-kernel	-f1 -x http://download.goldelico.com/letux-kernel/letux-4.14.79-raspi/kernel7.img -d http://download.goldelico.com/letux-kernel/letux-4.14.79-raspi/device-trees.tbz -f2 -m http://download.goldelico.com/letux-kernel/letux-4.14.79-raspi/modules.tgz
+raspi3b+		raspi-boot -d latest lxde -s 95 -k none -d none raspi-old-kernel
 # we must make sure that we load the mipsel variants and not armel/armhf
 lenny400		-A mipsel -f fat -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
 mipsbook-400		-A mipsel -f fat -s 2 -k latest-l400 -d latest-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m latest-l400
