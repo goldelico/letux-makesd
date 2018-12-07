@@ -976,20 +976,20 @@ do
 	if [ ! "$URL" ]
 	then continue
 	fi
-	# if DIRFILE ends in / use basename of url or unpack there
-	# if not, use as file name
 	$DEBUG && echo "-- fetch file(s) $URL to /media/P${P}/$DIRFILE --" >&2
 
 	for SUFFIX in .tgz .tbz ''
 	do
 		FILE="$URL$SUFFIX"
 		case "$FILE" in
-			*.tgz ) fetch "$FILE" - | (cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner) && break;;	# try to unpack into directory
-			*.tbz ) fetch "$FILE" - | (cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner) && break;;	# try to unpack into directory
+			*.tgz ) fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner) && break;;	# try to unpack into directory
+			*.tbz ) fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner) && break;;	# try to unpack into directory
 			* )
+				# if DIRFILE ends in / use basename of url
+				# if not, use as qualified file name
 				case "$DIRFILE" in
-					*/ )	fetch "$FILE" "/media/P${P}/$DIRFILE/$(basename "$URL")" && break;; # load single file
-					* )	fetch "$FILE" "/media/P${P}/$DIRFILE" && break;; # load single file (with rename)
+					*/ )	mkdir -p "/media/P${P}/$DIRFILE" && fetch "$FILE" "/media/P${P}/$DIRFILE$(basename "$FILE")" && break;; # load single file
+					* )	mkdir -p "$(dirname "$/media/P${P}/DIRFILE")" && fetch "$FILE" "/media/P${P}/$DIRFILE" && break;; # load plain file (with rename)
 				esac
 			;;
 		esac
