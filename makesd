@@ -980,13 +980,20 @@ do
 	# if not, use as file name
 	$DEBUG && echo "-- fetch file(s) $URL to /media/P${P}/$DIRFILE --" >&2
 
-	case "$DIRFILE" in
-		*/ )	fetch "$URL" "/media/P${P}/$DIRFILE/$(basename "$URL")"	;; # load single file into directory
-		* )	fetch "$URL" "/media/P${P}/$DIRFILE" ;; # load single file with rename
-	esac
-	fetch "$URL.tgz" - | (cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner)	# try to unpack into directory
-	fetch "$URL.tbz" - | (cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner)	# try to unpack into directory
-
+	for SUFFIX in .tgz .tbz ''
+	do
+		FILE="$URL$SUFFIX"
+		case "$FILE" in
+			*.tgz ) fetch "$FILE" - | (cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner) && break;;	# try to unpack into directory
+			*.tbz ) fetch "$FILE" - | (cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner) && break;;	# try to unpack into directory
+			* )
+				case "$DIRFILE" in
+					*/ )	fetch "$FILE" "/media/P${P}/$DIRFILE/$(basename "$URL")" && break;; # load single file
+					* )	fetch "$FILE" "/media/P${P}/$DIRFILE" && break;; # load single file (with rename)
+				esac
+			;;
+		esac
+	done
 done
 
 INFO="$(getparam $P INFO)"
