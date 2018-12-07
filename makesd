@@ -345,7 +345,7 @@ $SECTOR $F"	# append new line
 			-x* )	# low level extract of url file/package into given directory/file
 				local SUBDIR=${1:2}
 				[ "$SUBDIR" ] || SUBDIR=/
-				SUBDIR=$(echo "$SUBDIR" | sed 's|../||g')	# protect
+				SUBDIR=$(echo "$SUBDIR" | sed 's|\.\./||g')	# protect - not perfect - .../file -> .file
 				shift
 				local XLIST="$(getparam $NP XLIST)"
 				if [ "$XLIST" ]
