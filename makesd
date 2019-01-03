@@ -65,6 +65,7 @@ cat <<END
 -rpyraos		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-pyraos.tbz
 -re17			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-e17.tbz
 -rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-quantumstep.tbz
+-rphosh			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-phosh.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
 debian			-f ext4 -r debian -kboot latest -dboot latest -m latest -c latest
 lxde			debian -r lxde
@@ -73,6 +74,7 @@ quantumstep		debian -r quantumstep
 qtmoko			debian -c none -r qtmoko
 replicant		debian -k none -d none -m none -c none -r replicant
 pyraos			debian -c none -r pyraos
+phosh			debian -r phosh
 all 			lxde qtmoko replicant quantumstep
 # production images (dual partition) for specific devices
 gta04			-f fat -s 5 -b GTA04/latest -k latest -d latest lxde -k none -d none -s 95
