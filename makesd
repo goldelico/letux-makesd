@@ -431,9 +431,8 @@ $SUBDIR $1"	# append new line
 			-A ) # define architecture
 				shift
 				$DEBUG && echo "architecture $1" >&2
-				[ "$1" ] && ARCHITECTURE="$1"	# overwrite
+				[ "$1" ] && ARCHITECTURE="-$1"	# overwrite with hyphen prefix
 				;;
-
 
 			-* )
 				echo "unknown option: $1" >&2; useage >&2; exit 1
