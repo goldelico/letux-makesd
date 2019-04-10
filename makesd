@@ -119,19 +119,21 @@ pyraphone		gta15
 openpandora		lxde -b OpenPandora/latest
 pandora			openpandora
 # Udoo Neo needs a pseudo-single -partition but SPL and u-boot must be copied by dd
-udoo-neo		lxde -p 2 -dd Udoo-Neo/latest/SPL -p 138 -dd Udoo-Neo/latest/u-boot.img -p 2048 -bboot Udoo-Neo/latest -kboot latest-udoo -dboot latest-udoo -m latest-udoo
+udoo-neo		lxde -p 2 -dd Udoo-Neo/latest/SPL -p 138 -dd Udoo-Neo/latest/u-boot.img -p 2048 -bboot Udoo-Neo/latest -kboot latest -dboot latest -m latest
 # Raspi 3B+ needs special setup with bootloader and boot plus rootfs partitions
 raspi3b+		-f fat -s 5 -I -x https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin \
 			-x https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat \
 			-x https://github.com/raspberrypi/firmware/raw/master/boot/start.elf \
 			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/latest/config.txt \
 			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/latest/cmdline.txt \
-			-k http://download.goldelico.com/letux-kernel/latest-raspi/zImage -d latest-raspi lxde -k none -d none -m latest-raspi -s 95
+			-k http://download.goldelico.com/letux-kernel/latest/zImage -d latest lxde -k none -d none -m latest -s 95
 # we must make sure that we load the mipsel variants and not armel/armhf
 lenny400		-A mipsel -f fat -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
 mipsbook-400		-A mipsel -f fat -s 2 -k latest-l400 -d latest-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m latest-l400
 mipsbook		mipsbook-400
 letux-400		mipsbook-400
+# CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
+ci20			-A mipsel lxde -p 2 -dd CI20/latest/u-boot-spl.bin -p 500 -dd CI20/latest/u-boot.img -p 4096 -bboot Udoo-Neo/latest -kboot latest-l400 -dboot latest-l400 -m latest-l400
 END
 }
 
