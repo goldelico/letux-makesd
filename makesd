@@ -133,7 +133,8 @@ mipsbook-400		-A mipsel -f fat -s 2 -k latest-l400 -d latest-l400 -f ext -r http
 mipsbook		mipsbook-400
 letux-400		mipsbook-400
 # CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
-ci20			-A mipsel lxde -p 2 -dd CI20/latest/u-boot-spl.bin -p 500 -dd CI20/latest/u-boot.img -p 4096 -bboot Udoo-Neo/latest -kboot latest-l400 -dboot latest-l400 -m latest-l400
+# see https://elinux.org/CI20_Dev_Zone#Making_a_bootable_SD_card_from_sources
+ci20			-A mipsel lxde -p 2 -dd CI20/latest/u-boot-spl.bin -p 28 -dd CI20/latest/u-boot.img -p 4096 -bboot CI20/latest -kboot latest-l400 -dboot latest-l400 -m latest-l400
 END
 }
 
