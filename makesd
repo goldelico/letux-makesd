@@ -838,7 +838,9 @@ do # format and mount partitions
 		fat )
 			if ! [ "$NOFORMAT" ]
 			then
-				mkfs.vfat -F 32 -n "boot" ${DEVP}${P} &&
+				PNAME="boot"
+				[ "$P" != 1 ] && PNAME="$PNAME$P"	# define unique names
+				mkfs.vfat -F 32 -n $PNAME ${DEVP}${P} &&
 				fsck.vfat -a -y ${DEVP}${P}
 			fi
 			mount ${DEVP}${P} /media/P${P} || exit
@@ -846,8 +848,8 @@ do # format and mount partitions
 		ext* )
 			if ! [ "$NOFORMAT" ]
 			then
-				# FIXME: make different volume names for different rootfs???
 				PNAME="rootfs"
+				[ "$P" != 1 ] && PNAME="$PNAME$P"	# define unique names
 				yes | mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
 				fsck.ext3 -y ${DEVP}${P}
 			fi
