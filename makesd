@@ -678,7 +678,6 @@ done
 }
 
 # make sure we are not mounted anywhere else
-umount /boot /boot
 umount ${DEV}*
 sleep 2
 umount ${DEV}*
