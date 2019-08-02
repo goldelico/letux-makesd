@@ -821,6 +821,9 @@ $DEBUG && echo "-- format partitions --" >&2
 
 fi	# ! NOFORMAT
 
+FATNUM=""
+EXTNUM=""
+
 for P in 1 2 3 4
 do # format and mount partitions
 	if $DRYRUN
@@ -837,8 +840,9 @@ do # format and mount partitions
 		fat )
 			if ! [ "$NOFORMAT" ]
 			then
-				PNAME="boot"
-				[ "$P" != 1 ] && PNAME="$PNAME$P"	# define unique names
+				PNAME="boot$FATNUM"
+				FATNUM=$(expr "${FATNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
+				echo making $(getparam $P FORMAT) partition $PNAME
 				mkfs.vfat -F 32 -n $PNAME ${DEVP}${P} &&
 				fsck.vfat -a -y ${DEVP}${P}
 			fi
@@ -847,8 +851,9 @@ do # format and mount partitions
 		ext* )
 			if ! [ "$NOFORMAT" ]
 			then
-				PNAME="rootfs"
-				[ "$P" != 1 ] && PNAME="$PNAME$P"	# define unique names
+				PNAME="rootfs$EXTNUM"
+				EXTNUM=$(expr "${EXTNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
+				echo making $(getparam $P FORMAT) partition $PNAME
 				yes | mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
 				fsck.ext3 -y ${DEVP}${P}
 			fi
