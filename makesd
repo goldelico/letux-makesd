@@ -273,7 +273,7 @@ END
 
 function setparam()
 { # $partition $name $value
-	if [ "$1" -lt 1 -o "$1" -gt 4 ]
+	if [ "$2" != "PSTART" -a "(" "$1" -lt 1 -o "$1" -gt 4 ")" ]
 		then
 		echo "invalid partition number $1" >&2
 		useage
@@ -761,6 +761,7 @@ do # calculate sizes of partitions
 if $DEBUG
 then
 	echo "P: $P" >&2
+	echo "PSTART: $(getparam $P PSTART)" >&2
 	echo "FORMAT: $FORMAT" >&2
 	echo "REMAINING: $REMAINING" >&2
 	echo "THISSIZE: $THISSIZE ($TOTALSIZE)" >&2
