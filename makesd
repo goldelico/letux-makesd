@@ -347,7 +347,7 @@ function process()
 				shift
 				SECTOR=$(getparam "$NP" PSTART)	# current sector
 				case "$1" in
-					http://* | https://* )
+					http://* | https://* | file:* )
 						local F="$1"
 						;;
 					* ) # relative to boot directory
