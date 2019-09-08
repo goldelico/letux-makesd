@@ -557,7 +557,7 @@ function sane_sfdisk {
 
 function disk_size {
 	# make sure fdisk runs in default LANGUAGE
-	( export LC_ALL=C LANGUAGE=C; fdisk -l "$1" ) | head -1 | awk '{print $5}'
+	( export LC_ALL=C LANGUAGE=C; fdisk -l "$1" ) | fgrep " $1: " | head -1 | awk '{print $5}'
 	# expr 1024 '*' $(sane_sfdisk -s "$DEV")	# total size in bytes - but why 1024? is this well defined?
 }
 
