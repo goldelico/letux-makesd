@@ -346,7 +346,14 @@ function process()
 			-dd )	# copy (raw) file to current partition start
 				shift
 				SECTOR=$(getparam "$NP" PSTART)	# current sector
-				local F=$(lookup "-B$1")
+				case "$1" in
+					http://* | https://* )
+						local F="$1"
+						;;
+					* ) # relative to boot directory
+						local F=$(lookup "-B$1")
+						;;
+				esac
 				if [ "$DDLIST" ]
 				then DDLIST="$DDLIST
 $SECTOR $F"	# append new line
