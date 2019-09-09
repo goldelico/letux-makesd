@@ -475,6 +475,17 @@ function fetch()
 	if $DRYRUN
 	then
 		echo "fetch $1 -> $2" >&2
+	elif [ ${1:0:5} = "file:" ]
+	then # file: pattern
+		local _FILE=${1#"file:"}
+		if [ "$2" = "-" ]
+		then # to stdout
+			$DEBUG && echo "-- cat $_FILE --" >&2
+			cat $_FILE
+		else
+			$DEBUG && echo "-- cp $_FILE $2 --" >&2
+			cp $_FILE $2 || rm "$2"
+		fi
 	elif exists wget
 	then # wget exists
 		if [ "$2" = "-" ]
