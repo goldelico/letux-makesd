@@ -119,7 +119,7 @@ pyraphone		gta15
 openpandora		lxde -b OpenPandora/latest
 pandora			openpandora
 # Udoo Neo needs a pseudo-single-partition but SPL and u-boot must be copied by dd
-udoo-neo		lxde -p 2 -dd Udoo-Neo/latest/SPL -p 138 -dd Udoo-Neo/latest/u-boot.img -p 2048 -bboot Udoo-Neo/latest -kboot latest -dboot latest -m latest
+udoo-neo		-p 2 -dd Udoo-Neo/latest/SPL -p 138 -dd Udoo-Neo/latest/u-boot.img -p 2048 lxde -bboot Udoo-Neo/latest -kboot latest -dboot latest -m latest
 # Raspi 3B+ needs special setup with bootloader and boot plus rootfs partitions
 raspi3b+		-f fat -s 5 -I -x https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin \
 			-x https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat \
@@ -134,9 +134,9 @@ mipsbook		mipsbook-400
 letux-400		mipsbook-400
 # Imagination CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 # see https://elinux.org/CI20_Dev_Zone#Making_a_bootable_SD_card_from_sources
-ci20			-A mipsel lxde -p 1 -dd CI20/latest/u-boot-spl.bin -p 28 -dd CI20/latest/u-boot.img -p 4096 -bboot CI20/latest -kboot latest-l400 -dboot latest-l400 -m latest-l400
+ci20			-p 1 -dd CI20/latest/u-boot-spl.bin -p 28 -dd CI20/latest/u-boot.img -p 4096 -A mipsel lxde -bboot CI20/latest -kboot latest-l400 -dboot latest-l400 -m latest-l400
 # Kobo Clara / Tolino 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
-clara			debian -p 2 -dd Clara/latest/boot -p 49152 -kboot latest -dboot latest -m latest
+clara			-p 2 -dd Clara/latest/boot -p 49152 debian -kboot latest -dboot latest -m latest
 tolino3			clara
 END
 }
@@ -196,7 +196,7 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -f-		go back one partition so that we can specify a macro that contains a -f
     -F		go back one partition so that we can specify a macro that contains a -f
     -s size	define relative size (do not specify a % suffix or other units!)
-    -p sector	force start of partition to a specific sector (512 byte / sector)
+    -p sector	force start of next partition (-f) or -dd to a specific sector (512 byte / sector)
     low level copy:
     -x[dirfile] <url>	raw expand of remote file into directory dir or file (trying different suffixes like .tar, .tbz)
 		[can be specified multiple times]
@@ -274,7 +274,7 @@ END
 
 function setparam()
 { # $partition $name $value
-	if [ "$2" != "PSTART" -a "(" "$1" -lt 1 -o "$1" -gt 4 ")" ]
+	if [ "(" "$1" -lt 1 -o "$1" -gt 4 ")" ]
 		then
 		echo "invalid partition number $1" >&2
 		useage
@@ -322,6 +322,8 @@ function process()
 				shift
 				setparam $NP FORMAT "$1"
 				setparam $NP SIZE "25"
+				setparam $NP PSTART "$PSTART"
+				PSTART=""
 				if [ "$1" = "none" ]
 					then # don't install anything
 					setparam $NP BOOT "none"
@@ -336,9 +338,9 @@ function process()
 				shift
 				setparam $NP SIZE "$1"
 				;;
-			-p ) # define partition start sector
+			-p ) # define partition or dd start sector (must come before -f or -p)
 				shift
-				setparam $NP PSTART "$1"
+				PSTART="$1"
 				;;
 			-I* )	# write info
 				# should we allow a subdirectory?
@@ -346,7 +348,12 @@ function process()
 				;;
 			-dd )	# copy (raw) file to current partition start
 				shift
-				SECTOR=$(getparam "$NP" PSTART)	# current sector
+				if ! [ "$PSTART" ]
+				then
+					echo "missing partition start (-p sector)" >&2
+					useage
+					exit 1
+				fi
 				case "$1" in
 					http://* | https://* | file:* )
 						local F="$1"
@@ -357,8 +364,8 @@ function process()
 				esac
 				if [ "$DDLIST" ]
 				then DDLIST="$DDLIST
-$SECTOR $F"	# append new line
-				else DDLIST="$SECTOR $F"	# first line
+$PSTART $F"	# append new line
+				else DDLIST="$PSTART $F"	# first line
 				fi
 				;;
 			-x* )	# low level extract of url file/package into given directory/file
