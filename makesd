@@ -193,6 +193,7 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -f ext4
     -f none
     -f[0-4]	switch to given partition - note that another -f will increment by 1
+    -f-		go back one partition so that we can specify a macro that contains a -f
     -F		go back one partition so that we can specify a macro that contains a -f
     -s size	define relative size (do not specify a % suffix or other units!)
     -p sector	force start of partition to a specific sector (512 byte / sector)
@@ -301,7 +302,7 @@ function process()
 				# FIXME: check type!
 				$DEBUG && echo "switched to partition $NP" >&2
 				;;
-			-F ) # switch to previous partition
+			-F | -f- ) # switch to previous partition
 				NP=$(expr "$NP" - 1)
 				if [ "$NP" -lt 0 ]
 				then
