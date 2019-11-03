@@ -204,7 +204,7 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
 		[can be specified multiple times]
     -dd <url>	copy file to start of current sector (as defined by -p)
 		[can be specified multiple times]
-    -I		write makesd.info to current partition
+    -I		write makesd.info to current partition - should be used if there is no -b
     bootloader:
     -b[dir] <url>
     -b[dir] version
