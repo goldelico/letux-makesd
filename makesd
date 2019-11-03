@@ -135,9 +135,11 @@ letux-400		mipsbook-400
 # Imagination CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 # see https://elinux.org/CI20_Dev_Zone#Making_a_bootable_SD_card_from_sources
 ci20			-p 1 -dd CI20/latest/u-boot-spl.bin -p 28 -dd CI20/latest/u-boot.img -p 4096 -A mipsel lxde -bboot CI20/latest -kboot latest-l400 -dboot latest-l400 -m latest-l400
-# Kobo Clara / Tolino 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
-clara			-p 2 -dd Clara/latest/boot -p 2 -dd Clara/latest/u-boot.imx -p 49152 debian -kboot latest -dboot latest -m latest
+# Kobo Clara / Tolino Shine 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
+clara			-p 2 -dd Clara/latest/boot -p 2 -dd Clara/latest/u-boot.imx -p 49152 debian -I -kboot latest -dboot latest -m latest
+e60k02			clara
 tolino3			clara -p 2 -dd Shine3/latest/u-boot.imx
+e60k02-unklar		tolino3
 END
 }
 
