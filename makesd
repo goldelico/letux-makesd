@@ -10,7 +10,7 @@
 DEBUG=false
 DRYRUN=false
 
-[ "$VARIANT" ] || VARIANT=latest
+[ "$VARIANT" ] || VARIANT=stable
 [ "$ARCHITECTURE" ] || ARCHITECTURE=-armhf
 [ "$DEV" ] || DEV="$(cat ~/.makesd.conf 2>/dev/null)"
 [ "$DEV" ] || DEV=/dev/null	# no default set!
@@ -67,7 +67,7 @@ cat <<END
 -rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-quantumstep.tbz
 -rphosh			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-phosh.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
-debian			-f ext4 -r debian -kboot latest -dboot latest -m latest -c latest
+debian			-f ext4 -r debian -kboot $VARIANT -dboot $VARIANT -m $VARIANT -c $VARIANT
 lxde			debian -r lxde
 xfce			debian -r xfce
 quantumstep		debian -r quantumstep
@@ -78,67 +78,67 @@ phosh			debian -r phosh
 all 			lxde qtmoko replicant quantumstep
 all2 			xfce qtmoko phosh quantumstep
 # production images (dual partition) for specific devices
-gta04			-f fat -s 5 -b GTA04/latest -k latest -d latest lxde -k none -d none -s 95
+gta04			-f fat -s 5 -b GTA04/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
 l2804			gta04
-gta04one		-f fat -s 5 -b GTA04-OneNAND/latest -k latest -d latest lxde -k none -d none -s 95
+gta04one		-f fat -s 5 -b GTA04-OneNAND/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
 gta04a5			gta04one
 l2804a5			gta04one
-gta04b2			-f fat -s 5 -b Letux-3704/latest -k latest -d latest lxde -k none -d none -s 95
+gta04b2			-f fat -s 5 -b Letux-3704/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
 l3704			gta04b2
-gta04b3			-f fat -s 5 -b Letux-7004/latest -k latest -d latest lxde -k none -d none -s 95
+gta04b3			-f fat -s 5 -b Letux-7004/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
 l7004			gta04b3
-gta04b7			-f fat -s 5 -b Neo900/latest -k latest -d latest lxde -k none -d none -s 95
+gta04b7			-f fat -s 5 -b Neo900/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
 neo900			gta04b7
-bb			-f fat -s 5 -b Letux-BeagleBoard/latest -k latest -d latest lxde -k none -d none -s 95
+bb			-f fat -s 5 -b Letux-BeagleBoard/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
 beagleboard		bb
-bbb			-f fat -s 5 -b Letux-BeagleBone-Black/latest -k latest -d latest lxde -k none -d none -s 95
-lc8			-f fat -s 5 -b Letux-Cortex-8/latest -k latest -d latest lxde -k none -d none -s 95
+bbb			-f fat -s 5 -b Letux-BeagleBone-Black/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+lc8			-f fat -s 5 -b Letux-Cortex-8/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
 pocketbeagle		lc8
-bb+b1			-f fat -s 5 -b OpenMoko-Beagle-Hybrid/latest -k latest -d latest lxde -k none -d none -s 95
-bb+b2			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b2/latest -k latest -d latest lxde -k none -d none -s 95
-bb+b4			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b4/latest -k latest -d latest lxde -k none -d none -s 95
-bb+b7			-f fat -s 5 -b BeagleBoard-Neo900/latest -k latest -d latest lxde -k none -d none -s 95
-panda-es		-f fat -s 5 -b PandaBoard-ES/latest -k latest -d latest lxde -k none -d none -s 95
-omap5432evm		-f fat -s 5 -b OMAP5-uEVM/latest -k latest -d latest lxde -k none -d none -s 95
-omap5432evm+pyra	-f fat -s 5 -b OMAP5-uEVM+Pyra4.9/latest -k latest -d latest lxde -k none -d none -s 95
-pyra+lc15		-f fat -s 5 -b Pyra+LC15/latest -k latest -d latest lxde -k none -d none -s 95
-pyra+lc15-4.9		-f fat -s 5 -b Pyra+LC15-4.9/latest -k latest -d latest lxde -k none -d none -s 95
-pyra+lc15-4gb		-f fat -s 5 -b Pyra+LC15-4GB/latest -k latest-lpae -d latest-lpae lxde -m latest-lpae -k none -d none -s 95
+bb+b1			-f fat -s 5 -b OpenMoko-Beagle-Hybrid/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+bb+b2			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b2/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+bb+b4			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b4/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+bb+b7			-f fat -s 5 -b BeagleBoard-Neo900/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+panda-es		-f fat -s 5 -b PandaBoard-ES/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+omap5432evm		-f fat -s 5 -b OMAP5-uEVM/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+omap5432evm+pyra	-f fat -s 5 -b OMAP5-uEVM+Pyra4.9/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+pyra+lc15		-f fat -s 5 -b Pyra+LC15/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+pyra+lc15-4.9		-f fat -s 5 -b Pyra+LC15-4.9/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+pyra+lc15-4gb		-f fat -s 5 -b Pyra+LC15-4GB/$VARIANT -k $VARIANT-lpae -d $VARIANT-lpae lxde -m $VARIANT-lpae -k none -d none -s 95
 pyra			pyra+lc15 -r pyraos
 pyra-lxde		pyra+lc15 -r lxde
 pyra-4gb		pyra+lc15-4gb -r pyraos
-lc15			-f fat -s 5 -b Letux-Cortex-15/latest -k latest -d latest lxde -k none -d none -s 95
-lc15-4.9		-f fat -s 5 -b Letux-Cortex-15-4.9/latest -k latest -d latest lxde -k none -d none -s 95
-lc15-4gb		-f fat -s 5 -b Letux-Cortex-15-4GB/latest -k latest-lpae -d latest-lpae lxde -k none -d none -m latest-lpae -s 95
-lc15evm			-f fat -s 5 -b Letux-Cortex-15-EVM/latest -k latest -d latest lxde -k none -d none -s 95
-lc15evm-4gb		-f fat -s 5 -b Letux-Cortex-15-EVM-4GB/latest -k latest -d latest lxde -k none -d none -s 95
-gta15			-f fat -s 5 -b GTA15/latest -k latest -d latest lxde -k none -d none -s 95
-gta15-4gb		-f fat -s 5 -b GTA15-4GB/latest -k latest -d latest lxde -k none -d none -s 95
+lc15			-f fat -s 5 -b Letux-Cortex-15/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+lc15-4.9		-f fat -s 5 -b Letux-Cortex-15-4.9/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+lc15-4gb		-f fat -s 5 -b Letux-Cortex-15-4GB/$VARIANT -k $VARIANT-lpae -d $VARIANT-lpae lxde -k none -d none -m $VARIANT-lpae -s 95
+lc15evm			-f fat -s 5 -b Letux-Cortex-15-EVM/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+lc15evm-4gb		-f fat -s 5 -b Letux-Cortex-15-EVM-4GB/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+gta15			-f fat -s 5 -b GTA15/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
+gta15-4gb		-f fat -s 5 -b GTA15-4GB/$VARIANT -k $VARIANT -d $VARIANT lxde -k none -d none -s 95
 pyraphone		gta15
 # for Pandora, a single partition image can boot
-openpandora		lxde -b OpenPandora/latest
+openpandora		lxde -b OpenPandora/$VARIANT
 pandora			openpandora
 # Udoo Neo needs a pseudo-single-partition but SPL and u-boot must be copied by dd
-udoo-neo		-p 2 -dd Udoo-Neo/latest/SPL -p 138 -dd Udoo-Neo/latest/u-boot.img -p 2048 lxde -bboot Udoo-Neo/latest -kboot latest -dboot latest -m latest
+udoo-neo		-p 2 -dd Udoo-Neo/$VARIANT/SPL -p 138 -dd Udoo-Neo/$VARIANT/u-boot.img -p 2048 lxde -bboot Udoo-Neo/$VARIANT -kboot $VARIANT -dboot $VARIANT -m $VARIANT
 # Raspi 3B+ needs special setup with bootloader and boot plus rootfs partitions
 raspi3b+		-f fat -s 5 -I -x https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin \
 			-x https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat \
 			-x https://github.com/raspberrypi/firmware/raw/master/boot/start.elf \
-			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/latest/config.txt \
-			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/latest/cmdline.txt \
-			-k http://download.goldelico.com/letux-kernel/latest/zImage -d latest lxde -k none -d none -m latest -s 95
+			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/$VARIANT/config.txt \
+			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/$VARIANT/cmdline.txt \
+			-k http://download.goldelico.com/letux-kernel/$VARIANT/zImage -d $VARIANT lxde -k none -d none -m $VARIANT -s 95
 # we must make sure that we load the mipsel variants and not armel/armhf
 lenny400		-A mipsel -f fat -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
-mipsbook-400		-A mipsel -f fat -s 2 -k latest-l400 -d latest-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m latest-l400
+mipsbook-400		-A mipsel -f fat -s 2 -k $VARIANT-l400 -d $VARIANT-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m $VARIANT-l400
 mipsbook		mipsbook-400
 letux-400		mipsbook-400
 # Imagination CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 # see https://elinux.org/CI20_Dev_Zone#Making_a_bootable_SD_card_from_sources
-ci20			-p 1 -dd CI20/latest/u-boot-spl.bin -p 28 -dd CI20/latest/u-boot.img -p 4096 -A mipsel lxde -bboot CI20/latest -kboot latest-l400 -dboot latest-l400 -m latest-l400
+ci20			-p 1 -dd CI20/$VARIANT/u-boot-spl.bin -p 28 -dd CI20/$VARIANT/u-boot.img -p 4096 -A mipsel lxde -bboot CI20/$VARIANT -kboot $VARIANT-l400 -dboot $VARIANT-l400 -m $VARIANT-l400
 # Kobo Clara / Tolino Shine 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
-clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/latest/u-boot.imx -p 1536 -dd Clara/latest/clara-env.bin -p 49152 debian -I -kboot latest -dboot latest -m latest
+clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$VARIANT/u-boot.imx -p 1536 -dd Clara/$VARIANT/clara-env.bin -p 49152 debian -I -kboot $VARIANT -dboot $VARIANT -m $VARIANT
 e60k02-kobo		clara
-shine3			clara -p 2 -dd Shine3/latest/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
+shine3			clara -p 2 -dd Shine3/$VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
 e60k02-tolino		tolino3
 END
 }
@@ -232,26 +232,26 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -r replicant
     -r qtmoko
     -r pyraos
-    -v variant -- choose different variant for -r (default is 'latest')
+    -v variant -- choose different variant for -r and many macros (default is 'stable')
     -A architecture -- choose different architecture variant
 
     macros for single partition cards:
-      lxde = -f ext4 -r lxde -d all -k latest -m latest -c latest
-      qtmoko = -f ext4 -r qtmoko -d all -k latest (does not need config)
+      lxde = -f ext4 -r lxde -d all -k \$VARIANT -m \$VARIANT -c \$VARIANT
+      qtmoko = -f ext4 -r qtmoko -d all -k \$VARIANT (does not need config)
       replicant = -f ext4 -d all -r replicant-4.2 (has its own kernel)
-      quantumstep = -f ext4 -r quantumstep -d all -k latest -m latest -c latest
+      quantumstep = -f ext4 -r quantumstep -d all -k \$VARIANT -m \$VARIANT -c \$VARIANT
 
     macros for multiple partitions (to create bootable production image SD card):
-      gta04 | l2804 = -f fat -b latest lxde
-      gta04one | gta04a5 = -f fat -b latest/GTA04A5 lxde
-      gta04b2 | l3704 = -f fat -b latest/b2 lxde
-      gta04b3 | l7004 = -f fat -b latest/b3 lxde
-      gta04b7 | neo900 = -f fat -b latest/b7 lxde
-      bb = -f fat -b latest/ beagleboard lxde
-      bbb = -f fat -b latest/ beagleboardblack lxde
-      panda-es = -f fat -b latest/panda-es lxde
-      pyraos = -f fat -b latest/ pyra pyraos
-      openpandora = -f fat -b latest/ openpandora lxde
+      gta04 | l2804 = -f fat -b \$VARIANT lxde
+      gta04one | gta04a5 = -f fat -b \$VARIANT/GTA04A5 lxde
+      gta04b2 | l3704 = -f fat -b \$VARIANT/b2 lxde
+      gta04b3 | l7004 = -f fat -b \$VARIANT/b3 lxde
+      gta04b7 | neo900 = -f fat -b \$VARIANT/b7 lxde
+      bb = -f fat -b \$VARIANT/ beagleboard lxde
+      bbb = -f fat -b \$VARIANT/ beagleboardblack lxde
+      panda-es = -f fat -b \$VARIANT/panda-es lxde
+      pyraos = -f fat -b \$VARIANT/ pyra pyraos
+      openpandora = -f fat -b \$VARIANT/ openpandora lxde
       all = lxde qtmoko replicant quantumstep
 
 examples:"
@@ -259,10 +259,10 @@ examples:"
   makesd lxde -- also makes a LXDE image
   makesd replicant -- makes a single partition replicant image
   makesd all -- makes a 4-partition card
-  makesd gta04 -- makes the latest stable production (recovery) image for the GTA04 (includes boot loader)
-  makesd gta04 -f1 -b GTA04/2015-10-25 -- makes the latest image for the GTA04 but use U-Boot from 2015-10-25
+  makesd gta04 -- makes the stable production (recovery) image for the GTA04 (includes boot loader)
+  makesd gta04 -f1 -b GTA04/2015-10-25 -- makes the \$VARIANT image for the GTA04 but use U-Boot from 2015-10-25
   makesd gta04 -d letux-4.10.4 -k letux-4.10.4 -m letux-4.10.4 -- replace DT, kernel and modules by specific version
-  makesd pyra -c none -r http://download.goldelico.com/letux-debian-rootfs/latest-pyraos.tbz -- install latest PyraOS
+  makesd pyra -c none -r http://download.goldelico.com/letux-debian-rootfs/stable-pyraos.tbz -- install stable PyraOS
   makesd -v unstable gta04 -- makes an unstable production image
   makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs
   makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704
