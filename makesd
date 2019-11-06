@@ -198,11 +198,11 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -f-		go back one partition so that we can specify a macro that contains a -f
     -F		go back one partition so that we can specify a macro that contains a -f
     -s size	define relative size (do not specify a % suffix or other units!)
-    -p sector	force start of next partition (-f) or -dd to a specific sector (512 byte / sector)
+    -p sector	position start of next partition (-f) or -dd to a specific sector (512 byte / sector)
     low level copy:
     -x[dirfile] <url>	raw expand of remote file into directory dir or file (trying different suffixes like .tar, .tbz)
 		[can be specified multiple times]
-    -dd <url>	copy file to start of current sector (as defined by -p)
+    -dd <url>	copy binary file to current position (as defined by -p)
 		[can be specified multiple times]
     -I		write makesd.info to current partition - should be used if there is no -b
     bootloader:
