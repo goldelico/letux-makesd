@@ -67,7 +67,7 @@ cat <<END
 -rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-quantumstep.tbz
 -rphosh			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-phosh.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
-debian			-f ext4 -r debian -kboot $VARIANT -dboot $VARIANT -m $VARIANT -c $VARIANT
+debian			-f ext4 -r debian -kboot $VARIANT -dboot $VARIANT -m $VARIANT -c $VARIANT -I
 lxde			debian -r lxde
 xfce			debian -r xfce
 quantumstep		debian -r quantumstep
