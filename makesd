@@ -71,9 +71,9 @@ debian			-f ext4 -r debian -kboot $VARIANT -dboot $VARIANT -m $VARIANT -c $VARIA
 lxde			debian -r lxde
 xfce			debian -r xfce
 quantumstep		debian -r quantumstep
-qtmoko			debian -c none -r qtmoko
-replicant		debian -k none -d none -m none -c none -r replicant
-pyraos			debian -c none -r pyraos
+qtmoko			debian -r qtmoko
+replicant		debian -k none -d none -m none -r replicant
+pyraos			debian -r pyraos
 phosh			debian -r phosh
 all 			lxde qtmoko replicant quantumstep
 all2 			xfce qtmoko phosh quantumstep
@@ -262,7 +262,7 @@ examples:"
   makesd gta04 -- makes the stable production (recovery) image for the GTA04 (includes boot loader)
   makesd gta04 -f1 -b GTA04/2015-10-25 -- makes the \$VARIANT image for the GTA04 but use U-Boot from 2015-10-25
   makesd gta04 -d letux-4.10.4 -k letux-4.10.4 -m letux-4.10.4 -- replace DT, kernel and modules by specific version
-  makesd pyra -c none -r http://download.goldelico.com/letux-debian-rootfs/stable-pyraos.tbz -- install stable PyraOS
+  makesd pyra -r http://download.goldelico.com/letux-debian-rootfs/stable-pyraos.tbz -- install stable PyraOS
   makesd -v unstable gta04 -- makes an unstable production image
   makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs
   makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704
