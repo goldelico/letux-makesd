@@ -140,6 +140,7 @@ clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$VARIANT/u-boot.imx -p 153
 e60k02-kobo		clara
 shine3			clara -p 2 -dd Shine3/$VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
 e60k02-tolino		tolino3
+pinephone		-p 1 -dd PinePhone/2019-12-20/u-boot-spl.bin -p 1953 lxde -bboot PinePhone/$VARIANT -kboot $VARIANT -dboot $VARIANT -m $VARIANT
 END
 }
 
