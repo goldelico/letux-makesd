@@ -67,7 +67,7 @@ cat <<END
 -rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-quantumstep.tbz
 -rphosh			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-phosh.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
-debian			-f ext4 -r debian -kboot $VARIANT -dboot $VARIANT -m $VARIANT -c $VARIANT -I
+debian			-f ext4 -r debian -kboot $VARIANT -dboot $VARIANT -m $VARIANT -I
 lxde			debian -r lxde
 xfce			debian -r xfce
 quantumstep		debian -r quantumstep
@@ -128,8 +128,8 @@ raspi3b+		-f fat -s 5 -I -x https://github.com/raspberrypi/firmware/raw/master/b
 			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/$VARIANT/cmdline.txt \
 			-k http://download.goldelico.com/letux-kernel/$VARIANT/zImage -d $VARIANT lxde -k none -d none -m $VARIANT -s 95
 # we must make sure that we load the mipsel variants and not armel/armhf
-lenny400		-A mipsel -f fat -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
-mipsbook-400		-A mipsel -f fat -s 2 -k $VARIANT-l400 -d $VARIANT-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -c http://download.goldelico.com/letux-400/20110208-lenny400/config.tgz -m $VARIANT-l400
+lenny400		-A mipsel -f fat -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
+mipsbook-400		-A mipsel -f fat -s 2 -k $VARIANT-l400 -d $VARIANT-l400 -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -m $VARIANT-l400
 mipsbook		mipsbook-400
 letux-400		mipsbook-400
 # Imagination CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
