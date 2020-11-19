@@ -538,6 +538,7 @@ function partitions()
 	for P in 1 2 3 4
 	do
 		FORMAT="$(getparam "$P" FORMAT)"
+		PS="$(getparam $P PSTART)"
 		SIZE="$(getparam "$P" SIZE)"
 		[ "$FORMAT" = none ] && SIZE=0
 		BOOT="$(getparam "$P" BOOT)"
@@ -550,7 +551,7 @@ function partitions()
 		ROOTFS="$(getparam "$P" ROOTFS)"
 		MODULES="$(getparam "$P" MODULES)"
 		CONFIG="$(getparam "$P" CONFIG)"
-		echo "$P: $FORMAT $SIZE% b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
+		echo "$P: $FORMAT s:$SIZE% p:$PS b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
 		XLIST="$(getparam "$P" XLIST)"
 		[ "$XLIST" ] && echo "$P: x:$(echo $XLIST)"
 	done
