@@ -193,6 +193,7 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
   partition:
     format (starts next partition):
     -f fat
+    -f fat16
     -f ext3
     -f ext4
     -f none
@@ -701,7 +702,7 @@ do
 			## check if this is the last or only followed by "none"
 			## i.e. there can't be "holes" in the partition numbers
 			;; # skip
-		fat | ext* | swap )
+		fat* | ext* | swap )
 			! $DRYRUN && mkdir -p /media/P${P}
 			TOTALSIZE=$(expr "$TOTALSIZE" + "$(getparam $P SIZE)")	# sum up
 			;;
@@ -813,7 +814,7 @@ fi
 				echo "$PS,0,0,-"	# empty partition
 			fi
 			;;
-		fat )
+		fat* )
 			# echo "$P: start=$PSTART,size=$PSECTORS,type=0c,bootable"	# FAT partition (bootable)
 			echo "$PS,$PSECTORS,0x0C,*"	# FAT partition (bootable)
 			;;
@@ -873,14 +874,23 @@ do # format and mount partitions
 		none )
 			: skip
 			;;
-		fat )
+		fat* )
 			if ! [ "$NOFORMAT" ]
 			then
 				PNAME="boot$FATNUM"
 				FATNUM=$(expr "${FATNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
 				echo making $(getparam $P FORMAT) partition $PNAME
-				mkfs.vfat -F 32 -n $PNAME ${DEVP}${P} &&
-				fsck.vfat -a -y ${DEVP}${P}
+				case "$(getparam $P FORMAT)" in
+					fat16 )
+						mkfs.vfat -F 16 -n $PNAME ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
+						;;
+					fat | fat32 )
+						mkfs.vfat -F 32 -n $PNAME ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
+						;;
+					fat )	# let mkfs decide
+						mkfs.vfat -n $PNAME ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
+						;;
+				esac
 			fi
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
