@@ -515,10 +515,10 @@ function fetch()
 		if [ "$2" = "-" ]
 		then # to stdout
 			$DEBUG && echo "-- curl $1 --" >&2
-			curl "$1"
+			curl -L "$1"
 		else
 			$DEBUG && echo "-- curl $1 -o $2 --" >&2
-			curl "$1" -o "$2" || rm "$2"
+			curl -L "$1" -o "$2" || rm "$2"
 		fi
 	else
 		echo "error: can't fetch files (please install 'wget' or 'curl')" >&2
