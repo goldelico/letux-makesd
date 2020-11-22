@@ -127,15 +127,15 @@ raspi3b+		-f fat -s 5 -I -x https://github.com/raspberrypi/firmware/raw/master/b
 			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/$VARIANT/config.txt \
 			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/$VARIANT/cmdline.txt \
 			-k http://download.goldelico.com/letux-kernel/$VARIANT/zImage -d $VARIANT lxde -k none -d none -m $VARIANT -s 95
-# we must make sure that we load the mipsel variants and not armel/armhf
-lenny400		-A mipsel -f fat16 -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
-mipsbook-400		-A mipsel -f fat16 -s 5 -k $VARIANT-l400 -d $VARIANT-l400 -I lxde -k none -d none -m $VARIANT-l400 -s 95
+# we must make sure that we load the mipsel variants and not armel/armhf - and the kernels have device specific variants (ci20, l400)
+lenny400		-f fat16 -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
+mipsbook-400		-f fat16 -s 5 -k $VARIANT-l400 -d $VARIANT-l400 -I -A mipsel lxde -k none -d none -m $VARIANT-l400 -s 95
 mipsbook		mipsbook-400
 letux-400		mipsbook-400
 l400			mipsbook-400
 # Imagination CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 # see https://elinux.org/CI20_Dev_Zone#Making_a_bootable_SD_card_from_sources
-ci20			-p 1 -dd CI20/$VARIANT/u-boot-spl.bin -p 28 -dd CI20/$VARIANT/u-boot.img -p 4096 -A mipsel lxde -bboot CI20/$VARIANT -kboot $VARIANT-mips -dboot $VARIANT-mips -m $VARIANT-mips
+ci20			-p 1 -dd CI20/$VARIANT/u-boot-spl.bin -p 28 -dd CI20/$VARIANT/u-boot.img -p 4096 -A mipsel lxde -bboot CI20/$VARIANT -kboot $VARIANT-ci20 -dboot $VARIANT-ci20 -m $VARIANT-mips
 # Kobo Clara / Tolino Shine 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
 clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$VARIANT/u-boot.imx -p 1536 -dd Clara/$VARIANT/clara-env.bin -p 49152 debian -I -kboot $VARIANT -dboot $VARIANT -m $VARIANT
 e60k02-kobo		clara
