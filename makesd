@@ -981,6 +981,7 @@ then
 	fetch "$(dirname "$BOOT")/u-boot.img" "$BOOTDIR/u-boot.img"	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
 	fetch "$(dirname "$BOOT")/u-boot.flash" "$BOOTDIR/u-boot.flash"
 	fetch "$(dirname "$BOOT")/u-boot.img.flash" "$BOOTDIR/u-boot.img.flash"
+	fetch "$(dirname "$BOOT")/uImage" "$BOOTDIR/uImage"	# for chained intermediate u-boot hiding behind the name uImage
 	fetch "$(dirname "$BOOT")/splash.rgb16z" "$BOOTDIR/splash.rgb16z"
 	fetch "$(dirname "$BOOT")/menu.rgb16z" "$BOOTDIR/menu.rgb16z"
 	fetch "$(dirname "$BOOT")/boot.scr" "$BOOTDIR/boot.scr"
