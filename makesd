@@ -31,41 +31,41 @@ cat <<END
 -bnone			$1
 -bhttp://.*/.*		$1
 -bhttps://.*/.*		$1
--b.*			http://download.goldelico.com/letux-u-boot/$1/u-boot.bin
--B.*			http://download.goldelico.com/letux-u-boot/$1
+-b.*			https://download.goldelico.com/letux-u-boot/$1/u-boot.bin
+-B.*			https://download.goldelico.com/letux-u-boot/$1
 # kernel
 -knone			$1
 -khttp://.*/.*		$1
 -khttps://.*/.*		$1
--k.*			http://download.goldelico.com/letux-kernel/$1/uImage
+-k.*			https://download.goldelico.com/letux-kernel/$1/uImage
 # device tree
 -dnone			$1
 -dhttp://.*/.*		$1
 -dhttps://.*/.*		$1
--d.*			http://download.goldelico.com/letux-kernel/$1/device-trees.tbz
+-d.*			https://download.goldelico.com/letux-kernel/$1/device-trees.tbz
 # kernel modules
 -mnone			$1
 -mhttp://.*/.*		$1
 -mhttps://.*/.*		$1
--m.*			http://download.goldelico.com/letux-kernel/$1/modules.tgz
+-m.*			https://download.goldelico.com/letux-kernel/$1/modules.tgz
 # additional config
 -cnone			$1
 -chttp://.*/.*		$1
 -chttps://.*/.*		$1
--c.*			http://download.goldelico.com/letux-debian-rootfs/$1-config.tgz
+-c.*			https://download.goldelico.com/letux-debian-rootfs/$1-config.tgz
 # rootfs
 -rnone			$1
 -rhttp://.*/.*		$1
 -rhttps://.*/.*		$1
--rdebian		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-minimal.tbz
--rlxde			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-lxde.tbz
--rxfce			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-xfce4.tbz
--rqtmoko		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-qtmoko.tbz
--rreplicant		http://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz
--rpyraos		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-pyraos.tbz
--re17			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-e17.tbz
--rquantumstep		http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-quantumstep.tbz
--rphosh			http://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-phosh.tbz
+-rdebian		https://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-minimal.tbz
+-rlxde			https://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-lxde.tbz
+-rxfce			https://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-xfce4.tbz
+-rqtmoko		https://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-qtmoko.tbz
+-rreplicant		https://download.goldelico.com/letux-replicant/4.2/$VARIANT-replicant.tbz
+-rpyraos		https://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-pyraos.tbz
+-re17			https://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-e17.tbz
+-rquantumstep		https://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-quantumstep.tbz
+-rphosh			https://download.goldelico.com/letux-debian-rootfs/$VARIANT$ARCHITECTURE-phosh.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
 debian			-f ext4 -r debian -kboot $VARIANT -dboot $VARIANT -m $VARIANT -I
 lxde			debian -r lxde
@@ -124,9 +124,9 @@ udoo-neo		-p 2 -dd Udoo-Neo/$VARIANT/SPL -p 138 -dd Udoo-Neo/$VARIANT/u-boot.img
 raspi3b+		-f fat -s 5 -I -x https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin \
 			-x https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat \
 			-x https://github.com/raspberrypi/firmware/raw/master/boot/start.elf \
-			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/$VARIANT/config.txt \
-			-x http://download.goldelico.com/letux-u-boot/RasPi-3B+/$VARIANT/cmdline.txt \
-			-k http://download.goldelico.com/letux-kernel/$VARIANT/zImage -d $VARIANT lxde -k none -d none -m $VARIANT -s 95
+			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$VARIANT/config.txt \
+			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$VARIANT/cmdline.txt \
+			-k https://download.goldelico.com/letux-kernel/$VARIANT/zImage -d $VARIANT lxde -k none -d none -m $VARIANT -s 95
 # we must make sure that we load the mipsel variants and not armel/armhf - and the kernels have device specific variants (ci20, l400)
 lenny400		-f fat16 -s 2 -k http://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r http://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -m http://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
 mipsbook-400		-f fat16 -s 5 -k $VARIANT-l400 -d $VARIANT-l400 -I -A mipsel lxde -k none -d none -m $VARIANT-l400 -s 95
@@ -266,7 +266,7 @@ examples:"
   makesd gta04 -- makes the stable production (recovery) image for the GTA04 (includes boot loader)
   makesd gta04 -f1 -b GTA04/2015-10-25 -- makes the \$VARIANT image for the GTA04 but use U-Boot from 2015-10-25
   makesd gta04 -d letux-4.10.4 -k letux-4.10.4 -m letux-4.10.4 -- replace DT, kernel and modules by specific version
-  makesd pyra -r http://download.goldelico.com/letux-debian-rootfs/stable-pyraos.tbz -- install stable PyraOS
+  makesd pyra -r https://download.goldelico.com/letux-debian-rootfs/stable-pyraos.tbz -- install stable PyraOS
   makesd -v unstable gta04 -- makes an unstable production image
   makesd -v unstable gta04 -f1 quantumstep -- makes an unstable production image but with quantumstep rootfs
   makesd -v 20141006-GTA04-beta-3.17.0-wheezy-7.6 l3704 -- makes the specified version for the Letux 3704
@@ -623,7 +623,7 @@ do
 			;;
 		"-u" | "--update" )	# self-update
 			$DEBUG && echo "-- self-update --" >&2
-			fetch "http://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)" "$0.new" &&
+			fetch "https://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)" "$0.new" &&
 			chmod +x $0.new &&
 			mv $0.new $0
 			exit
@@ -1065,7 +1065,7 @@ if [ "$INFO" ]
 then
 	$DEBUG && echo "-- write info >/media/P${P}/makesd.info --" >&2
 	! $DRYRUN && (
-	echo "+++ this system was created by makesd (http://projects.goldelico.com/p/gta04-makesd/) at $(date) +++"
+	echo "+++ this system was created by makesd (https://projects.goldelico.com/p/gta04-makesd/) at $(date) +++"
 	echo "$CMDLINE"
 	partitions
 	) >"/media/P${P}/makesd.info"	# so that we can easily find out for which device this is formatted
