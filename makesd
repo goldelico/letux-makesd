@@ -143,7 +143,10 @@ e60k02-kobo		clara
 shine3			clara -p 2 -dd Shine3/$VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
 e60k02-tolino		tolino3
 			# pinephone should use -A arm64 in the future but it also boots with armhf
-pinephone		-A armhf -p 1 -dd PinePhone/2019-12-20/u-boot-spl.bin -p 1953 lxde -bboot PinePhone/$VARIANT -kboot https://download.goldelico.com/letux-kernel/$VARIANT-arm64/Image.gz -dboot $VARIANT-arm64 -m $VARIANT-arm64
+			# we share the same u-boot-spl.bin
+pinephone-1.0		-A armhf -p 1 -dd PinePhone-1.0/latest/u-boot-spl.bin -p 1953 lxde -bboot PinePhone-1.0/$VARIANT -kboot https://download.goldelico.com/letux-kernel/$VARIANT-arm64/Image.gz -dboot $VARIANT-arm64 -m $VARIANT-arm64
+pinephone-1.1		pinephone-1.0 -bboot PinePhone-1.1/$VARIANT
+pinephone-1.2		pinephone-1.0 -bboot PinePhone-1.2/$VARIANT
 END
 }
 
