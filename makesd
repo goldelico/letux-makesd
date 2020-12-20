@@ -963,8 +963,8 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	ls -l /media/P${P}
 	# run in a subshell so that we can really redirect ouput
 	case "$ROOTFS" in
-	*.tgz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - --numeric-owner ) ;;
-	*.tbz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
+	*.tgz | *.tar.gz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - --numeric-owner ) ;;
+	*.tbz | *.tar.bz2 ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
 	* )	echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
 	esac
 fi
