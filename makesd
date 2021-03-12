@@ -482,9 +482,30 @@ $SUBDIR $1"	# append new line
 	done
 }
 
-function exists()
+function tool()
 { # check if tool exists
 	which "$1" >/dev/null
+}
+
+function exists()
+{ # check if $url can be downloaded
+	$DEBUG && echo "-- exists $1 --" >&2
+	if [ "${1:0:5}" = "file:" ]
+	then # file: pattern
+		local _FILE=${1#"file:"}
+		[ -r "$_FILE" ]
+		return
+	elif tool wget
+	then # wget exists
+		wget --spider "$1" 2>/dev/null
+		return
+	elif tool curl
+	then # try curl
+		curl -L --output /dev/null --silent --fail -r 0-0 "$1"
+		return
+	fi
+	echo "error: can't fetch files (please install 'wget' or 'curl')" >&2
+	return 1
 }
 
 function fetch()
@@ -493,7 +514,7 @@ function fetch()
 	if $DRYRUN
 	then
 		echo "fetch $1 -> $2" >&2
-	elif [ ${1:0:5} = "file:" ]
+	elif [ "${1:0:5}" = "file:" ]
 	then # file: pattern
 		local _FILE=${1#"file:"}
 		if [ "$2" = "-" ]
@@ -504,7 +525,7 @@ function fetch()
 			$DEBUG && echo "-- cp $_FILE $2 --" >&2
 			cp $_FILE $2 || rm "$2"
 		fi
-	elif exists wget
+	elif tool wget
 	then # wget exists
 		if [ "$2" = "-" ]
 		then # to stdout
@@ -514,7 +535,7 @@ function fetch()
 			$DEBUG && echo "-- wget -O - $1 >$2 --" >&2
 			wget -O - "$1" >"$2" || rm "$2"
 		fi
-	elif exists curl
+	elif tool curl
 	then # try curl
 		if [ "$2" = "-" ]
 		then # to stdout
@@ -627,6 +648,11 @@ do
 			;;
 		"-u" | "--update" )	# self-update
 			$DEBUG && echo "-- self-update --" >&2
+			if ! exists "https://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)"
+			then
+				echo "!!! can't access download path https://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)" >&2
+				exit 1
+			fi
 			fetch "https://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)" "$0.new" &&
 			chmod +x $0.new &&
 			mv $0.new $0
@@ -962,6 +988,7 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	$DEBUG && echo "-- fetch rootfs to /media/P${P} --" >&2
 	ls -l /media/P${P}
 	# run in a subshell so that we can really redirect ouput
+	exists "$ROOTFS" || { echo "could not find $ROOTFS" >&2; exit 1; }
 	case "$ROOTFS" in
 	*.tgz | *.tar.gz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - --numeric-owner ) ;;
 	*.tbz | *.tar.bz2 ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
@@ -978,19 +1005,31 @@ then
 	#
 	# loading some files may fail since they do not exist for the chosen variant - but we ignore
 	#
-	fetch "$(dirname "$BOOT")/MLO" "$BOOTDIR/MLO"	# must come first
-	fetch "$(dirname "$BOOT")/x-load.flash" "$BOOTDIR/x-load.flash"
-	fetch "$(dirname "$BOOT")/MLO.flash" "$BOOTDIR/MLO.flash"
-	fetch "$BOOT" "$BOOTDIR/u-boot.bin"
-	fetch "$(dirname "$BOOT")/u-boot.img" "$BOOTDIR/u-boot.img"	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
-	fetch "$(dirname "$BOOT")/u-boot.flash" "$BOOTDIR/u-boot.flash"
-	fetch "$(dirname "$BOOT")/u-boot.img.flash" "$BOOTDIR/u-boot.img.flash"
-	fetch "$(dirname "$BOOT")/uImage" "$BOOTDIR/uImage"	# for chained intermediate u-boot hiding behind the name uImage
-	fetch "$(dirname "$BOOT")/splash.rgb16z" "$BOOTDIR/splash.rgb16z"
-	fetch "$(dirname "$BOOT")/menu.rgb16z" "$BOOTDIR/menu.rgb16z"
-	fetch "$(dirname "$BOOT")/boot.scr" "$BOOTDIR/boot.scr"
-	fetch "$(dirname "$BOOT")/boot.txt" "$BOOTDIR/boot.txt"
-	fetch "$(dirname "$BOOT")/uEnv.txt" "$BOOTDIR/uEnv.txt"
+# should somehow count how much files have been installed
+# and print an error if none...
+	(
+	DIR="$(dirname "$BOOT")"
+	echo "$DIR/MLO" "$BOOTDIR/MLO"	# must come first
+	echo "$DIR/x-load.flash" "$BOOTDIR/x-load.flash"
+	echo "$DIR/MLO.flash" "$BOOTDIR/MLO.flash"
+	echo "$BOOT" "$BOOTDIR/u-boot.bin"
+	echo "$DIR/u-boot.img" "$BOOTDIR/u-boot.img"	# some x-loaders want u-boot.bin others want u-boot.img (e.g. the OMAP5 MLO)
+	echo "$DIR/u-boot.flash" "$BOOTDIR/u-boot.flash"
+	echo "$DIR/u-boot.img.flash" "$BOOTDIR/u-boot.img.flash"
+	echo "$DIR/uImage" "$BOOTDIR/uImage"	# for chained intermediate u-boot hiding behind the name uImage
+	echo "$DIR/splash.rgb16z" "$BOOTDIR/splash.rgb16z"
+	echo "$DIR/menu.rgb16z" "$BOOTDIR/menu.rgb16z"
+	echo "$DIR/boot.scr" "$BOOTDIR/boot.scr"
+	echo "$DIR/boot.txt" "$BOOTDIR/boot.txt"
+	echo "$DIR/uEnv.txt" "$BOOTDIR/uEnv.txt"
+	) | while read DIR DEST
+	do
+		if exists "$DIR"
+		then
+			fetch "$DIR" "$DEST" || break
+		fi
+	done
+
 	! $DRYRUN && echo "$CMDLINE" >"$BOOTDIR/makesd.info"	# so that we can easily find out for which device this is formatted
 	! $DRYRUN && partitions >>"$BOOTDIR/makesd.info"
 fi
@@ -1002,8 +1041,10 @@ then
 	$DEBUG && echo "-- fetch kernel to $KERNELDIR --" >&2
 	mkdir -p "$KERNELDIR"
 	KDEST="$KERNELDIR/$(basename "$KERNEL")"
+	exists "$KERNEL" || { echo "could not find $KERNEL" >&2; exit 1; }
 	fetch "$KERNEL" "$KDEST"
-	fetch "$(dirname "$KERNEL")/bootargs.scr" "$KERNELDIR/bootargs.scr"
+	BOOTARGS="$(dirname "$KERNEL")/bootargs.scr"
+	exists "$BOOTARGS" && fetch "$BOOTARGS" "$KERNELDIR/bootargs.scr"
 	KERNEL_VERSION=$(file "$KDEST")
 	KERNEL_VERSION=$(expr "$KERNEL_VERSION" : ".*Linux-\([^,]*\),.*")
 	$DEBUG && echo "-- installed $KERNEL_VERSION --" >&2
@@ -1015,15 +1056,17 @@ if [ "$DT" != none ]
 then
 	$DEBUG && echo "-- fetch device trees to $DTDIR --" >&2
 	mkdir -p "$DTDIR"
-	fetch "$DT" - | ( cd "$DTDIR" && tar xvjf - )
+	exists "$DT" || { echo "could not find $DT" >&2; exit 1; }
+	fetch "$DT" - | ( cd "$DTDIR" && tar xvjf - --no-same-owner)
 fi
 
 MODULES=$(getparam "$P" MODULES)
 if [ "$MODULES" != none ]
 then
 	$DEBUG && echo "-- fetch modules to /media/P${P} --" >&2
+	exists "$MODULES" || { echo "could not find $MODULES" >&2; exit 1; }
 	fetch "$MODULES" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner --keep-directory-symlink)
-	if [ "$KERNEL_VERSION" ] && exists depmod
+	if [ "$KERNEL_VERSION" ] && tool depmod
 	then # run depmod on the installed root for the last kernel we have installed
 		$DEBUG && echo "-- run depmod $KERNEL_VERSION --" >&2
 		depmod -b "/media/P${P}/" "$KERNEL_VERSION"
@@ -1034,6 +1077,7 @@ CONFIG=$(getparam "$P" CONFIG)
 if [ "$CONFIG" != none ]
 then
 	$DEBUG && echo "-- fetch config patches to /media/P${P} --" >&2
+	exists "$CONFIG" || { echo "could not find $CONFIG" >&2; exit 1; }
 	fetch "$CONFIG" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner)
 fi
 
@@ -1047,9 +1091,11 @@ do
 	fi
 	$DEBUG && echo "-- fetch file(s) $URL to /media/P${P}/$DIRFILE --" >&2
 
+# FIXME: error if none did match
 	for SUFFIX in .tgz .tbz ''
 	do
 		FILE="$URL$SUFFIX"
+		exists "$FILE" || continue
 		case "$FILE" in
 			*.tgz ) fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner) && break;;	# try to unpack into directory
 			*.tbz ) fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner) && break;;	# try to unpack into directory
@@ -1079,7 +1125,7 @@ fi
 
 ls -l /media/P[1-4]
 
-done
+done	# loop over partitions
 
 $DEBUG && echo "-- sync --" >&2
 
