@@ -607,7 +607,8 @@ function version
 
 function sane_sfdisk {
 	SFVER=$(sfdisk -v | awk '{print $4}')
-# echo sfdisk version: $SFVER $(version $SFVER) >&2
+	$DEBUG && echo $(which sfdisk) -v: $(sfdisk -v) >&2
+	$DEBUG && echo "$(version $SFVER) -ge $(version 2.26)" >&2
 	if [ "$(version $SFVER)" -ge "$(version 2.26)" ]
 	then
 		# 2.26.2 and later have changed API
