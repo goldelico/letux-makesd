@@ -59,15 +59,10 @@ cat <<END
 -rnone			$1
 -rhttp://.*/.*		$1
 -rhttps://.*/.*		$1
--rdebian		https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-minimal.tbz
--rlxde			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-lxde.tbz
--rxfce			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-xfce4.tbz
--rqtmoko		https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-qtmoko.tbz
 -rreplicant		https://download.goldelico.com/letux-replicant/4.2/$ROOTFS_VARIANT-replicant.tbz
--rpyraos		https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-pyraos.tbz
--re17			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-e17.tbz
--rquantumstep		https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-quantumstep.tbz
--rphosh			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-phosh.tbz
+-rxfce			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-xfce4.tbz
+-rdebian		https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-minimal.tbz
+-r.*			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-$1.tbz
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
 debian			-f ext4 -r debian -kboot $KERNEL_VARIANT -dboot $ROOTFS_VARIANT -m $KERNEL_VARIANT -I
 lxde			debian -r lxde
