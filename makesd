@@ -602,7 +602,7 @@ function partitions()
 # https://stackoverflow.com/questions/4023830/how-to-compare-two-strings-in-dot-separated-version-format-in-bash
 function version
 {
-	printf "%03d%03d%03d%03d" $(echo "$1" | tr '.' ' ')
+	printf "%03d" $(echo "$1.2.0.0.0" | cut -d '.' -f 1-5 | tr '.' ' ')
 }
 
 function sane_sfdisk {
