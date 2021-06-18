@@ -606,8 +606,8 @@ function version
 }
 
 function sane_sfdisk {
-	SFVER=$(sfdisk -v | awk '{print $4}')
-	$DEBUG && echo $(which sfdisk) -v: $(sfdisk -v) >&2
+	SFVER=$(export LC_ALL=C LANGUAGE=C; sfdisk -v | awk '{print $4}')
+	$DEBUG && echo $(which sfdisk) -v: $(export LC_ALL=C LANGUAGE=C; sfdisk -v) >&2
 	$DEBUG && echo "$(version $SFVER) -ge $(version 2.26)" >&2
 	if [ "$(version $SFVER)" -ge "$(version 2.26)" ]
 	then
@@ -857,10 +857,10 @@ fi
 			# this gives the wrong impression that we could define just a partition 3 and none for 1 & 2
 			# in other words: there should only be "none" records after the first "none"
 			# but we don't check that yet
-			SFVER=$(sfdisk -v | awk '{print $4}')
+			SFVER=$(export LC_ALL=C LANGUAGE=C; sfdisk -v | awk '{print $4}')
 			if [ "$(version $SFVER)" -lt "$(version 2.26)" ]
 			then
-				echo "$PS,0,0,-"	# empty partition
+				echo "$PS,0,0,-"	# start with empty partition before 2.26
 			fi
 			;;
 		fat* )
