@@ -145,6 +145,14 @@ e60k02-tolino		tolino3
 pinephone-1.0		-A armhf -p 1 -dd PinePhone-1.0/latest/u-boot-spl.bin -p 1953 lxde -bboot PinePhone-1.0/$BOOT_VARIANT -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -dboot $KERNEL_VARIANT-arm64 -m $KERNEL_VARIANT-arm64
 pinephone-1.1		pinephone-1.0 -bboot PinePhone-1.1/$BOOT_VARIANT
 pinephone-1.2		pinephone-1.0 -bboot PinePhone-1.2/$BOOT_VARIANT
+# x86 needs syslinux (mbr.bin) to be bootable and the first partition to be FAT
+x86			-A x86 -p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
+			-p 2 -f fat -s 5 \
+			-x https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/ldlinux.bin \
+			-x https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/ldlinux.c32 \
+			-x https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/syslinux.cfg \
+			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-i386/vmlinux.bin -d none \
+			lxde -k none -d none -m $KERNEL_VARIANT-i386 -s 95
 END
 }
 
