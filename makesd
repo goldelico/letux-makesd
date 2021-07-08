@@ -719,9 +719,11 @@ $DEBUG && echo "-- prepare $DEV --" >&2
 
 if [ "${DEV}" = "/dev/sda" ]
 then
-	echo "error: refuses to overwrite /dev/sda" >&2
+	echo "error: refuses to overwrite /dev/sda - but you may specify /dev/sda!" >&2
 	exit 1
 fi
+
+[ "${DEV}" = "/dev/sda!" ] && DEV="/dev/sda"	# override protection
 
 if ! [ -b "$DEV" ] && ! $DRYRUN
 then
