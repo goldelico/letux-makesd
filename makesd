@@ -156,7 +156,7 @@ x86-syslinux		-A x86 -p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
 x86-efi			-A x86 \
 			-p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
 			-p 2 -f fat -s 5 -I \
-			-x https://download.goldelico.com/letux-u-boot/X86/2021-07-10/x86-boot.tgz \
+			-x https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/x86-boot.tgz \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-i386/vmlinuz -d none \
 			lxde -k none -d none -m $KERNEL_VARIANT-i386 -s 95
 x86			x86-efi
