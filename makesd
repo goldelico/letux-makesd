@@ -157,6 +157,7 @@ x86-efi			-A i386 \
 			-p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
 			-p 2 -f fat -s 5 -I \
 			-x https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/x86-boot.tgz \
+			-xefi/debian/grub.cfg https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/grub.cfg \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-i386/vmlinuz -d none \
 			lxde -k none -d none -m $KERNEL_VARIANT-i386 -s 95
 x86			x86-efi
@@ -221,7 +222,8 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -s size	define relative size (do not specify a % suffix or other units!)
     -p sector	position start of next partition (-f) or -dd to a specific sector (512 byte / sector)
     low level copy:
-    -x[dirfile] <url>	raw expand of remote file into directory dir or file (trying different suffixes like .tar, .tbz)
+    -x[file] <url>	raw copy of remote file into directory file
+    -x[dirl] <url>	raw expand of remote package into directory dir (trying different suffixes like .tar, .tbz)
 		[can be specified multiple times]
     -dd <url>	copy binary file to current position (as defined by -p)
 		[can be specified multiple times]
