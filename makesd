@@ -137,9 +137,10 @@ l400			mipsbook-400
 # see https://elinux.org/CI20_Dev_Zone#Making_a_bootable_SD_card_from_sources
 ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT_VARIANT/u-boot.img -p 4096 lxde -bboot CI20/$BOOT_VARIANT -kboot $BOOT_VARIANT-ci20 -dboot $KERNEL_VARIANT-ci20 -m $KERNEL_VARIANT-mips
 # Kobo Clara / Tolino Shine 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
-clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Clara/$BOOT_VARIANT/clara-env.bin -p 49152 debian -I -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
+clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Clara/$BOOT_VARIANT/clara-env.bin -p 49152 debian -I -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
 e60k02-kobo		clara
-shine3			clara -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
+shine3-old		clara -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
+shine3			-p 2 -dd Shine3/2019-09-23/boot -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/$BOOT_VARIANT/shine3-env.bin -p 49152 debian -I -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
 e60k02-tolino		tolino3
 			# pinephone should use -A arm64 in the future but it also boots with armhf
 			# we share the same u-boot-spl.bin
