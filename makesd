@@ -22,7 +22,7 @@ function macros()
 {
 # format: macro-pattern macro-body
 # it is valid to use shell variables in the body since they are expanded by the here-document
-# $1 is expanded by the first argument given to the macros call
+# $1 is expanded by the first argument given to the macros() call
 # patterns are regexp (expr : command)
 # comments (lines starting with "#" can be used and they are ignored
 # macros can be recursive
@@ -1068,8 +1068,7 @@ then
 		fi
 	done
 
-	! $DRYRUN && echo "$CMDLINE" >"$BOOTDIR/makesd.info"	# so that we can easily find out for which device this is formatted
-	! $DRYRUN && partitions >>"$BOOTDIR/makesd.info"
+	! $DRYRUN && { echo "$CMDLINE"; date; partitions; } >"$BOOTDIR/makesd.info"	# so that we can easily find out for which device this is formatted, when and how
 fi
 
 KERNEL=$(getparam "$P" KERNEL)
