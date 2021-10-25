@@ -33,32 +33,38 @@ cat <<END
 -bnone			$1
 -bhttp://.*/.*		$1
 -bhttps://.*/.*		$1
+-bfile:/.*		$1
 -b.*			https://download.goldelico.com/letux-u-boot/$1/u-boot.bin
 -B.*			https://download.goldelico.com/letux-u-boot/$1
 # kernel
 -knone			$1
 -khttp://.*/.*		$1
 -khttps://.*/.*		$1
+-kfile:/.*		$1
 -k.*			https://download.goldelico.com/letux-kernel/$1/uImage
 # device tree
 -dnone			$1
 -dhttp://.*/.*		$1
 -dhttps://.*/.*		$1
+-dfile:/.*		$1
 -d.*			https://download.goldelico.com/letux-kernel/$1/device-trees.tbz
 # kernel modules
 -mnone			$1
 -mhttp://.*/.*		$1
 -mhttps://.*/.*		$1
+-mfile:/.*		$1
 -m.*			https://download.goldelico.com/letux-kernel/$1/modules.tgz
 # additional config
 -cnone			$1
 -chttp://.*/.*		$1
 -chttps://.*/.*		$1
+-cfile:/.*		$1
 -c.*			https://download.goldelico.com/letux-debian-rootfs/$1-config.tgz
 # rootfs
 -rnone			$1
 -rhttp://.*/.*		$1
 -rhttps://.*/.*		$1
+-rfile:/.*		$1
 -rreplicant		https://download.goldelico.com/letux-replicant/4.2/$ROOTFS_VARIANT-replicant.tbz
 -rxfce			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-xfce4.tbz
 -rdebian		https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-minimal.tbz
