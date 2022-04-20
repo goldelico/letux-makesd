@@ -121,6 +121,7 @@ pyraphone		gta15
 # for Pandora, a single partition image can boot
 openpandora		lxde -b OpenPandora/$BOOT_VARIANT
 pandora			openpandora
+pandora-auto		openpandora -x/autoboot.txt http://download.goldelico.com/letux-u-boot/OpenPandora/$BOOT_VARIANT/src/boot.txt
 # Udoo Neo needs a pseudo-single-partition but SPL and u-boot must be copied by dd
 udoo-neo		-p 2 -dd Udoo-Neo/$BOOT_VARIANT/SPL -p 138 -dd Udoo-Neo/$BOOT_VARIANT/u-boot.img -p 2048 lxde -bboot Udoo-Neo/$BOOT_VARIANT -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
 # Raspi 3B+ needs special setup with bootloader and boot plus rootfs partitions
