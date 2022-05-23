@@ -229,6 +229,7 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -f-		go back one partition so that we can specify a macro that contains a -f
     -F		go back one partition so that we can specify a macro that contains a -f
     -s size	define relative size (do not specify a % suffix or other units!)
+    -n name	define partition name (fat are called "boot" and ext are called "rootfs" by default)
     -p sector	position start of next partition (-f) or -dd to a specific sector (512 byte / sector)
     low level copy:
     -x[file] <url>	raw copy of remote file into directory file
@@ -349,7 +350,7 @@ function process()
 					exit 1
 				fi
 				;;
-			-f ) # switch to next partition
+			-f ) # switch to next partition and define format
 				NP=$(expr "$NP" + 1)
 				if [ "$NP" -gt 4 ]
 				then
@@ -358,6 +359,28 @@ function process()
 					exit 1
 				fi
 				shift
+				case "$1" in
+				none )
+					: skip
+					;;
+				fat* )
+					setparam $NP NAME "boot$FATNUM"	# define default
+					FATNUM=$(expr "${FATNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
+					;;
+				ext* )
+					setparam $NP NAME "rootfs$EXTNUM"	# define default
+					EXTNUM=$(expr "${EXTNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
+					;;
+				swap )
+					setparam $NP NAME "swap$SWAPNUM"	# define default
+					SWAPNUM=$(expr "${SWAPNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
+					;;
+				* )
+					echo "unknown partition type $1" >&2
+					useage
+					exit 1
+					;;
+				esac
 				setparam $NP FORMAT "$1"
 				setparam $NP SIZE "25"
 				setparam $NP PSTART "$PSTART"
@@ -375,6 +398,10 @@ function process()
 			-s ) # define relative size (typically in %)
 				shift
 				setparam $NP SIZE "$1"
+				;;
+			-n ) # define partition name
+				shift
+				setparam $NP NAME "$1"
 				;;
 			-p ) # define partition or dd start sector (must come before -f or -p)
 				shift
@@ -620,7 +647,8 @@ function partitions()
 		ROOTFS="$(getparam "$P" ROOTFS)"
 		MODULES="$(getparam "$P" MODULES)"
 		CONFIG="$(getparam "$P" CONFIG)"
-		echo "$P: $FORMAT s:$SIZE% p:$PS b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
+		PNAME="$(getparam "$P" NAME)"
+		echo "$P: $FORMAT n:$PNAME s:$SIZE% p:$PS b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
 		XLIST="$(getparam "$P" XLIST)"
 		[ "$XLIST" ] && echo "$P: x:$(echo $XLIST)"
 	done
@@ -948,6 +976,7 @@ do # format and mount partitions
 	fi
 	umount ${DEVP}${P} 2>/dev/null
 	sleep 1
+	PNAME="$(getparam $P NAME)"
 	case "$(getparam $P FORMAT)" in
 		none )
 			: skip
@@ -955,18 +984,16 @@ do # format and mount partitions
 		fat* )
 			if ! [ "$NOFORMAT" ]
 			then
-				PNAME="boot$FATNUM"
-				FATNUM=$(expr "${FATNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
 				echo making $(getparam $P FORMAT) partition $PNAME
 				case "$(getparam $P FORMAT)" in
 					fat16 )
-						mkfs.vfat -F 16 -n $PNAME ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
+						mkfs.vfat -F 16 -n "$PNAME" ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
 						;;
 					fat | fat32 )
-						mkfs.vfat -F 32 -n $PNAME ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
+						mkfs.vfat -F 32 -n "$PNAME" ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
 						;;
 					fat )	# let mkfs decide
-						mkfs.vfat -n $PNAME ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
+						mkfs.vfat -n "$PNAME" ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
 						;;
 				esac
 			fi
@@ -975,8 +1002,6 @@ do # format and mount partitions
 		ext* )
 			if ! [ "$NOFORMAT" ]
 			then
-				PNAME="rootfs$EXTNUM"
-				EXTNUM=$(expr "${EXTNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
 				echo making $(getparam $P FORMAT) partition $PNAME
 				yes | mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
 				fsck.ext3 -y ${DEVP}${P}
@@ -984,7 +1009,7 @@ do # format and mount partitions
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
 		swap )
-			mkswap -L "swap$P" ${DEVP}${P}
+			mkswap -L "$PNAME" ${DEVP}${P}
 			;;
 	esac
 done
