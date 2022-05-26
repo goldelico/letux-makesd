@@ -149,11 +149,29 @@ e60k02-kobo		clara
 shine3-old		clara -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
 shine3			-p 2 -dd Shine3/2019-09-23/boot -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/$BOOT_VARIANT/shine3-env.bin -p 49152 debian -I -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
 e60k02-tolino		tolino3
-			# pinephone should use -A arm64 in the future but it also boots with armhf
-			# we share the same u-boot-spl.bin
-pinephone-1.0		-A armhf -p 1 -dd PinePhone-1.0/latest/u-boot-spl.bin -p 1953 lxde -bboot PinePhone-1.0/$BOOT_VARIANT -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -dboot $KERNEL_VARIANT-arm64 -m $KERNEL_VARIANT-arm64
+# pinephone should use -A arm64 in the future but it also boots with armhf rootfs
+pinephone-1.0		-A armhf -p 1 -dd PinePhone-1.0/latest/u-boot-spl.bin -p 1953 \
+			lxde \
+			-bboot PinePhone-1.0/$BOOT_VARIANT \
+			-kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -dboot $KERNEL_VARIANT-arm64 -m $KERNEL_VARIANT-arm64
 pinephone-1.1		pinephone-1.0 -bboot PinePhone-1.1/$BOOT_VARIANT
 pinephone-1.2		pinephone-1.0 -bboot PinePhone-1.2/$BOOT_VARIANT
+# odroid should use -A arm64 in the future but it also boots with armhf rootfs
+odroid-m1		-A armhf -f ext2 -s 2 -n boot -I \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/boot.scr \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/Image.gz \
+			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -d $KERNEL_VARIANT-arm64 \
+			debian -n rootfs -k none -d none -m $KERNEL_VARIANT-arm64
+odroid-m1-orig		-v 2022-05-21-vendor -A armhf -f ext2 -s 2 -n boot -I \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/boot.scr \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/boot-logo.bmp.gz \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/config-4.19.219-odroid-arm64 \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/config.ini \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/dtb \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/dtbs \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/initrd.img \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/vmlinuz \
+			-f ext4 -n rootfs -r https://download.goldelico.com/letux-debian-rootfs/odroid-m1-rootfs.tbz
 # x86 needs syslinux (mbr.bin) to be bootable and the first partition to be FAT
 x86-syslinux		-A i386 -p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
 			-p 2 -f fat -s 5 -I \
