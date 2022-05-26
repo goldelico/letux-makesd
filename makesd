@@ -1003,8 +1003,20 @@ do # format and mount partitions
 			if ! [ "$NOFORMAT" ]
 			then
 				echo making $(getparam $P FORMAT) partition $PNAME
-				yes | mke2fs -j -L "${PNAME}" ${DEVP}${P} &&
-				fsck.ext3 -y ${DEVP}${P}
+				case "$(getparam $P FORMAT)" in
+				ext2 )
+					yes | mke2fs -t ext2 -L "${PNAME}" ${DEVP}${P} &&
+					fsck.ext2 -y ${DEVP}${P}
+					;;
+				ext3 )
+					yes | mke2fs -t ext3 -j -L "${PNAME}" ${DEVP}${P} &&
+					fsck.ext3 -y ${DEVP}${P}
+					;;
+				ext4 )
+					yes | mke2fs -t ext4 -j -L "${PNAME}" ${DEVP}${P} &&
+					fsck.ext4 -y ${DEVP}${P}
+					;;
+				esac
 			fi
 			mount ${DEVP}${P} /media/P${P} || exit
 			;;
