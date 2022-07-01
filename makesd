@@ -666,7 +666,7 @@ function partitions()
 		MODULES="$(getparam "$P" MODULES)"
 		CONFIG="$(getparam "$P" CONFIG)"
 		PNAME="$(getparam "$P" NAME)"
-		echo "$P: $FORMAT n:$PNAME s:$SIZE% p:$PS b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
+		echo "$P: $FORMAT p:$PS s:$SIZE% n:$PNAME b:$BOOTDIR+$BOOT k:$KERNELDIR+$KERNEL dt:$DTDIR+$DT r:$ROOTFS m:$MODULES c:$CONFIG"
 		XLIST="$(getparam "$P" XLIST)"
 		[ "$XLIST" ] && echo "$P: x:$(echo $XLIST)"
 	done
