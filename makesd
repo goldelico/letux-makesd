@@ -188,6 +188,7 @@ x86-efi			-A i386 \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-i386/vmlinuz -d none \
 			lxde -k none -d none -m $KERNEL_VARIANT-i386 -s 95
 x86			x86-efi
+atsama5			-f fat -s 5 -b AT-SAMA5D27/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 END
 }
 
@@ -1108,6 +1109,7 @@ then
 	#
 # should somehow count how much files have been installed
 # and print an error if none...
+# FIXME: there should be a default list and a macro to define them
 	(
 	DIR="$(dirname "$BOOT")"
 	echo "$DIR/MLO" "$BOOTDIR/MLO"	# must come first
@@ -1123,6 +1125,8 @@ then
 	echo "$DIR/boot.scr" "$BOOTDIR/boot.scr"
 	echo "$DIR/boot.txt" "$BOOTDIR/boot.txt"
 	echo "$DIR/uEnv.txt" "$BOOTDIR/uEnv.txt"
+	echo "$DIR/boot.bin" "$BOOTDIR/BOOT.BIN"	# for SAMA5
+	echo "$DIR/uboot.env" "$BOOTDIR/uboot.env"	# for SAMA5
 	) | while read DIR DEST
 	do
 		if exists "$DIR"
