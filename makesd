@@ -312,20 +312,20 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
 
   partition:
     format (starts next partition):
-    -f fat
-    -f fat16
-    -f ext3
-    -f ext4
-    -f none
-    -f[0-4]	switch to given partition - note that another -f will increment by 1
-    -f-		go back one partition so that we can specify a macro that contains a -f
-    -F		go back one partition so that we can specify a macro that contains a -f
-    -s size	define relative size (do not specify a % suffix or other units!)
-    -n name	define partition name (fat are called "boot" and ext are called "rootfs" by default)
+    -f fat		start next fat partition with name boot
+    -f fat16		start next fat16 partition with name boot
+    -f ext3		start next ext3 partition with name rootfs
+    -f ext4		start next ext4 partition with name rootfs
+    -f none		start next partition
+    -f[0-4][format]	switch to given partition and optionally define format
+		note that another -f will increment by 1
+    -F		go back one partition
+    -s size	define relative size of current partition (do not specify a % suffix or other units!)
+    -n name	define name of current partition
     -p sector	position start of next partition (-f) or -dd to a specific sector (512 byte / sector)
     low level copy:
     -x[file] <url>	raw copy of remote file into directory file
-    -x[dirl] <url>	raw expand of remote package into directory dir (trying different suffixes like .tar, .tbz)
+    -x[dir] <url>	raw expand of remote package into directory dir (trying different suffixes like .tar, .tbz)
 		[can be specified multiple times]
     -dd <url>	copy binary file to current position (as defined by -p)
 		[can be specified multiple times]
@@ -425,15 +425,31 @@ XLIST=""
 
 function process()
 { # $1 .. $n
+	echo "$@" >>.makesd.log
 	while [ "$1" ]
 		do
+		$DEBUG && echo "command $1" >&2
 		case "$1" in
-			-f[0-4] ) # switch to given partition (but don't change type)
-				NP=$(expr "$1" : "-f\(.*\)" )
+			-f[0-4]* ) # switch to given partition (and optionally change type)
+				NP=$(expr "$1" : "-f\([0-4]\).*" )
 				# FIXME: check type!
 				$DEBUG && echo "switched to partition $NP" >&2
+				FORMAT=$(expr "$1" : "-f[0-4]\(.*\)" )
+				case "$FORMAT" in
+				'' )
+					;;
+				fat* | ext* | swap )
+					setparam $NP FORMAT $FORMAT
+					$DEBUG && echo "switched partition $NP to $FORMAT" >&2
+					;;
+				* )
+					echo "unknown partition type $FORMAT" >&2
+					useage
+					exit 1
+					;;
+				esac
 				;;
-			-F | -f- ) # switch to previous partition
+			-F ) # switch to previous partition
 				NP=$(expr "$NP" - 1)
 				if [ "$NP" -lt 0 ]
 				then
@@ -841,6 +857,7 @@ done
 
 $DEBUG && echo "-- define defaults --" >&2
 NP=0
+rm -f .makesd.log
 process -f none -f none -f none -f none
 
 if [ "$1" ]
@@ -848,6 +865,7 @@ then
 	$DEBUG && echo "-- start over with given options --" >&2
 	# start over with given options
 	NP=0
+	rm -f .makesd.log
 	process "$@" || exit 1
 fi
 
