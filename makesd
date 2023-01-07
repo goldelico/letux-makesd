@@ -184,7 +184,7 @@ l400			mipsbook-400
 
 # Imagination CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 # see https://elinux.org/CI20_Dev_Zone#Making_a_bootable_SD_card_from_sources
-ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT_VARIANT/u-boot.img -p 4096 lxde -f1ext3 -bboot CI20/$BOOT_VARIANT -kboot $KERNEL_VARIANT-ci20 -dboot $KERNEL_VARIANT-ci20 -m $KERNEL_VARIANT-ci20
+ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT_VARIANT/u-boot.img -p 4096 lxde -F ext3 -bboot CI20/$BOOT_VARIANT -kboot $KERNEL_VARIANT-ci20 -dboot $KERNEL_VARIANT-ci20 -m $KERNEL_VARIANT-ci20
 
 #
 # i.MX6 boards
@@ -195,9 +195,8 @@ ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT
 udoo-neo		-p 2 -dd Udoo-Neo/$BOOT_VARIANT/SPL -p 138 -dd Udoo-Neo/$BOOT_VARIANT/u-boot.img -p 2048 lxde -bboot Udoo-Neo/$BOOT_VARIANT -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
 
 # Kobo Clara / Tolino Shine 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
-clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Clara/$BOOT_VARIANT/clara-env.bin -p 49152 debian -I -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
-e60k02-kobo		clara
-shine3-old		clara -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
+clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Clara/$BOOT_VARIANT/clara-env.bin -p 49152 debian -F ext3 -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
+shine3			clara -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
 # alternate names
 e60k02-kobo		clara
 e60k02-tolino		shine3
@@ -317,10 +316,10 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -f ext3		start next ext3 partition with name rootfs
     -f ext4		start next ext4 partition with name rootfs
     -f none		start next partition
-    -f[0-4][format]	switch to given partition and optionally define format
-		note that another -f will increment by 1
-    -F		go back one partition
+    -f-		go back one partition
     -s size	define relative size of current partition (do not specify a % suffix or other units!)
+    -F format	switch partion format (fat, fat16, ext3, ext4, swap)
+		note that another -f will increment by 1
     -n name	define name of current partition
     -p sector	position start of next partition (-f) or -dd to a specific sector (512 byte / sector)
     low level copy:
@@ -430,26 +429,11 @@ function process()
 		do
 		$DEBUG && echo "command $1" >&2
 		case "$1" in
-			-f[0-4]* ) # switch to given partition (and optionally change type)
+			-f[0-4] ) # switch to given partition
 				NP=$(expr "$1" : "-f\([0-4]\).*" )
-				# FIXME: check type!
 				$DEBUG && echo "switched to partition $NP" >&2
-				FORMAT=$(expr "$1" : "-f[0-4]\(.*\)" )
-				case "$FORMAT" in
-				'' )
-					;;
-				fat* | ext* | swap )
-					setparam $NP FORMAT $FORMAT
-					$DEBUG && echo "switched partition $NP to $FORMAT" >&2
-					;;
-				* )
-					echo "unknown partition type $FORMAT" >&2
-					useage
-					exit 1
-					;;
-				esac
 				;;
-			-F ) # switch to previous partition
+			-f- ) # switch to previous partition
 				NP=$(expr "$NP" - 1)
 				if [ "$NP" -lt 0 ]
 				then
@@ -510,6 +494,20 @@ function process()
 			-n ) # define partition name
 				shift
 				setparam $NP NAME "$1"
+				;;
+			-F ) # define partition type
+				shift
+				case "$1" in
+				fat* | ext* | swap )
+					setparam $NP FORMAT "$1"
+					$DEBUG && echo "switched partition $NP to $1" >&2
+					;;
+				* )
+					echo "unknown partition type $1" >&2
+					useage
+					exit 1
+					;;
+				esac
 				;;
 			-p ) # define partition or dd start sector (must come before -f or -p)
 				shift
