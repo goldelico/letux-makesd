@@ -28,7 +28,10 @@ function macros()
 # macros can be recursive
 
 cat <<END
+#
 # basic macros
+#
+
 # boot loader
 -bnone			$1
 -bhttp://.*/.*		$1
@@ -69,6 +72,13 @@ cat <<END
 -rxfce			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-xfce4.tbz
 -rdebian		https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-minimal.tbz
 -r.*			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-$1.tbz
+END
+
+cat <<END
+#
+# Root File Systems
+#
+
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
 debian			-f ext4 -r debian -kboot $KERNEL_VARIANT -dboot $ROOTFS_VARIANT -m $KERNEL_VARIANT -I
 lxde			debian -r lxde
@@ -80,6 +90,12 @@ pyraos			debian -r pyraos
 phosh			debian -r phosh
 all 			lxde qtmoko mate quantumstep
 all2 			xfce qtmoko phosh quantumstep
+
+#
+# OMAP3 boards
+# GTA04, BeagleBoard, BeagleBone, ...
+#
+
 # production images (dual partition) for specific devices
 gta04			-f fat -s 5 -b GTA04/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 l2804			gta04
@@ -101,6 +117,12 @@ bb+b1			-f fat -s 5 -b OpenMoko-Beagle-Hybrid/$BOOT_VARIANT -k $KERNEL_VARIANT -
 bb+b2			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b2/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 bb+b4			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b4/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 bb+b7			-f fat -s 5 -b BeagleBoard-Neo900/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+
+#
+# OMAP4/5 boards
+# Pyra, OMAP5EVM, PandaBoard
+#
+
 panda-es		-f fat -s 5 -b PandaBoard-ES/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 omap5432evm		-f fat -s 5 -b OMAP5-uEVM/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 omap5432evm+pyra	-f fat -s 5 -b OMAP5-uEVM+Pyra4.9/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
@@ -118,12 +140,20 @@ lc15evm-4gb		-f fat -s 5 -b Letux-Cortex-15-EVM-4GB/$BOOT_VARIANT -k $KERNEL_VAR
 gta15			-f fat -s 5 -b GTA15/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 gta15-4gb		-f fat -s 5 -b GTA15-4GB/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 pyraphone		gta15
+
+#
+# OpenPandora
+#
+
 # for Pandora, a single partition image can boot
 openpandora		lxde -b OpenPandora/$BOOT_VARIANT
 pandora			openpandora
 pandora-auto		openpandora -x/autoboot.txt http://download.goldelico.com/letux-u-boot/OpenPandora/$BOOT_VARIANT/src/boot.txt
-# Udoo Neo needs a pseudo-single-partition but SPL and u-boot must be copied by dd
-udoo-neo		-p 2 -dd Udoo-Neo/$BOOT_VARIANT/SPL -p 138 -dd Udoo-Neo/$BOOT_VARIANT/u-boot.img -p 2048 lxde -bboot Udoo-Neo/$BOOT_VARIANT -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
+
+#
+# RaspBerry Pi
+#
+
 # Raspi 3B+ needs special setup with bootloader and boot plus rootfs partitions
 raspi3b+		-f fat -s 1 -I -x https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin \
 			-x https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat \
@@ -133,6 +163,12 @@ raspi3b+		-f fat -s 1 -I -x https://github.com/raspberrypi/firmware/raw/master/b
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -d $KERNEL_VARIANT \
 			lxde -k none -d none -m $KERNEL_VARIANT -s 95
 raspi0			-A armel raspi3b+
+
+#
+# jz4730 boards
+# Letux400 / Alpha400
+#
+
 # we must make sure that we load the mipsel variants and not armel/armhf - and the kernels have device specific variants (ci20, l400)
 lenny400		-f fat16 -s 2 -k https://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r https://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -m https://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
 # this is the new image with chained intermediate U-Boot
@@ -140,15 +176,36 @@ mipsbook-400		-A mipsel -f fat16 -s 5 -b Mipsbook400/$BOOT_VARIANT -k https://do
 mipsbook		mipsbook-400
 letux-400		mipsbook-400
 l400			mipsbook-400
+
+#
+# jz4780 boards
+# CI20
+#
+
 # Imagination CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 # see https://elinux.org/CI20_Dev_Zone#Making_a_bootable_SD_card_from_sources
-ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT_VARIANT/u-boot.img lxde -f- -p 4096 -f ext3 -n rootfs -bboot CI20/$BOOT_VARIANT -kboot $KERNEL_VARIANT-ci20 -dboot $KERNEL_VARIANT-ci20 -m $KERNEL_VARIANT-ci20
+ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT_VARIANT/u-boot.img -p 4096 lxde -f1ext3 -bboot CI20/$BOOT_VARIANT -kboot $KERNEL_VARIANT-ci20 -dboot $KERNEL_VARIANT-ci20 -m $KERNEL_VARIANT-ci20
+
+#
+# i.MX6 boards
+# Udoo neo, Kobo Clara, Tolino Shine3
+#
+
+# Udoo Neo needs a pseudo-single-partition but SPL and u-boot must be copied by dd
+udoo-neo		-p 2 -dd Udoo-Neo/$BOOT_VARIANT/SPL -p 138 -dd Udoo-Neo/$BOOT_VARIANT/u-boot.img -p 2048 lxde -bboot Udoo-Neo/$BOOT_VARIANT -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
+
 # Kobo Clara / Tolino Shine 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
 clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Clara/$BOOT_VARIANT/clara-env.bin -p 49152 debian -I -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
 e60k02-kobo		clara
 shine3-old		clara -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
-shine3			-p 2 -dd Shine3/2019-09-23/boot -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/$BOOT_VARIANT/shine3-env.bin -p 49152 debian -I -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
-e60k02-tolino		tolino3
+# alternate names
+e60k02-kobo		clara
+e60k02-tolino		shine3
+
+#
+# Pinephone
+#
+
 # pinephone should use -A arm64 in the future but it also boots with armhf rootfs
 pinephone-1.0		-A armhf -p 1 -dd PinePhone-1.0/latest/u-boot-spl.bin -p 1953 \
 			lxde \
@@ -156,6 +213,11 @@ pinephone-1.0		-A armhf -p 1 -dd PinePhone-1.0/latest/u-boot-spl.bin -p 1953 \
 			-kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -dboot $KERNEL_VARIANT-arm64 -m $KERNEL_VARIANT-arm64
 pinephone-1.1		pinephone-1.0 -bboot PinePhone-1.1/$BOOT_VARIANT
 pinephone-1.2		pinephone-1.0 -bboot PinePhone-1.2/$BOOT_VARIANT
+
+#
+# Odroid M1
+#
+
 # odroid should use -A arm64 in the future but it also boots with armhf rootfs
 odroid-m1		-A armhf -f ext2 -s 2 -n boot -I \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/boot.scr \
@@ -172,6 +234,11 @@ odroid-m1-orig		-v 2022-05-21-vendor -A armhf -f ext2 -s 2 -n boot -I \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/initrd.img \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/vmlinuz \
 			-f ext4 -n rootfs -r https://download.goldelico.com/letux-debian-rootfs/odroid-m1-rootfs.tbz
+
+#
+# Intel X86
+#
+
 # x86 needs syslinux (mbr.bin) to be bootable and the first partition to be FAT
 x86-syslinux		-A i386 -p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
 			-p 2 -f fat -s 5 -I \
@@ -188,6 +255,12 @@ x86-efi			-A i386 \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-i386/vmlinuz -d none \
 			lxde -k none -d none -m $KERNEL_VARIANT-i386 -s 95
 x86			x86-efi
+
+#
+# ARM Cortex A5
+# ATSAMA5
+#
+
 atsama5			-f fat -s 5 -b AT-SAMA5D27/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 END
 }
