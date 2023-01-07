@@ -196,7 +196,7 @@ udoo-neo		-p 2 -dd Udoo-Neo/$BOOT_VARIANT/SPL -p 138 -dd Udoo-Neo/$BOOT_VARIANT/
 
 # Kobo Clara / Tolino Shine 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
 clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Clara/$BOOT_VARIANT/clara-env.bin -p 49152 debian -F ext3 -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
-shine3			clara -p 2 -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
+shine3			clara -p 2 -dd Shine3/2019-09-23/boot -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
 # alternate names
 e60k02-kobo		clara
 e60k02-tolino		shine3
