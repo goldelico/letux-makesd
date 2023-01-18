@@ -462,6 +462,8 @@ function process()
 					FATNUM=$(expr "${FATNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
 					;;
 				ext* )
+					# FIXME: scan all partitions for first "free" name in namespace...
+					# so that -n can overwrite a name which does not count here
 					setparam $NP NAME "rootfs$EXTNUM"	# define default
 					EXTNUM=$(expr "${EXTNUM:=1}" + 1)	# first has no suffix, second gets suffix "2"
 					;;
@@ -490,6 +492,7 @@ function process()
 				fi
 				;;
 			-s ) # define relative size (typically in %)
+# FIXME: there should be a mechanism to define minimum or maximum size in kMG Bytes
 				shift
 				setparam $NP SIZE "$1"
 				;;
@@ -1076,6 +1079,7 @@ fi	# ! NOFORMAT
 
 FATNUM=""
 EXTNUM=""
+SWAPNUM=""
 
 for P in 1 2 3 4
 do # format and mount partitions
