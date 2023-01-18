@@ -161,7 +161,7 @@ raspi3b+		-f fat -s 1 -I -x https://github.com/raspberrypi/firmware/raw/master/b
 			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/config.txt \
 			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/cmdline.txt \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -d $KERNEL_VARIANT \
-			lxde -k none -d none -m $KERNEL_VARIANT -s 95
+			lxde -n rootfs -k none -d none -m $KERNEL_VARIANT -s 95
 raspi0			-A armel raspi3b+
 
 #
@@ -218,11 +218,13 @@ pinephone-1.2		pinephone-1.0 -bboot PinePhone-1.2/$BOOT_VARIANT
 #
 
 # odroid should use -A arm64 in the future but it also boots with armhf rootfs
-odroid-m1		-A armhf -f ext2 -s 2 -n boot -I \
+odroid-m1		-A armhf \
+			-f ext2 -s 1 -n boot -I \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/boot.scr \
-			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/Image.gz \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/initrd.img-letux \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/kernel-symlink \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -d $KERNEL_VARIANT-arm64 \
-			debian -n rootfs -k none -d none -m $KERNEL_VARIANT-arm64
+			lxde -n rootfs -k none -d none -m $KERNEL_VARIANT-arm64 -s 99
 odroid-m1-orig		-v 2022-05-21-vendor -A armhf -f ext2 -s 2 -n boot -I \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/boot.scr \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/boot-logo.bmp.gz \
@@ -232,7 +234,7 @@ odroid-m1-orig		-v 2022-05-21-vendor -A armhf -f ext2 -s 2 -n boot -I \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/dtbs \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/initrd.img \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/vmlinuz \
-			-f ext4 -n rootfs -r https://download.goldelico.com/letux-debian-rootfs/odroid-m1-rootfs.tbz
+			-f ext4 -r https://download.goldelico.com/letux-debian-rootfs/odroid-m1-rootfs.tbz
 
 #
 # Intel X86
