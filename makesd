@@ -1191,6 +1191,16 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	*.tbz | *.tar.bz2 ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
 	* )	echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
 	esac
+	case "$(cat /media/P${P}/etc/debian_version 2>/dev/null)" in
+		[1-7].* )
+			echo "tuning partition ${DEVP}${P} to be compatible with older Debian"
+			umount ${DEVP}${P} 2>/dev/null
+			yes | tune2fs -O ^metadata_csum /dev/sdb2
+			yes | tune2fs -O ^has_journal /dev/sdb2
+			mount ${DEVP}${P} /media/P${P}
+			;;
+		[8-9].* | [1-9][0-9].* ) ;;
+	esac
 fi
 
 BOOT=$(getparam "$P" BOOT)
