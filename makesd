@@ -1185,21 +1185,27 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	$DEBUG && echo "-- fetch rootfs to /media/P${P} --" >&2
 	ls -l /media/P${P}
 	# run in a subshell so that we can really redirect ouput
-	exists "$ROOTFS" || { echo "could not find $ROOTFS" >&2; exit 1; }
+	exists "$ROOTFS" || { echo "!! could not find $ROOTFS" >&2; exit 1; }
 	case "$ROOTFS" in
 	*.tgz | *.tar.gz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - --numeric-owner ) ;;
 	*.tbz | *.tar.bz2 ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
 	* )	echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
 	esac
 	case "$(cat /media/P${P}/etc/debian_version 2>/dev/null)" in
-		[1-7].* )
-			echo "tuning partition ${DEVP}${P} to be compatible with older Debian"
+		[1-8].* )
+			echo "-- tuning partition ${DEVP}${P} to be compatible with older Debian fsck --"
 			umount ${DEVP}${P} 2>/dev/null
-			yes | tune2fs -O ^metadata_csum /dev/sdb2
-			yes | tune2fs -O ^has_journal /dev/sdb2
+			# echo tune2fs -O ^has_journal ${DEVP}${P}
+			yes | tune2fs -O ^has_journal ${DEVP}${P}
+			# echo fsck -fy ${DEVP}${P}
+			# must run fsck first to reset some counter or tune2fs would fail
+			fsck -fy ${DEVP}${P}
+			# echo tune2fs -O ^metadata_csum ${DEVP}${P}
+			yes | tune2fs -O ^metadata_csum ${DEVP}${P}
+			# echo mount ${DEVP}${P} /media/P${P}
 			mount ${DEVP}${P} /media/P${P}
 			;;
-		[8-9].* | [1-9][0-9].* ) ;;
+		[9].* | [1-9][0-9].* ) ;;
 	esac
 fi
 
