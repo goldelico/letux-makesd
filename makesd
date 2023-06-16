@@ -80,7 +80,7 @@ cat <<END
 #
 
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
-debian			-f ext4 -r debian -kboot $KERNEL_VARIANT -dboot $ROOTFS_VARIANT -m $KERNEL_VARIANT -I
+debian			-f ext4 -r debian -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT -I
 lxde			debian -r lxde
 xfce			debian -r xfce
 quantumstep		debian -r quantumstep
