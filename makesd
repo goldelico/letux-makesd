@@ -70,6 +70,7 @@ cat <<END
 -rfile:/.*		$1
 -rreplicant		https://download.goldelico.com/letux-replicant/4.2/$ROOTFS_VARIANT-replicant.tbz
 -rxfce			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-xfce4.tbz
+-rminimal		https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-minimal.tbz
 -rdebian		https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-minimal.tbz
 -r.*			https://download.goldelico.com/letux-debian-rootfs/$ROOTFS_VARIANT$ARCHITECTURE-$1.tbz
 END
@@ -81,6 +82,7 @@ cat <<END
 
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
 debian			-f ext4 -r debian -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT -I
+minimal			debian
 lxde			debian -r lxde
 xfce			debian -r xfce
 quantumstep		debian -r quantumstep
