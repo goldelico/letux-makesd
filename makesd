@@ -189,16 +189,34 @@ l400			mipsbook-400
 ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT_VARIANT/u-boot.img -p 4096 lxde -F ext3 -bboot CI20/$BOOT_VARIANT -kboot $KERNEL_VARIANT-ci20 -dboot $KERNEL_VARIANT-ci20 -m $KERNEL_VARIANT-ci20
 
 #
+# X1600 boards
+# LX16
+#
+
+# note: there are no device tree files (yet)
+# kernel is not (yet) loaded from a partition but as a binary (hence updating through apt-get is difficult...)
+# note we use ext3 for older rootfs like Squeeze
+
+lx16			-A mipsel -p 0 -dd Letux-X16/$BOOT_VARIANT/MBR \
+			-p 1 -dd Letux-X16/$BOOT_VARIANT/u-boot-with-spl.bin \
+			-p $((0x4480/512)) -dd Letux-X16/$BOOT_VARIANT/MEM \
+			-p $((0x300000/512)) -dd https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-lx16/uImage \
+			-p $((0xc80000/512)) minimal -F ext3 -kboot $KERNEL_VARIANT-lx16 -m $KERNEL_VARIANT-lx16
+
+#
 # i.MX6 boards
 # Udoo neo, Kobo Clara, Tolino Shine3
 #
 
 # Udoo Neo needs a pseudo-single-partition but SPL and u-boot must be copied by dd
+
 udoo-neo		-p 2 -dd Udoo-Neo/$BOOT_VARIANT/SPL -p 138 -dd Udoo-Neo/$BOOT_VARIANT/u-boot.img -p 2048 lxde -bboot Udoo-Neo/$BOOT_VARIANT -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
 
 # Kobo Clara / Tolino Shine 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
+
 clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Clara/$BOOT_VARIANT/clara-env.bin -p 49152 debian -F ext3 -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
 shine3			clara -p 2 -dd Shine3/2019-09-23/boot -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
+
 # alternate names
 e60k02-kobo		clara
 e60k02-tolino		shine3
