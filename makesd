@@ -174,7 +174,7 @@ raspi0			-A armel raspi3b+
 # we must make sure that we load the mipsel variants and not armel/armhf - and the kernels have device specific variants (ci20, l400)
 lenny400		-f fat16 -s 2 -k https://download.goldelico.com/letux-400/20110208-lenny400/uImage -f ext -r https://download.goldelico.com/letux-400/20110208-lenny400/bootstrapped-rootfs.tbz -m https://download.goldelico.com/letux-400/20110208-lenny400/modules.tgz
 # this is the new image with chained intermediate U-Boot
-mipsbook-400		-A mipsel -f fat16 -s 5 -b Mipsbook400/$BOOT_VARIANT -k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-l400/Image -d $KERNEL_VARIANT-l400 -I lxde -k none -d none -m $KERNEL_VARIANT-l400 -s 95
+mipsbook-400		-A mipsel -f fat16 -s 5 -b Mipsbook400/$BOOT_VARIANT -k $KERNEL_VARIANT-l400/Image -d $KERNEL_VARIANT-l400 -I lxde -k none -d none -m $KERNEL_VARIANT-l400 -s 95
 mipsbook		mipsbook-400
 letux-400		mipsbook-400
 l400			mipsbook-400
