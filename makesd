@@ -200,8 +200,8 @@ ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT
 lx16			-A mipsel -p 0 -dd Letux-X16/$BOOT_VARIANT/MBR \
 			-p 1 -dd Letux-X16/$BOOT_VARIANT/u-boot-with-spl.bin \
 			-p $((0x4480/512)) -dd Letux-X16/$BOOT_VARIANT/MEM \
-			-p $((0x300000/512)) -f fat16 -s 1 -k $KERNEL_VARIANT-lx16 -d $KERNEL_VARIANT-lx16 -d none \
-			minimal -F ext3 -s 99 -k none -d none -m $KERNEL_VARIANT-lx16
+			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-lx16 -d $KERNEL_VARIANT-lx16 -d none \
+			minimal -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-lx16
 
 #
 # i.MX6 boards
