@@ -83,6 +83,7 @@ cat <<END
 # single partition file system(s) - should boot if boot loader is in flash/eMMC
 debian			-f ext4 -r debian -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT -I
 minimal			debian
+letux			debian -r letux
 lxde			debian -r lxde
 xfce			debian -r xfce
 quantumstep		debian -r quantumstep
@@ -196,12 +197,13 @@ ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT
 # note: there are no device tree files (yet)
 # kernel is not (yet) loaded from a partition but as a binary (hence updating through apt-get is difficult...)
 # note we use ext3 for older rootfs like Squeeze
+# we should install the letux rootfs (and not minimal) to get the devel tools right away
 
 lx16			-A mipsel -p 0 -dd Letux-X16/$BOOT_VARIANT/MBR \
 			-p 1 -dd Letux-X16/$BOOT_VARIANT/u-boot-with-spl.bin \
 			-p $((0x4480/512)) -dd Letux-X16/$BOOT_VARIANT/MEM \
 			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-lx16 -d $KERNEL_VARIANT-lx16 -d none \
-			minimal -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-lx16
+			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-lx16
 
 #
 # i.MX6 boards
