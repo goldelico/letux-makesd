@@ -204,6 +204,11 @@ lx16			-A mipsel -p 0 -dd Letux-X16/$BOOT_VARIANT/MBR \
 			-p $((0x4480/512)) -dd Letux-X16/$BOOT_VARIANT/MEM \
 			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-lx16 -d $KERNEL_VARIANT-lx16 -d none \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-lx16
+lx16e			-A mipsel -p 0 -dd Letux-X16E/$BOOT_VARIANT/MBR \
+			-p 1 -dd Letux-X16E/$BOOT_VARIANT/u-boot-with-spl.bin \
+			-p $((0x4480/512)) -dd Letux-X16E/$BOOT_VARIANT/MEM \
+			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-lx16 -d $KERNEL_VARIANT-lx16 -d none \
+			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-lx16
 
 #
 # i.MX6 boards
