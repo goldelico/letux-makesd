@@ -1220,6 +1220,7 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	esac
 	DEBIAN=$(cat /media/P${P}/etc/debian_version 2>/dev/null)
 	case "$DEBIAN" in 1.* | 2.* | 3.* | 4.* | 5.* | 6.* | 7.* | 8.* )
+		# older Debian rootfs can't handle metadata_csum
 		echo "-- tuning partition ${DEVP}${P} to be compatible with Debian $DEBIAN fsck --"
 		umount ${DEVP}${P} 2>/dev/null
 		# echo tune2fs -O ^has_journal ${DEVP}${P}
@@ -1229,6 +1230,9 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 		fsck -fy ${DEVP}${P}
 		# echo tune2fs -O ^metadata_csum ${DEVP}${P}
 		yes | tune2fs -O ^metadata_csum ${DEVP}${P}
+		# now we can turn on journaling again
+		# echo tune2fs -O has_journal -o journal_data ${DEVP}${P}
+		yes | tune2fs -O has_journal -o journal_data ${DEVP}${P}
 		# echo mount ${DEVP}${P} /media/P${P}
 		mount ${DEVP}${P} /media/P${P}
 	;; esac
