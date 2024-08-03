@@ -233,7 +233,11 @@ e60k02-tolino		shine3
 #
 
 # pinephone should use -A arm64 in the future but it also boots with armhf rootfs
-pinephone-1.0		-A armhf -p 1 -dd PinePhone-1.0/latest/u-boot-spl.bin -p 1953 \
+pinephone-1.0		-A arm64 -p 1 -dd PinePhone-1.0/latest/u-boot-spl.bin -p 1953 \
+			lxde \
+			-bboot PinePhone-1.0/$BOOT_VARIANT \
+			-kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -dboot $KERNEL_VARIANT-arm64 -m $KERNEL_VARIANT-arm64
+pinephone-1.0-32	-A armhf -p 1 -dd PinePhone-1.0/latest/u-boot-spl.bin -p 1953 \
 			lxde \
 			-bboot PinePhone-1.0/$BOOT_VARIANT \
 			-kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -dboot $KERNEL_VARIANT-arm64 -m $KERNEL_VARIANT-arm64
@@ -245,7 +249,14 @@ pinephone-1.2		pinephone-1.0 -bboot PinePhone-1.2/$BOOT_VARIANT
 #
 
 # odroid should use -A arm64 in the future but it also boots with armhf rootfs
-odroid-m1		-A armhf \
+odroid-m1		-A arm64 \
+			-f ext2 -s 1 -n boot -I \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/boot.scr \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/initrd.img-letux \
+			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/kernel-symlink \
+			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -d $KERNEL_VARIANT-arm64 \
+			lxde -n rootfs -k none -d none -m $KERNEL_VARIANT-arm64 -s 99
+odroid-m1-32		-A armhf \
 			-f ext2 -s 1 -n boot -I \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/boot.scr \
 			-x https://download.goldelico.com/letux-u-boot/Odroid-M1/$BOOT_VARIANT/initrd.img-letux \
