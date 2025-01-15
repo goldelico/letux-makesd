@@ -278,6 +278,21 @@ odroid-m1-orig		-v 2022-05-21-vendor -A armhf -f ext2 -s 2 -n boot -I \
 			-f ext4 -r https://download.goldelico.com/letux-debian-rootfs/odroid-m1-rootfs.tbz
 
 #
+# Beagle-Y AI
+#
+
+byai			-A arm64 \
+			-f ext2 -s 1 -n boot -I \
+			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/tispl.bin \
+			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/tiboot3.bin \
+			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/u-boot.img \
+			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/boot.scr \
+			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -d $KERNEL_VARIANT-arm64 \
+			lxde -n rootfs -k none -d none -m $KERNEL_VARIANT-arm64 -s 99
+
+beagley-ai		byai
+
+#
 # Intel X86
 #
 
