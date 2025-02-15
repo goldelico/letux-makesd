@@ -161,9 +161,9 @@ pandora-auto		openpandora -x/autoboot.txt https://download.goldelico.com/letux-u
 #
 
 # Raspi 3B+ needs special setup with bootloader and boot plus rootfs partitions
-raspi3b+		-f fat -s 1 -I -x https://github.com/raspberrypi/firmware/raw/master/boot/bootcode.bin \
-			-x https://github.com/raspberrypi/firmware/raw/master/boot/fixup.dat \
-			-x https://github.com/raspberrypi/firmware/raw/master/boot/start.elf \
+raspi3b+		-f fat -s 1 -I -x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/bootcode.bin \
+			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/fixup.dat \
+			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/start.elf \
 			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/config.txt \
 			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/cmdline.txt \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -d $KERNEL_VARIANT \
