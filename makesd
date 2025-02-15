@@ -154,7 +154,7 @@ pyraphone		gta15
 # for Pandora, a single partition image can boot
 openpandora		lxde -b OpenPandora/$BOOT_VARIANT
 pandora			openpandora
-pandora-auto		openpandora -x/autoboot.txt http://download.goldelico.com/letux-u-boot/OpenPandora/$BOOT_VARIANT/src/boot.txt
+pandora-auto		openpandora -x/autoboot.txt https://download.goldelico.com/letux-u-boot/OpenPandora/$BOOT_VARIANT/src/boot.txt
 
 #
 # RaspBerry Pi
