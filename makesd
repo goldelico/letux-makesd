@@ -282,11 +282,11 @@ odroid-m1-orig		-v 2022-05-21-vendor -A armhf -f ext2 -s 2 -n boot -I \
 #
 
 byai			-A arm64 \
-			-f ext2 -s 1 -n boot -I \
-			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/tispl.bin \
+			-p 2048 -f fat -s 1 -n boot -I \
 			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/tiboot3.bin \
+			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/tispl.bin \
 			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/u-boot.img \
-			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/boot.scr \
+			-x https://download.goldelico.com/letux-u-boot/BeagleY-AI/$BOOT_VARIANT/uEnv.txt \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -d $KERNEL_VARIANT-arm64 \
 			lxde -n rootfs -k none -d none -m $KERNEL_VARIANT-arm64 -s 99
 
