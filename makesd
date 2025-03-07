@@ -193,14 +193,14 @@ l400			mipsbook-400
 ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT_VARIANT/u-boot.img -p 4096 lxde -F ext3 -bboot CI20/$BOOT_VARIANT -kboot $KERNEL_VARIANT-ci20 -dboot $KERNEL_VARIANT-ci20 -m $KERNEL_VARIANT-ci20
 
 #
-# X1600 boards
-# LX16
+# X1600/X2000 boards
+# LX16 + LX20
 #
 
 # note: there are no device tree files (yet)
 # kernel is not (yet) loaded from a partition but as a binary (hence updating through apt-get is difficult...)
+# MEM writes a special record to the µSD to indicate the DDR that is installed on a specific chip
 # note we use ext3 for older rootfs like Squeeze
-# we should install the letux rootfs (and not minimal) to get the devel tools right away
 
 lx16			-A mipsel -p 0 -dd Letux-X16/$BOOT_VARIANT/MBR \
 			-p 1 -dd Letux-X16/$BOOT_VARIANT/u-boot-with-spl.bin \
@@ -212,6 +212,12 @@ lx16e			-A mipsel -p 0 -dd Letux-X16E/$BOOT_VARIANT/MBR \
 			-p $((0x4480/512)) -dd Letux-X16E/$BOOT_VARIANT/MEM \
 			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-lx16 -d $KERNEL_VARIANT-lx16 -d none \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-lx16
+
+lx20			-A mipsel -p 0 -dd Letux-X20/$BOOT_VARIANT/MBR \
+			-p 1 -dd Letux-X20/$BOOT_VARIANT/u-boot-with-spl.bin \
+			-p $((0x4480/512)) -dd Letux-X20/$BOOT_VARIANT/MEM \
+			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-lx20 -d $KERNEL_VARIANT-lx20 -d none \
+			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-lx20
 
 #
 # i.MX6 boards
