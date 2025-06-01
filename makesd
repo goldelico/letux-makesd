@@ -299,6 +299,21 @@ byai			-A arm64 \
 beagley-ai		byai
 
 #
+# PocketBeagle2
+#
+
+pocketbeagle2		-A arm64 \
+			-p 2048 -f fat -s 1 -n boot -I \
+			-x https://download.goldelico.com/letux-u-boot/PocketBeagle2/$BOOT_VARIANT/tiboot3.bin \
+			-x https://download.goldelico.com/letux-u-boot/PocketBeagle2/$BOOT_VARIANT/tispl.bin \
+			-x https://download.goldelico.com/letux-u-boot/PocketBeagle2/$BOOT_VARIANT/u-boot.img \
+			-x https://download.goldelico.com/letux-u-boot/PocketBeagle2/$BOOT_VARIANT/uEnv.txt \
+			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm64/Image.gz -d $KERNEL_VARIANT-arm64 \
+			minimal -n rootfs -k none -d none -m $KERNEL_VARIANT-arm64 -s 99
+
+pb2			pocketbeagle2
+
+#
 # Intel X86
 #
 
