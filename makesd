@@ -1283,19 +1283,19 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 			echo "-- tuning partition ${DEVP}${P} to be compatible with Debian $DEBIAN fsck --"
 			if ! $DRYRUN
 			then
-			umount ${DEVP}${P} 2>/dev/null
-			# echo tune2fs -O ^has_journal ${DEVP}${P}
-			yes | tune2fs -O ^has_journal ${DEVP}${P}
-			# echo fsck -fy ${DEVP}${P}
-			# must run fsck first to reset some counter or tune2fs would fail
-			fsck -fy ${DEVP}${P}
-			# echo tune2fs -O ^metadata_csum ${DEVP}${P}
-			yes | tune2fs -O ^metadata_csum ${DEVP}${P}
-			# now we can turn on journaling again
-			# echo tune2fs -O has_journal -o journal_data ${DEVP}${P}
-			yes | tune2fs -O has_journal -o journal_data ${DEVP}${P}
-			# echo mount ${DEVP}${P} /media/P${P}
-			mount ${DEVP}${P} /media/P${P}
+				umount ${DEVP}${P} 2>/dev/null
+				# echo tune2fs -O ^has_journal ${DEVP}${P}
+				yes | tune2fs -O ^has_journal ${DEVP}${P}
+				# echo fsck -fy ${DEVP}${P}
+				# must run fsck first to reset some counter or tune2fs would fail
+				fsck -fy ${DEVP}${P}
+				# echo tune2fs -O ^metadata_csum ${DEVP}${P}
+				yes | tune2fs -O ^metadata_csum ${DEVP}${P}
+				# now we can turn on journaling again
+				# echo tune2fs -O has_journal -o journal_data ${DEVP}${P}
+				yes | tune2fs -O has_journal -o journal_data ${DEVP}${P}
+				# echo mount ${DEVP}${P} /media/P${P}
+				mount ${DEVP}${P} /media/P${P}
 			fi
 			;;
 	esac
