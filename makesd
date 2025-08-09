@@ -1370,13 +1370,21 @@ if [ "$MODULES" != none ]
 then
 	echo "-- fetch modules $MODULES to /media/P${P} --" >&2
 	exists "$MODULES" || { echo "could not find $MODULES" >&2; exit 1; }
-	fetch "$MODULES" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner --keep-directory-symlink)
+	! $DRYRUN && fetch "$MODULES" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner --keep-directory-symlink)
+
+# this is a hack because the modules tar may have wrong user permissions for ./ and ./usr etc...
+
+	chown -f root:root "/media/P${P}/" "/media/P${P}/bin" "/media/P${P}/etc" "/media/P${P}/include" "/media/P${P}/lib" "/media/P${P}/root" "/media/P${P}/usr" "/media/P${P}/var"
+	chown -f -R root:root "/media/P${P}/lib/firmware" "/media/P${P}/lib/modules"
+
 	if [ "$KERNEL_VERSION" ] && tool depmod
 	then # run depmod on the installed root for the last kernel we have installed
 		echo "-- run depmod $KERNEL_VERSION --" >&2
 		depmod -b "/media/P${P}/" "$KERNEL_VERSION"
 	fi
 fi
+
+# this feature isn't used any more by LetuxOS but let's keep it
 
 CONFIG=$(getparam "$P" CONFIG)
 if [ "$CONFIG" != none ]
@@ -1402,14 +1410,14 @@ do
 		FILE="$URL$SUFFIX"
 		exists "$FILE" || continue
 		case "$FILE" in
-			*.tgz ) fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner) && break;;	# try to unpack into directory
-			*.tbz ) fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner) && break;;	# try to unpack into directory
+			*.tgz ) ! $DRYRUN && fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner) && break;;	# try to unpack into directory
+			*.tbz ) ! $DRYRUN && fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner) && break;;	# try to unpack into directory
 			* )
 				# if DIRFILE ends in / use basename of url
 				# if not, use as qualified file name
 				case "$DIRFILE" in
-					*/ )	mkdir -p "/media/P${P}/$DIRFILE" && fetch "$FILE" "/media/P${P}/$DIRFILE$(basename "$FILE")" && break;; # load single file
-					* )	mkdir -p "$(dirname "$/media/P${P}/DIRFILE")" && fetch "$FILE" "/media/P${P}/$DIRFILE" && break;; # load plain file (with rename)
+					*/ )	! $DRYRUN && mkdir -p "/media/P${P}/$DIRFILE" && fetch "$FILE" "/media/P${P}/$DIRFILE$(basename "$FILE")" && break;; # load single file
+					* )	! $DRYRUN && mkdir -p "$(dirname "$/media/P${P}/DIRFILE")" && fetch "$FILE" "/media/P${P}/$DIRFILE" && break;; # load plain file (with rename)
 				esac
 			;;
 		esac
