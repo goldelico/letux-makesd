@@ -217,6 +217,10 @@ lx20			-A mipsel -p 0 -dd Letux-X20/$BOOT_VARIANT/MBR \
 			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-mips
 
+# FIXME: install retrode kernel, device-tree and modules
+# NOTE: the linux-image-letux-retrode and linux-modules-letux-retrode are already installed - but no code in the /boot partition...
+retrode3		-vk retrode -vr jessie lx16e -r retrode3
+
 #
 # i.MX6 boards
 # Udoo neo, Kobo Clara, Tolino Shine3
