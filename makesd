@@ -197,26 +197,24 @@ ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT
 # LX16 + LX20
 #
 
-# note: there are no device tree files (yet)
-# kernel is not (yet) loaded from a partition but as a binary (hence updating through apt-get is difficult...)
 # MEM writes a special record to the µSD to indicate the DDR that is installed on a specific chip
-# note we use ext3 for older rootfs like Squeeze
+# note we use ext3 for older rootfs like Squeeze or Jessie
 
 lx16			-A mipsel -p 0 -dd Letux-X16/$BOOT_VARIANT/MBR \
 			-p 1 -dd Letux-X16/$BOOT_VARIANT/u-boot-with-spl.bin \
 			-p $((0x4480/512)) -dd Letux-X16/$BOOT_VARIANT/MEM \
-			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips -d none \
+			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-mips
 lx16e			-A mipsel -p 0 -dd Letux-X16E/$BOOT_VARIANT/MBR \
 			-p 1 -dd Letux-X16E/$BOOT_VARIANT/u-boot-with-spl.bin \
 			-p $((0x4480/512)) -dd Letux-X16E/$BOOT_VARIANT/MEM \
-			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips -d none \
+			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-mips
 
 lx20			-A mipsel -p 0 -dd Letux-X20/$BOOT_VARIANT/MBR \
 			-p 1 -dd Letux-X20/$BOOT_VARIANT/u-boot-with-spl.bin \
 			-p $((0x4480/512)) -dd Letux-X20/$BOOT_VARIANT/MEM \
-			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips -d none \
+			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-mips
 
 #
