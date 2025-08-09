@@ -1182,7 +1182,7 @@ do # format and mount partitions
 		fat* )
 			if ! [ "$NOFORMAT" ]
 			then
-				echo making $(getparam $P FORMAT) partition $PNAME
+				echo making $(getparam $P FORMAT) partition $PNAME on ${DEVP}${P}
 				case "$(getparam $P FORMAT)" in
 					fat16 )
 						mkfs.vfat -F 16 -n "$PNAME" ${DEVP}${P} && fsck.vfat -a -y ${DEVP}${P}
@@ -1200,7 +1200,7 @@ do # format and mount partitions
 		ext* )
 			if ! [ "$NOFORMAT" ]
 			then
-				echo making $(getparam $P FORMAT) partition $PNAME
+				echo making $(getparam $P FORMAT) partition $PNAME on ${DEVP}${P}
 				case "$(getparam $P FORMAT)" in
 				ext2 )
 					yes | mke2fs -t ext2 -L "${PNAME}" ${DEVP}${P} &&
@@ -1240,7 +1240,7 @@ then
 		do
 		if [ "$SECTOR" ]
 		then
-			$DEBUG && echo "-- fetch $FILE to sector $SECTOR --" >&2
+			echo "-- fetch $FILE to sector $SECTOR --" >&2
 			! $DRYRUN && fetch "$FILE" - | dd of=$DEV bs=512 seek=$SECTOR
 		fi
 		done
@@ -1266,13 +1266,13 @@ ROOTFS=$(getparam "$P" ROOTFS)
 if [ "$ROOTFS" != none ]
 then # a rootfs must be installed first so that we can overwrite by a kernel
 
-	$DEBUG && echo "-- fetch rootfs to /media/P${P} --" >&2
+	echo "-- fetch rootfs "$ROOTFS" to /media/P${P} --" >&2
 	ls -l /media/P${P}
 	# run in a subshell so that we can really redirect ouput
 	exists "$ROOTFS" || { echo "!! could not find $ROOTFS" >&2; exit 1; }
 	case "$ROOTFS" in
-	*.tgz | *.tar.gz ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - --numeric-owner ) ;;
-	*.tbz | *.tar.bz2 ) fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
+	*.tgz | *.tar.gz ) ! $DRYRUN && fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - --numeric-owner ) ;;
+	*.tbz | *.tar.bz2 ) ! $DRYRUN && fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
 	* )	echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
 	esac
 	DEBIAN=$(cat /media/P${P}/etc/debian_version 2>/dev/null)
@@ -1300,7 +1300,7 @@ BOOT=$(getparam "$P" BOOT)
 BOOTDIR="/media/P${P}/$(getparam "$P" BOOTDIR)/"
 if [ "$BOOT" != none ]
 then
-	$DEBUG && echo "-- fetch boot loader to $BOOTDIR --" >&2
+	echo "-- fetch boot loader to $BOOTDIR --" >&2
 	mkdir -p "$BOOTDIR" || exit
 	#
 	# loading some files may fail since they do not exist for the chosen variant - but we ignore
@@ -1329,7 +1329,7 @@ then
 	do
 		if exists "$DIR"
 		then
-			fetch "$DIR" "$DEST" || break
+			! $DRYRUN && fetch "$DIR" "$DEST" || break
 		fi
 	done
 
@@ -1340,13 +1340,13 @@ KERNEL=$(getparam "$P" KERNEL)
 KERNELDIR="/media/P${P}/$(getparam "$P" KERNELDIR)/"
 if [ "$KERNEL" != none ]
 then
-	$DEBUG && echo "-- fetch kernel to $KERNELDIR --" >&2
+	echo "-- fetch kernel $KERNEL to $KERNELDIR --" >&2
 	mkdir -p "$KERNELDIR"
 	KDEST="$KERNELDIR/$(basename "$KERNEL")"
 	exists "$KERNEL" || { echo "could not find $KERNEL" >&2; exit 1; }
-	fetch "$KERNEL" "$KDEST"
+	! $DRYRUN && fetch "$KERNEL" "$KDEST"
 	BOOTARGS="$(dirname "$KERNEL")/bootargs.scr"
-	exists "$BOOTARGS" && fetch "$BOOTARGS" "$KERNELDIR/bootargs.scr"
+	! $DRYRUN && exists "$BOOTARGS" && fetch "$BOOTARGS" "$KERNELDIR/bootargs.scr"
 	KERNEL_VERSION=$(file "$KDEST")
 	KERNEL_VERSION=$(expr "$KERNEL_VERSION" : ".*Linux-\([^,]*\),.*")
 	$DEBUG && echo "-- installed $KERNEL_VERSION --" >&2
@@ -1356,21 +1356,21 @@ DT=$(getparam "$P" DT)
 DTDIR="/media/P${P}/$(getparam "$P" DTDIR)/"
 if [ "$DT" != none ]
 then
-	$DEBUG && echo "-- fetch device trees to $DTDIR --" >&2
+	echo "-- fetch device trees $DT to $DTDIR --" >&2
 	mkdir -p "$DTDIR"
 	exists "$DT" || { echo "could not find $DT" >&2; exit 1; }
-	fetch "$DT" - | ( cd "$DTDIR" && tar xvjf - --no-same-owner)
+	! $DRYRUN && fetch "$DT" - | ( cd "$DTDIR" && tar xvjf - --no-same-owner)
 fi
 
 MODULES=$(getparam "$P" MODULES)
 if [ "$MODULES" != none ]
 then
-	$DEBUG && echo "-- fetch modules to /media/P${P} --" >&2
+	echo "-- fetch modules $MODULES to /media/P${P} --" >&2
 	exists "$MODULES" || { echo "could not find $MODULES" >&2; exit 1; }
 	fetch "$MODULES" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner --keep-directory-symlink)
 	if [ "$KERNEL_VERSION" ] && tool depmod
 	then # run depmod on the installed root for the last kernel we have installed
-		$DEBUG && echo "-- run depmod $KERNEL_VERSION --" >&2
+		echo "-- run depmod $KERNEL_VERSION --" >&2
 		depmod -b "/media/P${P}/" "$KERNEL_VERSION"
 	fi
 fi
@@ -1378,9 +1378,9 @@ fi
 CONFIG=$(getparam "$P" CONFIG)
 if [ "$CONFIG" != none ]
 then
-	$DEBUG && echo "-- fetch config patches to /media/P${P} --" >&2
+	$DEBUG && echo "-- fetch config patches $CONFIG to /media/P${P} --" >&2
 	exists "$CONFIG" || { echo "could not find $CONFIG" >&2; exit 1; }
-	fetch "$CONFIG" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner)
+	! $DRYRUN && fetch "$CONFIG" - | (cd "/media/P${P}/" && tar xvzf - --numeric-owner)
 fi
 
 XLIST="$(getparam $P XLIST)"
@@ -1391,7 +1391,7 @@ do
 	if [ ! "$URL" ]
 	then continue
 	fi
-	$DEBUG && echo "-- fetch file(s) $URL to /media/P${P}/$DIRFILE --" >&2
+	echo "-- fetch file(s) $URL to /media/P${P}/$DIRFILE --" >&2
 
 # FIXME: error if none did match
 	for SUFFIX in .tgz .tbz ''
