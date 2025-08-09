@@ -1429,7 +1429,7 @@ done
 INFO="$(getparam $P INFO)"
 if [ "$INFO" ]
 then
-	$DEBUG && echo "-- write info >/media/P${P}/makesd.info --" >&2
+	echo "-- write info >/media/P${P}/makesd.info --" >&2
 	! $DRYRUN && (
 	echo "+++ this system was created by makesd (https://projects.goldelico.com/p/gta04-makesd/) at $(date) +++"
 	echo "$CMDLINE"
@@ -1448,7 +1448,7 @@ sync
 
 if [ "$DEV" ]
 then
-	$DEBUG && echo "-- show mounted partitions --" >&2
+	echo "-- show mounted partitions --" >&2
 	df
 	$DEBUG && echo "-- unmount --" >&2
 	for P in 1 2 3 4
@@ -1459,7 +1459,7 @@ then
 		umount ${DEVP}${P} 2>/dev/null
 		[ -d "/media/P${P}" ] && rmdir "/media/P${P}"
 	done
-	$DEBUG && echo "-- fsck --" >&2
+	echo "-- fsck --" >&2
 	for P in 1 2 3 4
 	do
 		if [ -b "${DEVP}${P}" ]
@@ -1469,4 +1469,4 @@ then
 	done
 fi
 
-$DEBUG && echo "-- done --" >&2
+echo "-- done --" >&2
