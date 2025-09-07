@@ -155,6 +155,7 @@ pyraphone		gta15
 openpandora		lxde -b OpenPandora/$BOOT_VARIANT
 pandora			openpandora
 pandora-auto		openpandora -x/autoboot.txt https://download.goldelico.com/letux-u-boot/OpenPandora/$BOOT_VARIANT/src/boot.txt
+pandora-slackware	-f ext3-j -s 95 -r https://slackware.openpandora.org/pandora/sl4p/sl4p-15.0/rootfs/SL4P-15.0-alpha2.tar.xz -f swap -s 5
 
 #
 # RaspBerry Pi
