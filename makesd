@@ -396,7 +396,9 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -f fat		start next fat partition with name boot
     -f fat16		start next fat16 partition with name boot
     -f ext3		start next ext3 partition with name rootfs
+    -f ext3-j		start next ext3 partition without journal with name rootfs
     -f ext4		start next ext4 partition with name rootfs
+    -f ext4-j		start next ext4 partition without journal with name rootfs
     -f none		start next partition
     -f-		go back one partition
     -s size	define relative size of current partition (do not specify a % suffix or other units!)
@@ -1210,8 +1212,18 @@ do # format and mount partitions
 					yes | mke2fs -t ext3 -j -L "${PNAME}" ${DEVP}${P} &&
 					fsck.ext3 -y ${DEVP}${P}
 					;;
+				ext3-j )
+					yes | mke2fs -t ext3 -j -L "${PNAME}" ${DEVP}${P} &&
+					yes | tune2fs -O ^has_journal ${DEVP}${P}
+					fsck.ext3 -y ${DEVP}${P}
+					;;
 				ext4 )
 					yes | mke2fs -t ext4 -j -L "${PNAME}" ${DEVP}${P} &&
+					fsck.ext4 -y ${DEVP}${P}
+					;;
+				ext4-j )
+					yes | mke2fs -t ext4 -j -L "${PNAME}" ${DEVP}${P} &&
+					yes | tune2fs -O ^has_journal ${DEVP}${P}
 					fsck.ext4 -y ${DEVP}${P}
 					;;
 				esac
