@@ -1285,6 +1285,7 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	case "$ROOTFS" in
 	*.tgz | *.tar.gz ) ! $DRYRUN && fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - --numeric-owner ) ;;
 	*.tbz | *.tar.bz2 ) ! $DRYRUN && fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
+	*.txz | *.tar.xz ) ! $DRYRUN && fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvJf - --numeric-owner ) ;;
 	* )	echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
 	esac
 	DEBIAN=$(cat /media/P${P}/etc/debian_version 2>/dev/null)
@@ -1424,6 +1425,7 @@ do
 		case "$FILE" in
 			*.tgz ) ! $DRYRUN && fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner) && break;;	# try to unpack into directory
 			*.tbz ) ! $DRYRUN && fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner) && break;;	# try to unpack into directory
+			*.txz ) ! $DRYRUN && fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvJf - --numeric-owner) && break;;	# try to unpack into directory
 			* )
 				# if DIRFILE ends in / use basename of url
 				# if not, use as qualified file name
