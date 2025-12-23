@@ -343,6 +343,14 @@ x86			x86-efi
 #
 
 atsama5			-f fat -s 5 -b AT-SAMA5D27/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+
+# RedPitaya STEMLab 125-14 LAN oscilloscope
+
+# BUGS: boot image seems to be a zipped partition image
+
+redpitaya-125		-f fat -n 695D-389B -s 5 -r https://downloads.redpitaya.com/downloads/STEMlab-125-1x/STEMlab_125-xx_OS_1.04-18_stable.img.zip -I \
+			-f ext4 -n 42dcbefc-a078-40a9-bf35-7dd15e551c6f -r https://downloads.redpitaya.com/downloads/LinuxOS/redpitaya_OS_10-21-54_08-Dec-2025.tar.gz -I
+
 END
 }
 
@@ -1287,6 +1295,7 @@ then # a rootfs must be installed first so that we can overwrite by a kernel
 	*.tgz | *.tar.gz ) ! $DRYRUN && fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvzf - --numeric-owner ) ;;
 	*.tbz | *.tar.bz2 ) ! $DRYRUN && fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvjf - --numeric-owner ) ;;
 	*.txz | *.tar.xz ) ! $DRYRUN && fetch "$ROOTFS" - | ( cd "/media/P${P}" && tar xvJf - --numeric-owner ) ;;
+	*.img.zip | *.zip ) echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
 	* )	echo "-- don't know how to unpack $ROOTFS --" >&2; exit ;;
 	esac
 	DEBIAN=$(cat /media/P${P}/etc/debian_version 2>/dev/null)
@@ -1427,6 +1436,7 @@ do
 			*.tgz ) ! $DRYRUN && fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvzf - --numeric-owner) && break;;	# try to unpack into directory
 			*.tbz ) ! $DRYRUN && fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvjf - --numeric-owner) && break;;	# try to unpack into directory
 			*.txz ) ! $DRYRUN && fetch "$FILE" - | (mkdir -p "/media/P${P}/$DIRFILE" && cd "/media/P${P}/$DIRFILE" && tar xvJf - --numeric-owner) && break;;	# try to unpack into directory
+			*.img.zip | *.zip ) echo "-- don't know how to unpack $FILE --" >&2; exit ;;
 			* )
 				# if DIRFILE ends in / use basename of url
 				# if not, use as qualified file name
