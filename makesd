@@ -339,17 +339,28 @@ x86			x86-efi
 
 #
 # ARM Cortex A5
-# ATSAMA5
 #
 
+# ATSAMA5
 atsama5			-f fat -s 5 -b AT-SAMA5D27/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
 
-# RedPitaya STEMLab 125-14 LAN oscilloscope
+#
+# RedPitaya
+#
 
+# STEMLab 125-14 LAN oscilloscope
 # BUGS: boot image seems to be a zipped partition image
-
 redpitaya-125		-f fat -n 695D-389B -s 5 -r https://downloads.redpitaya.com/downloads/STEMlab-125-1x/STEMlab_125-xx_OS_1.04-18_stable.img.zip -I \
 			-f ext4 -n 42dcbefc-a078-40a9-bf35-7dd15e551c6f -r https://downloads.redpitaya.com/downloads/LinuxOS/redpitaya_OS_10-21-54_08-Dec-2025.tar.gz -I
+
+#
+# SiFive RISCV 64
+#
+
+star64			-A riscv64 -f fat -s 5 -b Star64/$BOOT_VARIANT \
+			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-riscv/vmlinux \
+			-d $KERNEL_VARIANT-riscv \
+			lxde -k none -d none -m $KERNEL_VARIANT-riscv -s 95
 
 END
 }
