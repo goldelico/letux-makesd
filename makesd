@@ -425,6 +425,7 @@ useage: [DEV=/dev/device] makesd [--dry --debug --help -- update] [partition1 [p
     -F format	switch partion format (fat, fat16, ext3, ext4, swap)
 		note that another -f will increment by 1
     -n name	define name of current partition
+    -U uuid	define UUID of current partition
     -p sector	position start of next partition (-f) or -dd to a specific sector (512 byte / sector)
     low level copy:
     -x[file] <url>	raw copy of remote file into directory file
@@ -601,6 +602,10 @@ function process()
 			-n ) # define partition name
 				shift
 				setparam $NP NAME "$1"
+				;;
+			-U ) # define partition uuid
+				shift
+				setparam $NP UUID "$1"
 				;;
 			-F ) # define partition type
 				shift
@@ -1197,6 +1202,8 @@ do # format and mount partitions
 	umount ${DEVP}${P} 2>/dev/null
 	sleep 1
 	PNAME="$(getparam $P NAME)"
+	UUID="$(getparam $P UUID)"
+	[ "$UUID" ] && UUID="-U $UUID"
 	case "$(getparam $P FORMAT)" in
 		none )
 			: skip
@@ -1225,24 +1232,24 @@ do # format and mount partitions
 				echo making $(getparam $P FORMAT) partition $PNAME on ${DEVP}${P}
 				case "$(getparam $P FORMAT)" in
 				ext2 )
-					yes | mke2fs -t ext2 -L "${PNAME}" ${DEVP}${P} &&
+					yes | mke2fs -t ext2 $UUID -L "${PNAME}" ${DEVP}${P} &&
 					fsck.ext2 -y ${DEVP}${P}
 					;;
 				ext3 )
-					yes | mke2fs -t ext3 -j -L "${PNAME}" ${DEVP}${P} &&
+					yes | mke2fs -t ext3 $UUID -j -L "${PNAME}" ${DEVP}${P} &&
 					fsck.ext3 -y ${DEVP}${P}
 					;;
 				ext3-j )
-					yes | mke2fs -t ext3 -j -L "${PNAME}" ${DEVP}${P} &&
+					yes | mke2fs -t ext3 $UUID -j -L "${PNAME}" ${DEVP}${P} &&
 					yes | tune2fs -O ^has_journal ${DEVP}${P}
 					fsck.ext3 -y ${DEVP}${P}
 					;;
 				ext4 )
-					yes | mke2fs -t ext4 -j -L "${PNAME}" ${DEVP}${P} &&
+					yes | mke2fs -t ext4 $UUID -j -L "${PNAME}" ${DEVP}${P} &&
 					fsck.ext4 -y ${DEVP}${P}
 					;;
 				ext4-j )
-					yes | mke2fs -t ext4 -j -L "${PNAME}" ${DEVP}${P} &&
+					yes | mke2fs -t ext4 $UUID -j -L "${PNAME}" ${DEVP}${P} &&
 					yes | tune2fs -O ^has_journal ${DEVP}${P}
 					fsck.ext4 -y ${DEVP}${P}
 					;;
