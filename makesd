@@ -671,7 +671,7 @@ $SUBDIR $1"	# append new line
 				local P=$(lookup "-b$1")
 				if [ ! "$P" ]
 				then
-					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+					echo "unknown macro: -b $1" >&2; useage >&2; exit 1
 				fi
 				setparam $NP BOOT "$P"
 				;;
@@ -692,7 +692,7 @@ $SUBDIR $1"	# append new line
 				local P=$(lookup "-m$1")
 				if [ ! "$P" ]
 				then
-					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+					echo "unknown macro: -m $1" >&2; useage >&2; exit 1
 				fi
 				setparam $NP MODULES "$P"
 				;;
@@ -703,7 +703,7 @@ $SUBDIR $1"	# append new line
 				local P=$(lookup "-d$1")
 				if [ ! "$P" ]
 				then
-					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+					echo "unknown macro: -d $1" >&2; useage >&2; exit 1
 				fi
 				setparam $NP DT "$P"
 				;;
@@ -713,7 +713,7 @@ $SUBDIR $1"	# append new line
 				local P=$(lookup "-r$1")
 				if [ ! "$P" ]
 				then
-					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+					echo "unknown macro: -r $1" >&2; useage >&2; exit 1
 				fi
 				setparam $NP ROOTFS "$P"
 				;;
@@ -723,7 +723,7 @@ $SUBDIR $1"	# append new line
 				local P=$(lookup "-c$1")
 				if [ ! "$P" ]
 				then
-					echo "unknown macro: -k $1" >&2; useage >&2; exit 1
+					echo "unknown macro: -c $1" >&2; useage >&2; exit 1
 				fi
 				setparam $NP CONFIG "$P"
 				;;
