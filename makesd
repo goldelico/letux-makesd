@@ -357,7 +357,14 @@ redpitaya-125		-f fat -n 695D-389B -s 5 -r https://downloads.redpitaya.com/downl
 # SiFive RISCV 64
 #
 
-star64			-A riscv64 -f fat -s 5 -b Star64/$BOOT_VARIANT \
+# assumes SPL, OpenSBI, U-Boot is magically installed in eMMC
+star64			-A riscv64 -p 2048 \
+			letux -bboot Star64/$BOOT_VARIANT \
+			-kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-riscv/Image.gz -dboot $KERNEL_VARIANT-riscv -m $KERNEL_VARIANT-riscv
+
+
+# completely stand-alone µSD
+star64-usd		-A riscv64 -f fat -s 5 -b Star64/$BOOT_VARIANT \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-riscv/vmlinux \
 			-d $KERNEL_VARIANT-riscv \
 			lxde -k none -d none -m $KERNEL_VARIANT-riscv -s 95
