@@ -1016,12 +1016,7 @@ then
 	exit 1
 fi
 
-DEVP=$DEV
-if [ -b "${DEV}p1" ]
-then
-	DEVP="${DEV}p"	# MMC card reader or loop device expects "p"artition suffix (hard coded into kernel)
-	$DEBUG && echo "-- suffix p added $DEV -> $PDEV --" >&2
-fi
+DEVP="DEVP undefined"
 
 $DEBUG && echo "-- unmount partitions --" >&2
 
@@ -1031,8 +1026,7 @@ local P
 TOTALSIZE=0
 for P in 1 2 3 4
 do
-	umount -f ${DEVP}${P} 2>/dev/null
-	wait
+#	umount -f ${DEVP}${P} 2>/dev/null; wait
 	case "$(getparam $P FORMAT)" in
 		none )
 			## check if this is the last or only followed by "none"
@@ -1055,6 +1049,7 @@ umount ${DEV}*
 sleep 2
 umount ${DEV}*
 
+DEVP="DEVP undefined"
 totalsize
 
 ls -l /media/P[1-4]
@@ -1194,6 +1189,13 @@ fi
 $DEBUG && echo "-- format partitions --" >&2
 
 fi	# ! NOFORMAT
+
+DEVP=$DEV
+if [ -b "${DEV}p1" ]
+then
+	DEVP="${DEV}p"	# MMC card reader or loop device expects "p"artition suffix (hard coded into kernel)
+	$DEBUG && echo "-- suffix p added $DEV -> $PDEV --" >&2
+fi
 
 FATNUM=""
 EXTNUM=""
