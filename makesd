@@ -1017,10 +1017,10 @@ then
 fi
 
 DEVP=$DEV
-if [ -b "${DEV}p1" ] || expr "${DEV}" : "/dev/mmc.*" >/dev/null
+if [ -b "${DEV}p1" ]
 then
-	DEVP=${DEV}p	# MMC card reader expects "p"artition suffix (hard coded into kernel)
-	$DEBUG && echo "-- suffix p added --" >&2
+	DEVP="${DEV}p"	# MMC card reader or loop device expects "p"artition suffix (hard coded into kernel)
+	$DEBUG && echo "-- suffix p added $DEV -> $PDEV --" >&2
 fi
 
 $DEBUG && echo "-- unmount partitions --" >&2
