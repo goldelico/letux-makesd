@@ -1427,6 +1427,7 @@ then
 
 	if [ "$KERNEL_VERSION" ] && tool depmod
 	then # run depmod on the installed root for the last kernel we have installed
+		KERNEL_VERSION=$(ls -1 /media/P${P}//lib/modules/)	# file uImage may truncate
 		echo "-- run depmod $KERNEL_VERSION --" >&2
 		depmod -b "/media/P${P}/" "$KERNEL_VERSION"
 	fi
