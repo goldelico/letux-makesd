@@ -220,7 +220,7 @@ lx20			-A mipsel -p 0 -dd Letux-X20/$BOOT_VARIANT/MBR \
 
 # LX16 derived variant
 
-retrode3		-vr jessie -vk latest-retrode lx16e -r retrode3
+retrode3		-vr jessie -vk latest-retrode3 lx16e -r retrode3
 
 #
 # i.MX6 boards
