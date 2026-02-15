@@ -199,6 +199,7 @@ ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT
 #
 
 # MEM writes a special record to the µSD to indicate the DDR that is installed on a specific chip
+# this was only used in https://download.goldelico.com/letux-u-boot/Letux-X16/2023-07-13-hack/ and is now obsolete (-dd command will be ignored)
 # note we use ext3 for older rootfs like Squeeze or Jessie
 
 lx16			-A mipsel -p 0 -dd Letux-X16/$BOOT_VARIANT/MBR \
