@@ -2,11 +2,11 @@
 #
 # makesd
 # partitioning, formatting and installation tool
-# for (µ)SD cards suitable for LetuxOS devices
+# for (u)SD cards suitable for LetuxOS devices
 #
 # Run this script on some host with a SD interface
 #
-# (c) Golden Delicious Comp. GmbH&Co. KG, 2014-2025
+# (c) Golden Delicious Comp. GmbH&Co. KG, 2014-2026
 # Licenced under GPLv2
 #
 
@@ -191,15 +191,16 @@ l400			mipsbook-400
 
 # Imagination CI20 needs a pseudo-single -partition but SPL and u-boot must be copied by dd
 # see https://elinux.org/CI20_Dev_Zone#Making_a_bootable_SD_card_from_sources
-ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT_VARIANT/u-boot.img -p 4096 lxde -F ext3 -bboot CI20/$BOOT_VARIANT -kboot $KERNEL_VARIANT-mips -dboot $KERNEL_VARIANT-mips -m $KERNEL_VARIANT-mips
+ci20			-A mipsel -p 1 -dd CI20/$BOOT_VARIANT/u-boot-spl.bin -p 28 -dd CI20/$BOOT_VARIANT/u-boot.img \
+			-p 4096 lxde -F ext3 -bboot CI20/$BOOT_VARIANT -kboot $KERNEL_VARIANT-mips -dboot $KERNEL_VARIANT-mips -m $KERNEL_VARIANT-mips
 
 #
-# X1600/X2000 boards
-# LX16 + LX20
+# X1600/X2000/X2600 boards
+# LX16 + LX20 + LX26
 #
 
-# MEM writes a special record to the µSD to indicate the DDR that is installed on a specific chip
-# this was only used in https://download.goldelico.com/letux-u-boot/Letux-X16/2023-07-13-hack/ and is now obsolete (-dd command will be ignored)
+# MEM writes a special record to the uSD to indicate the DDR that is installed on a specific chip
+# this was only used in https://download.goldelico.com/letux-u-boot/Letux-X16/2023-07-13-hack/ and is now obsolete (-dd command will ignore it)
 # note we use ext3 for older rootfs like Squeeze or Jessie
 
 lx16			-A mipsel -p 0 -dd Letux-X16/$BOOT_VARIANT/MBR \
@@ -215,7 +216,11 @@ lx16e			-A mipsel -p 0 -dd Letux-X16E/$BOOT_VARIANT/MBR \
 
 lx20			-A mipsel -p 0 -dd Letux-X20/$BOOT_VARIANT/MBR \
 			-p 1 -dd Letux-X20/$BOOT_VARIANT/u-boot-with-spl.bin \
-			-p $((0x4480/512)) -dd Letux-X20/$BOOT_VARIANT/MEM \
+			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips \
+			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-mips
+
+lx26			-A mipsel -p 0 -dd Letux-X26/$BOOT_VARIANT/MBR \
+			-p 1 -dd Letux-X26/$BOOT_VARIANT/u-boot-with-spl.bin \
 			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-mips
 
@@ -364,7 +369,7 @@ star64			-A riscv64 -p 2048 \
 			-kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-riscv/Image.gz -dboot $KERNEL_VARIANT-riscv -m $KERNEL_VARIANT-riscv
 
 
-# completely stand-alone µSD
+# completely stand-alone uSD
 star64-usd		-A riscv64 -f fat -s 5 -b Star64/$BOOT_VARIANT \
 			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-riscv/vmlinux \
 			-d $KERNEL_VARIANT-riscv \
@@ -949,12 +954,14 @@ do
 			;;
 		"-u" | "--update" )	# self-update
 			$DEBUG && echo "-- self-update --" >&2
-			if ! exists "https://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)"
+			URL="https://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)"
+			URL="https://download.goldelico.com/$(basename $0)"
+			if ! exists "$URL"
 			then
-				echo "!!! can't access download path https://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)" >&2
+				echo "!!! can't access download path $URL" >&2
 				exit 1
 			fi
-			fetch "https://git.goldelico.com/?p=gta04-makesd.git;a=blob_plain;hb=HEAD;f=$(basename $0)" "$0.new" &&
+			fetch "$URL" "$0.new" &&
 			chmod +x $0.new &&
 			mv $0.new $0
 			exit
