@@ -219,8 +219,8 @@ lx20			-A mipsel -p 0 -dd Letux-X20/$BOOT_VARIANT/MBR \
 			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-mips
 
-lx26			-A mipsel -p 0 -dd Letux-X26/$BOOT_VARIANT/MBR \
-			-p 1 -dd Letux-X26/$BOOT_VARIANT/u-boot-with-spl.bin \
+lx26h			-A mipsel -p 0 -dd Letux-X26H/$BOOT_VARIANT/MBR \
+			-p 1 -dd Letux-X26H/$BOOT_VARIANT/u-boot-with-spl.bin \
 			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-mips
 
