@@ -83,15 +83,15 @@ cat <<END
 # Root File Systems
 #
 
-# single partition file system(s) - should boot if boot loader is in flash/eMMC
-debian			-f ext4 -r debian -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT -I
+# single partition file system(s) - should boot if boot loader is in flash/eMMC - defaults to ARM
+debian			-f ext4 -r debian -kboot $KERNEL_VARIANT-arm -dboot $KERNEL_VARIANT-arm -m $KERNEL_VARIANT-arm -I
 minimal			debian
 letux			debian -r letux
 lxde			debian -r lxde
 xfce			debian -r xfce
 quantumstep		debian -r quantumstep
 qtmoko			debian -r qtmoko
-replicant		-f ext4 -kboot $BOOT_VARIANT-replicant -dboot $KERNEL_VARIANT-replicant -m $KERNEL_VARIANT-replicant -I -r replicant
+replicant		-f ext4 -kboot $BOOT_VARIANT-replicant -dboot $KERNEL_VARIANT-arm-replicant -m $KERNEL_VARIANT-arm-replicant -I -r replicant
 pyraos			debian -r pyraos
 phosh			debian -r phosh
 all 			lxde qtmoko mate quantumstep
@@ -102,60 +102,58 @@ all2 			xfce qtmoko phosh quantumstep
 # GTA04, BeagleBoard, BeagleBone, ...
 #
 
-# production images (dual partition) for specific devices
-gta04			-f fat -s 5 -b GTA04/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+# production images (dual partition) for specific devices - they differ only in boot loader
+gta04			-f fat -s 5 -b GTA04/$BOOT_VARIANT -k $KERNEL_VARIANT-arm -d $KERNEL_VARIANT-arm lxde -k none -d none -s 95
 l2804			gta04
-gta04one		-f fat -s 5 -b GTA04-OneNAND/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+gta04one		gta04 -f- -b GTA04-OneNAND/$BOOT_VARIANT
 gta04a5			gta04one
 l2804a5			gta04one
-gta04b2			-f fat -s 5 -b Letux-3704/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+gta04b2			gta04 -f- -b Letux-3704/$BOOT_VARIANT
 l3704			gta04b2
-gta04b3			-f fat -s 5 -b Letux-7004/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+gta04b3			gta04 -f- -b Letux-7004/$BOOT_VARIANT
 l7004			gta04b3
-gta04b7			-f fat -s 5 -b Neo900/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+gta04b7			gta04 -f- -b Neo900/$BOOT_VARIANT
 neo900			gta04b7
-bb			-f fat -s 5 -b Letux-BeagleBoard/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+bb			gta04 -f- -b Letux-BeagleBoard/$BOOT_VARIANT
 beagleboard		bb
-bbb			-f fat -s 5 -b Letux-BeagleBone-Black/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-lc8			-f fat -s 5 -b Letux-Cortex-8/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+bbb			gta04 -f- -b Letux-BeagleBone-Black/$BOOT_VARIANT
+lc8			gta04 -f- -b Letux-Cortex-8/$BOOT_VARIANT
 pocketbeagle		lc8
-bb+b1			-f fat -s 5 -b OpenMoko-Beagle-Hybrid/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-bb+b2			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b2/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-bb+b4			-f fat -s 5 -b Openmoko-Beagle-Hybrid-b4/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-bb+b7			-f fat -s 5 -b BeagleBoard-Neo900/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+bb+b1			bbb -f- -b OpenMoko-Beagle-Hybrid/$BOOT_VARIANT
+bb+b2			bbb -f- -b Openmoko-Beagle-Hybrid-b2/$BOOT_VARIANT
+bb+b4			bbb -f- -b Openmoko-Beagle-Hybrid-b4/$BOOT_VARIANT
+bb+b7			bbb -f- -b BeagleBoard-Neo900/$BOOT_VARIANT
 
 #
 # OMAP4/5 boards
 # Pyra, OMAP5EVM, PandaBoard
 #
 
-panda-es		-f fat -s 5 -b PandaBoard-ES/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-omap5432evm		-f fat -s 5 -b OMAP5-uEVM/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-omap5432evm+pyra	-f fat -s 5 -b OMAP5-uEVM+Pyra4.9/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-pyra+lc15		-f fat -s 5 -b Pyra+LC15/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-pyra+lc15-4.9		-f fat -s 5 -b Pyra+LC15-4.9/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-pyra+lc15-4gb		-f fat -s 5 -b Pyra+LC15-4GB/$BOOT_VARIANT -k $KERNEL_VARIANT-lpae -d $KERNEL_VARIANT-lpae lxde -m $KERNEL_VARIANT-lpae -k none -d none -s 95
+panda-es		-f fat -s 5 -b PandaBoard-ES/$BOOT_VARIANT -k $KERNEL_VARIANT-arm -d $KERNEL_VARIANT-arm lxde -k none -d none -s 95
+omap5432evm		-f fat -s 5 -b OMAP5-uEVM/$BOOT_VARIANT -k $KERNEL_VARIANT-arm-lpae -d $KERNEL_VARIANT-arm-lpae lxde -k none -d none -s 95
+omap5432evm+pyra	omap5432evm -f- -b OMAP5-uEVM+Pyra4.9/$BOOT_VARIANT
+lc15			-f fat -s 5 -b Letux-Cortex-15/$BOOT_VARIANT -k $KERNEL_VARIANT-arm-lpae -d $KERNEL_VARIANT-arm-lpae lxde -k none -d none -s 95
+lc15-4.9		lc15 -f- -b Letux-Cortex-15-4.9/$BOOT_VARIANT
+lc15-4gb		lc15 -f- -b Letux-Cortex-15-4GB/$BOOT_VARIANT
+lc15evm			lc15 -f- -b Letux-Cortex-15-EVM/$BOOT_VARIANT
+lc15evm-4gb		lc15-4gb -f- -b Letux-Cortex-15-EVM-4GB/$BOOT_VARIANT
+pyra+lc15		lc15 -f- -b Pyra+LC15/$BOOT_VARIANT
+pyra+lc15-4.9		lc15-4.9 -f- -b Pyra+LC15-4.9/$BOOT_VARIANT
+pyra+lc15-4gb		lc15-4gb -f- -b Pyra+LC15-4GB/$BOOT_VARIANT
 pyra			pyra+lc15 -r pyraos
 pyra-lxde		pyra+lc15 -r lxde
 pyra-4gb		pyra+lc15-4gb -r pyraos
-lc15			-f fat -s 5 -b Letux-Cortex-15/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-lc15-4.9		-f fat -s 5 -b Letux-Cortex-15-4.9/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-lc15-4gb		-f fat -s 5 -b Letux-Cortex-15-4GB/$BOOT_VARIANT -k $KERNEL_VARIANT-lpae -d $KERNEL_VARIANT-lpae lxde -k none -d none -m $KERNEL_VARIANT-lpae -s 95
-lc15evm			-f fat -s 5 -b Letux-Cortex-15-EVM/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-lc15evm-4gb		-f fat -s 5 -b Letux-Cortex-15-EVM-4GB/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-gta15			-f fat -s 5 -b GTA15/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
-gta15-4gb		-f fat -s 5 -b GTA15-4GB/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+gta15			lc15 -f- -b GTA15/$BOOT_VARIANT
+gta15-4gb		lc15-4gb -f- -b GTA15-4GB/$BOOT_VARIANT
 pyraphone		gta15
 
 #
 # OpenPandora
 #
 
-# for Pandora, a single partition image can boot
-openpandora		lxde -b OpenPandora/$BOOT_VARIANT
-pandora			openpandora
-pandora-auto		openpandora -x/autoboot.txt https://download.goldelico.com/letux-u-boot/OpenPandora/$BOOT_VARIANT/src/boot.txt
-pandora-slackware	-f ext3-j -s 95 -r https://slackware.openpandora.org/pandora/sl4p/sl4p-15.0/rootfs/SL4P-15.0-alpha2.tar.xz -f swap -s 5
+# for Pandora, a single partition image can boot - but standard ext4 fails
+pandora			lxde -F ext4-32 -b OpenPandora/$BOOT_VARIANT -x/autoboot.txt https://download.goldelico.com/letux-u-boot/OpenPandora/$BOOT_VARIANT/src/boot.txt
+pandora-slackware	-f ext4-32 -s 95 -r https://slackware.openpandora.org/pandora/sl4p/sl4p-15.0/rootfs/SL4P-15.0-alpha2.tar.xz -f swap -s 5
 
 #
 # RaspBerry Pi
@@ -167,8 +165,8 @@ raspi3b+		-f fat -s 1 -I -x https://download.goldelico.com/letux-u-boot/RasPi-3B
 			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/start.elf \
 			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/config.txt \
 			-x https://download.goldelico.com/letux-u-boot/RasPi-3B+/$BOOT_VARIANT/cmdline.txt \
-			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -d $KERNEL_VARIANT \
-			lxde -n rootfs -k none -d none -m $KERNEL_VARIANT -s 95
+			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm/zImage -d $KERNEL_VARIANT-arm \
+			lxde -n rootfs -k none -d none -m $KERNEL_VARIANT-arm -s 95
 raspi0			-A armel raspi3b+
 
 #
@@ -208,6 +206,7 @@ lx16			-A mipsel -p 0 -dd Letux-X16/$BOOT_VARIANT/MBR \
 			-p $((0x4480/512)) -dd Letux-X16/$BOOT_VARIANT/MEM \
 			-p $((0x300000/512)) -f fat16 -s 5 -I -k $KERNEL_VARIANT-mips -d $KERNEL_VARIANT-mips \
 			letux -F ext3 -s 95 -k none -d none -m $KERNEL_VARIANT-mips
+
 lx16e			-A mipsel -p 0 -dd Letux-X16E/$BOOT_VARIANT/MBR \
 			-p 1 -dd Letux-X16E/$BOOT_VARIANT/u-boot-with-spl.bin \
 			-p $((0x4480/512)) -dd Letux-X16E/$BOOT_VARIANT/MEM \
@@ -226,7 +225,7 @@ lx26h			-A mipsel -p 0 -dd Letux-X26H/$BOOT_VARIANT/MBR \
 
 # LX16 derived variant
 
-retrode3		-vr jessie -vk latest-retrode3 lx16e -r retrode3
+retrode3		lx16e -r retrode3 -m $KERNEL_VARIANT-mips-retrode3 -f- -k $KERNEL_VARIANT-mips-retrode3 -d $KERNEL_VARIANT-mips-retrode3
 
 #
 # i.MX6 boards
@@ -235,11 +234,11 @@ retrode3		-vr jessie -vk latest-retrode3 lx16e -r retrode3
 
 # Udoo Neo needs a pseudo-single-partition but SPL and u-boot must be copied by dd
 
-udoo-neo		-p 2 -dd Udoo-Neo/$BOOT_VARIANT/SPL -p 138 -dd Udoo-Neo/$BOOT_VARIANT/u-boot.img -p 2048 lxde -bboot Udoo-Neo/$BOOT_VARIANT -kboot $KERNEL_VARIANT -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
+udoo-neo		-p 2 -dd Udoo-Neo/$BOOT_VARIANT/SPL -p 138 -dd Udoo-Neo/$BOOT_VARIANT/u-boot.img -p 2048 lxde -bboot Udoo-Neo/$BOOT_VARIANT -kboot $KERNEL_VARIANT-arm -dboot $KERNEL_VARIANT-arm -m $KERNEL_VARIANT-arm
 
 # Kobo Clara / Tolino Shine 3 needs a pseudo-single-partition but SPL and u-boot must be copied by dd
 
-clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Clara/$BOOT_VARIANT/clara-env.bin -p 49152 debian -F ext3 -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT/zImage -dboot $KERNEL_VARIANT -m $KERNEL_VARIANT
+clara			-p 2 -dd Clara/2019-09-09/boot -p 2 -dd Clara/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Clara/$BOOT_VARIANT/clara-env.bin -p 49152 debian -F ext3 -kboot https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-arm/zImage -dboot $KERNEL_VARIANT-arm -m $KERNEL_VARIANT-arm
 shine3			clara -p 2 -dd Shine3/2019-09-23/boot -dd Shine3/$BOOT_VARIANT/u-boot.imx -p 1536 -dd Shine3/2019-10-05/shine3-env.bin
 
 # alternate names
@@ -327,28 +326,32 @@ pb2			pocketbeagle2
 #
 
 # x86 needs syslinux (mbr.bin) to be bootable and the first partition to be FAT
-x86-syslinux		-A i386 -p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
+x86-syslinux		-p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
 			-p 2 -f fat -s 5 -I \
 			-x https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/ldlinux.bin \
 			-x https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/ldlinux.c32 \
 			-x https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/syslinux.cfg \
-			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-i386/vmlinuz -d none \
-			lxde -k none -d none -m $KERNEL_VARIANT-i386 -s 95
-x86-efi			-A i386 \
-			-p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
+			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT$ARCHITECTURE/vmlinuz -d none \
+			lxde -k none -d none -m $KERNEL_VARIANT$ARCHITECTURE -s 95
+x86-efi			-p 0 -dd X86/$BOOT_VARIANT/mbr.bin \
 			-p 2 -f fat -s 5 -I \
 			-x https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/x86-boot.tgz \
 			-xefi/debian/grub.cfg https://download.goldelico.com/letux-u-boot/X86/$BOOT_VARIANT/grub.cfg \
-			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT-i386/vmlinuz -d none \
-			lxde -k none -d none -m $KERNEL_VARIANT-i386 -s 95
-x86			x86-efi
+			-k https://download.goldelico.com/letux-kernel/$KERNEL_VARIANT$ARCHITECTURE/vmlinuz -d none \
+			lxde -k none -d none -m $KERNEL_VARIANT$ARCHITECTURE -s 95
+
+# kann man .iso erzeugen? Oder ist das eine Nachbearbeitung auf einem loop-device wie für die .tgz?
+
+# default system
+x86			-A i386 x86-efi
+amd64			-A amd64 x86-efi
 
 #
 # ARM Cortex A5
 #
 
 # ATSAMA5
-atsama5			-f fat -s 5 -b AT-SAMA5D27/$BOOT_VARIANT -k $KERNEL_VARIANT -d $KERNEL_VARIANT lxde -k none -d none -s 95
+atsama5			-f fat -s 5 -b AT-SAMA5D27/$BOOT_VARIANT -k $KERNEL_VARIANT-arm -d $KERNEL_VARIANT-arm lxde -k none -d none -s 95
 
 #
 # RedPitaya
